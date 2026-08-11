@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uziseller · APMMO API Test</title>
+<style>
+body{margin:0;background:#070611;color:#f7f5ff;font-family:Inter,Arial,sans-serif;padding:30px}
+.wrap{max-width:900px;margin:auto}.panel{border:1px solid #252139;background:#0f0c1e;border-radius:18px;padding:24px;margin:16px 0}
+h1{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+input,button{padding:12px;border-radius:10px;border:1px solid #34304a;background:#141126;color:white}
+input{min-width:220px}button{cursor:pointer;background:#6242e8;border-color:#7658ff;font-weight:700}
+pre{white-space:pre-wrap;word-break:break-word;background:#080711;padding:16px;border-radius:12px;min-height:120px}
+small{color:#aaa5c2}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <h1>APMMO API 测试</h1>
+    <small>这个页面用于测试 API。API Key 不会放在浏览器里。</small>
+    <div class="row"><input id="password" type="password" placeholder="输入后台密码"><button onclick="savePassword()">保存</button></div>
+  </div>
+
+  <div class="panel">
+    <h3>1. 账户</h3>
+    <button onclick="run('profile')">获取余额 / 账户信息</button>
+  </div>
+
+  <div class="panel">
+    <h3>2. 商品</h3>
+    <button onclick="run('products')">获取商品列表</button>
+    <div class="row"><input id="product" placeholder="商品 ID，例如 3"><button onclick="product()">获取商品详情</button></div>
+  </div>
+
+  <div class="panel">
+    <h3>3. 查询订单</h3>
+    <div class="row"><input id="order" placeholder="供应商订单号"><button onclick="order()">查询订单</button></div>
+  </div>
+
+  <div class="panel">
+    <h3>4. 测试购买</h3>
+    <small>只有在你确认供应商商品 ID 和数量后才点击。会真实产生购买。</small>
+    <div class="row">
+      <input id="buyId" placeholder="商品 ID">
+      <input id="amount" placeholder="数量">
+      <input id="coupon" placeholder="优惠券（可留空）">
+      <button onclick="buy()">真实购买</button>
+    </div>
+  </div>
+
+  <div class="panel"><h3>API 返回</h3><pre id="out">等待操作…</pre></div>
+</div>
+<script>
+function pwd(){return sessionStorage.getItem("uz_admin_password")||document.getElementById("password").value}
+function savePassword(){sessionStorage.setItem("uz_admin_password",document.getElementById("password").value);out("后台密码已保存到本次浏览器会话。")}
+function out(x){document.getElementById("out").textContent=typeof x==="string"?x:JSON.stringify(x,null,2)}
+async function req(url,opt={}){
+  opt.headers=Object.assign({},opt.headers||{},{"x-admin-password":pwd()});
+  const r=await fetch(url,opt); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j=t}
+  out(j); return j;
+}
+function run(a){return req("/api/apmmo?action="+encodeURIComponent(a))}
+function product(){return req("/api/apmmo?action=product&product="+encodeURIComponent(document.getElementById("product").value))}
+function order(){return req("/api/apmmo?action=order&order="+encodeURIComponent(document.getElementById("order").value))}
+function buy(){
+  if(!confirm("这会真实调用供应商购买接口并产生订单。确定继续吗？")) return;
+  return req("/api/apmmo?action=buy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    ID:document.getElementById("buyId").value,
+    Amount:document.getElementById("amount").value,
+    Coupon:document.getElementById("coupon").value
+  })})
+}
+</script>
+</body>
+</html>
