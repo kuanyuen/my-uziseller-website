@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order Status — Uziseller</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<style>
+.status-wrap{max-width:520px;margin:80px auto;padding:0 20px}
+.status-panel{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:22px;padding:36px}
+.status-badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:13px;font-weight:700;margin:12px 0}
+.status-pending_payment{background:rgba(245,187,77,.15);color:#f5bb4d}
+.status-paid,.status-processing{background:rgba(123,255,160,.12);color:#7bffa0}
+.status-payment_failed,.status-needs_manual_review{background:rgba(255,110,130,.12);color:#ff6e82}
+.status-hint{color:var(--muted);font-size:13px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<header class="nav">
+  <a class="brand" href="index.html#top"><img src="assets/logo.svg" alt="Uziseller logo"><span>Uziseller</span></a>
+</header>
+<div class="status-wrap">
+  <div class="status-panel" id="app"><p>Loading your order…</p></div>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const orderId = params.get('order');
+const app = document.getElementById('app');
+
+const LABELS = {
+  pending_payment: 'Waiting for payment confirmation…',
+  paid: 'Payment received — sending your order to the supplier…',
+  processing: 'Processing — order sent to supplier',
+  payment_failed: 'Payment failed',
+  needs_manual_review: "We're reviewing your order — we'll follow up shortly"
+};
+
+async function load(){
+  if (!orderId) { app.innerHTML = '<p>No order specified.</p>'; return; }
+  try {
+    const r = await fetch('/api/order-status?id=' + encodeURIComponent(orderId));
+    const j = await r.json();
+    if (j.status !== 'ok') { app.innerHTML = '<p>Order not found.</p>'; return; }
+    const o = j.order;
+    app.innerHTML = `
+      <h2 style="margin-top:0">${o.name}</h2>
+      <p>Quantity: ${o.quantity.toLocaleString()}</p>
+      <p>Total: RM${Number(o.priceMYR).toFixed(2)}</p>
+      <span class="status-badge status-${o.status}">${LABELS[o.status] || o.status}</span>
+      ${o.supplierOrderId ? `<p class="status-hint">Supplier order ref: ${o.supplierOrderId}</p>` : ''}
+      <p class="status-hint">Order ID: ${o.id}</p>
+      <p style="margin-top:24px"><a href="index.html#products">← Back to store</a></p>
+    `;
+    if (o.status === 'pending_payment' || o.status === 'paid') {
+      setTimeout(load, 4000);
+    }
+  } catch(e) {
+    app.innerHTML = '<p>Could not load order status. Please refresh.</p>';
+  }
+}
+load();
+</script>
+</body>
+</html>

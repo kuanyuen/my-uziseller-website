@@ -1,5 +1,8 @@
 {
   "name": "uziseller-v1-apmmo",
   "private": true,
-  "version": "1.0.0"
+  "version": "1.2.0",
+  "dependencies": {
+    "@vercel/kv": "^2.0.0"
+  }
 }
