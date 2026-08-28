@@ -196,19 +196,16 @@
         </div>
       </div>
       <div id="subscription-status" class="subscription-status">Loading subscription products…</div>
-      <div class="subscription-shop-body">
-        <aside class="subscription-sidebar">
+      <div class="subscription-catalog-head">
+        <div class="subscription-categories-block">
           <div class="subscription-side-title" data-i18n="subs.categories">Categories</div>
           <div id="subscription-categories" class="subscription-category-list"></div>
-        </aside>
-        <main class="subscription-main">
-          <div class="subscription-toolbar">
-            <strong data-i18n="subs.products">Products</strong>
-            <span id="subscription-result-count"></span>
-          </div>
-          <div id="subscription-products" class="subscription-product-grid"></div>
-        </main>
+        </div>
+        <div class="subscription-catalog-count"><strong data-i18n="subs.products">Products</strong><span id="subscription-result-count"></span></div>
       </div>
+      <main class="subscription-main">
+        <div id="subscription-products" class="subscription-product-grid"></div>
+      </main>
     </div>
     <p class="tab-note" data-i18n="subs.note">Products are loaded live from the supplier API. Customer-facing prices include the 30% markup.</p>
   </div>

@@ -27,7 +27,24 @@ async function upstream(path, params = {}, options = {}) {
 
 function arrFrom(data) {
   if (Array.isArray(data)) return data;
-  for (const k of ["data","products","items","result","results","categories"]) if (Array.isArray(data?.[k])) return data[k];
+  const direct = ["data","products","items","result","results"];
+  for (const k of direct) {
+    if (Array.isArray(data?.[k])) return data[k];
+    if (data?.[k] && typeof data[k] === "object") {
+      const nested=[];
+      for (const [category, value] of Object.entries(data[k])) {
+        if (Array.isArray(value)) value.forEach(item => nested.push({...item, category: item?.category ?? item?.category_name ?? category}));
+      }
+      if (nested.length) return nested;
+    }
+  }
+  if (data && typeof data === "object") {
+    const nested=[];
+    for (const [category,value] of Object.entries(data)) {
+      if (Array.isArray(value)) value.forEach(item => nested.push({...item, category: item?.category ?? item?.category_name ?? category}));
+    }
+    if (nested.length) return nested;
+  }
   return [];
 }
 function first(o, keys, fallback="") { for (const k of keys) if (o?.[k] !== undefined && o?.[k] !== null && o?.[k] !== "") return o[k]; return fallback; }

@@ -12,34 +12,14 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
 
   function escapeHtml(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-  // Remove ONLY services whose PRODUCT NAME indicates the Vietnam market.
-  // Do not inspect category, platform, description, or Vietnamese letters in
-  // general: a global service may simply have a Vietnamese-language name.
+  // Remove Vietnam/Vietnamese-only services before they reach the customer UI.
+  // The original API name is kept untouched for audit/filtering, but these
+  // services are excluded from the public catalogue.
   function isVietnameseService(s){
-    const name = String(s.name || '').toLowerCase();
-    const patterns = [
-      /\bvietnam\b/i,
-      /\bviet\s*nam\b/i,
-      /\bviệt\s*nam\b/i,
-      /\bvn\b/i,
-      /\bviệt\b/i,
-      /\bviet\b/i,
-      /\bcho\s+(?:người\s+)?việt\b/i,
-      /\bdành\s+cho\s+(?:người\s+)?việt\b/i,
-      /\btại\s+việt\b/i,
-      /\bở\s+việt\b/i,
-      /\bngười\s+việt\b/i,
-      /\bkhách\s+việt\b/i,
-      /\bacc\s+việt\b/i,
-      /\bclone\s+việt\b/i,
-      /\bprofile\s+việt\b/i,
-      /\btài\s+khoản\s+việt\b/i,
-      /\bfacebook\s+vn\b/i,
-      /\btiktok\s+vn\b/i,
-      /\byoutube\s+vn\b/i,
-      /\binstagram\s+vn\b/i
-    ];
-    return patterns.some(re => re.test(name));
+    const text = `${s.name || ''} ${s.category || ''} ${s.description || ''}`.toLowerCase();
+    const vietnameseMarks = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
+    const explicit = /\b(vietnam|vietnamese|viet nam|việt nam|việt|vn|clone việt|acc việt|profile việt|tiktok vn|facebook vn)\b/i;
+    return vietnameseMarks.test(text) || explicit.test(text);
   }
 
   function visible(){
