@@ -33,6 +33,7 @@ export default async function handler(req, res) {
 
     // Billplz (FPX/card) settles in MYR regardless of which currency the
     // customer was browsing in — that's just a display preference.
+    // service.prices.MYR already includes the 30% customer-facing markup.
     const totalMYR = Math.round(((service.prices.MYR * qty) / 1000) * 100) / 100;
     const amountCents = Math.round(totalMYR * 100);
     if (amountCents < 100) {
