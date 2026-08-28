@@ -55,8 +55,10 @@ const UzOrderModal = (() => {
     const btn = overlay.querySelector('#om-submit');
     if (!btn.disabled) btn.textContent = t('order.pay');
     if (currentService) {
+      overlay.querySelector('#om-title').textContent =
+        localizeServiceText(currentService.name, (typeof UzState !== 'undefined' && UzState.lang) || 'en');
       overlay.querySelector('#om-meta').textContent =
-        `${currentService.platformLabel} · ${t('order.minMax', { min: currentService.min.toLocaleString(), max: currentService.max.toLocaleString() })}`;
+        `${localizePlatformLabel(currentService.platformLabel, (typeof UzState !== 'undefined' && UzState.lang) || 'en')} · ${t('order.minMax', { min: currentService.min.toLocaleString(), max: currentService.max.toLocaleString() })}`;
       overlay.querySelector('#om-qty-hint').textContent =
         t('order.minMax', { min: currentService.min || 1, max: currentService.max || '—' });
     }
@@ -77,7 +79,7 @@ const UzOrderModal = (() => {
   function open(service) {
     if (!overlay) build();
     currentService = service;
-    overlay.querySelector('#om-title').textContent = service.name;
+    overlay.querySelector('#om-title').textContent = localizeServiceText(service.name, (typeof UzState !== 'undefined' && UzState.lang) || 'en');
     const qtyInput = overlay.querySelector('#om-qty');
     qtyInput.value = service.min || 1;
     qtyInput.min = service.min || 1;

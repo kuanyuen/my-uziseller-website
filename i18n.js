@@ -142,6 +142,186 @@ const I18N = {
   'footer.tag2': { en: 'Built for Growth. Powered by Trust.', zh: '为增长而生，值得信赖。' }
 };
 
+
+// SMM service-name localization.
+// Supplier names are often returned in Vietnamese. We keep the original
+// service ID/name for ordering, but localize only what customers see.
+const SERVICE_TRANSLATIONS = {
+  // common phrases (longest phrases should be listed first)
+  'giá rẻ': { zh: '便宜', en: 'Cheap' },
+  'đa quốc gia': { zh: '多国', en: 'Global' },
+  'quốc gia': { zh: '国家', en: 'Country' },
+  'dạng mới': { zh: '新版', en: 'New Type' },
+  'thử nghiệm': { zh: '测试', en: 'Test' },
+  'không tụt': { zh: '不掉粉', en: 'No Drop' },
+  'tài khoản': { zh: '账号', en: 'Account' },
+  'người theo dõi': { zh: '粉丝', en: 'Followers' },
+  'lượt thích': { zh: '点赞', en: 'Likes' },
+  'lượt xem': { zh: '观看次数', en: 'Views' },
+  'lượt theo dõi': { zh: '关注', en: 'Follows' },
+  'bình luận': { zh: '评论', en: 'Comments' },
+  'tương tác': { zh: '互动', en: 'Engagement' },
+  'đánh giá': { zh: '评价', en: 'Reviews' },
+  '5 sao': { zh: '5星', en: '5 Stars' },
+  'chính hãng': { zh: '官方', en: 'Official' },
+  'tự động': { zh: '自动', en: 'Automatic' },
+  'chất lượng cao': { zh: '高质量', en: 'High Quality' },
+  'thời gian': { zh: '时间', en: 'Time' },
+  'mỗi ngày': { zh: '每天', en: 'Daily' },
+  'mỗi giờ': { zh: '每小时', en: 'Hourly' },
+  'thanh toán': { zh: '付款', en: 'Payment' },
+  'bảo hành': { zh: '保修', en: 'Warranty' },
+  'đơn hàng': { zh: '订单', en: 'Order' },
+  'khách hàng': { zh: '客户', en: 'Customer' },
+
+  // common SMM words
+  'like': { zh: '点赞', en: 'Likes' },
+  'likes': { zh: '点赞', en: 'Likes' },
+  'like post': { zh: '帖子点赞', en: 'Post Likes' },
+  'like comment': { zh: '评论点赞', en: 'Comment Likes' },
+  'post': { zh: '帖子', en: 'Post' },
+  'comment': { zh: '评论', en: 'Comment' },
+  'comments': { zh: '评论', en: 'Comments' },
+  'follow': { zh: '关注', en: 'Follows' },
+  'followers': { zh: '粉丝', en: 'Followers' },
+  'view': { zh: '观看', en: 'Views' },
+  'views': { zh: '观看次数', en: 'Views' },
+  'share': { zh: '分享', en: 'Shares' },
+  'sub': { zh: '订阅', en: 'Subscriptions' },
+  'subscribe': { zh: '订阅', en: 'Subscribe' },
+  'subscriber': { zh: '订阅者', en: 'Subscribers' },
+  'member': { zh: '成员', en: 'Members' },
+  'group': { zh: '群组', en: 'Group' },
+  'page': { zh: '页面', en: 'Page' },
+  'story': { zh: '快拍', en: 'Story' },
+  'video': { zh: '视频', en: 'Video' },
+  'live': { zh: '直播', en: 'Live' },
+  'channel': { zh: '频道', en: 'Channel' },
+  'traffic': { zh: '流量', en: 'Traffic' },
+  'rating': { zh: '评分', en: 'Rating' },
+  'review': { zh: '评价', en: 'Review' },
+  'reviews': { zh: '评价', en: 'Reviews' },
+  'vip': { zh: 'VIP', en: 'VIP' },
+  'premium': { zh: '高级', en: 'Premium' },
+  'organic': { zh: '自然', en: 'Organic' },
+  'global': { zh: '全球', en: 'Global' },
+  'worldwide': { zh: '全球', en: 'Worldwide' },
+  'mixed': { zh: '混合', en: 'Mixed' },
+  'new': { zh: '新', en: 'New' },
+  'test': { zh: '测试', en: 'Test' },
+  'cheap': { zh: '便宜', en: 'Cheap' },
+  'fast': { zh: '快速', en: 'Fast' },
+  'stable': { zh: '稳定', en: 'Stable' },
+  'quality': { zh: '质量', en: 'Quality' },
+
+  // Vietnamese words
+  'facebook': { zh: 'Facebook', en: 'Facebook' },
+  'tiktok': { zh: 'TikTok', en: 'TikTok' },
+  'instagram': { zh: 'Instagram', en: 'Instagram' },
+  'youtube': { zh: 'YouTube', en: 'YouTube' },
+  'threads': { zh: 'Threads', en: 'Threads' },
+  'telegram': { zh: 'Telegram', en: 'Telegram' },
+  'twitter': { zh: 'Twitter', en: 'Twitter' },
+  'spotify': { zh: 'Spotify', en: 'Spotify' },
+  'shopee': { zh: 'Shopee', en: 'Shopee' },
+  'website': { zh: '网站', en: 'Website' },
+  'seo': { zh: 'SEO', en: 'SEO' },
+  'giá': { zh: '价格', en: 'Price' },
+  'rẻ': { zh: '便宜', en: 'Cheap' },
+  'mới': { zh: '新', en: 'New' },
+  'quốc': { zh: '国家', en: 'Country' },
+  'comment': { zh: '评论', en: 'Comment' },
+  'bình': { zh: '评论', en: 'Comment' },
+  'luận': { zh: '评论', en: 'Comment' },
+  'thích': { zh: '点赞', en: 'Likes' },
+  'xem': { zh: '观看', en: 'Views' },
+  'theo': { zh: '关注', en: 'Follow' },
+  'dõi': { zh: '关注', en: 'Follow' },
+  'người': { zh: '用户', en: 'Users' },
+  'dùng': { zh: '用户', en: 'Users' },
+  'tăng': { zh: '增加', en: 'Increase' },
+  'giảm': { zh: '减少', en: 'Decrease' },
+  'tương': { zh: '互动', en: 'Engagement' },
+  'tác': { zh: '互动', en: 'Engagement' },
+  'đông': { zh: '东', en: 'East' },
+  'nam': { zh: '南', en: 'South' },
+  'việt': { zh: '越南', en: 'Vietnam' },
+  'nội': { zh: '本地', en: 'Local' },
+  'địa': { zh: '本地', en: 'Local' },
+  'tây': { zh: '西方', en: 'Western' },
+  'thật': { zh: '真人', en: 'Real' },
+  'ảo': { zh: '虚拟', en: 'Virtual' },
+  'bot': { zh: '机器人', en: 'Bot' },
+  'quảng cáo': { zh: '广告', en: 'Ads' },
+  'kênh': { zh: '频道', en: 'Channel' },
+  'ngày': { zh: '天', en: 'Days' },
+  'giờ': { zh: '小时', en: 'Hours' },
+  'phút': { zh: '分钟', en: 'Minutes' },
+  'tuần': { zh: '周', en: 'Weeks' },
+  'tháng': { zh: '月', en: 'Months' },
+  'năm': { zh: '年', en: 'Years' },
+  'không': { zh: '无', en: 'No' },
+  'có': { zh: '有', en: 'With' },
+  'với': { zh: '与', en: 'With' },
+  'cho': { zh: '用于', en: 'For' },
+  'từ': { zh: '从', en: 'From' },
+  'đến': { zh: '至', en: 'To' },
+  'trên': { zh: '在', en: 'On' },
+  'bằng': { zh: '通过', en: 'By' },
+  'chỉ': { zh: '仅', en: 'Only' },
+  'tất cả': { zh: '全部', en: 'All' },
+  'nhanh': { zh: '快速', en: 'Fast' },
+  'chậm': { zh: '慢速', en: 'Slow' },
+  'ổn định': { zh: '稳定', en: 'Stable' },
+  'cao': { zh: '高', en: 'High' },
+  'thấp': { zh: '低', en: 'Low' },
+  'tốt': { zh: '优质', en: 'Good' },
+  'đặc biệt': { zh: '特别', en: 'Special' },
+  'chuyên nghiệp': { zh: '专业', en: 'Professional' },
+  'dịch vụ': { zh: '服务', en: 'Service' },
+  'mục tiêu': { zh: '目标', en: 'Target' },
+  'liên kết': { zh: '链接', en: 'Link' },
+  'trang': { zh: '页面', en: 'Page' },
+  'tài khoản': { zh: '账号', en: 'Account' },
+  'mua': { zh: '购买', en: 'Buy' },
+  'bán': { zh: '销售', en: 'Sell' }
+};
+
+function localizePlatformLabel(label, lang) {
+  const map = {
+    Facebook: { zh: 'Facebook', en: 'Facebook' },
+    TikTok: { zh: 'TikTok', en: 'TikTok' },
+    Instagram: { zh: 'Instagram', en: 'Instagram' },
+    YouTube: { zh: 'YouTube', en: 'YouTube' },
+    Threads: { zh: 'Threads', en: 'Threads' },
+    Telegram: { zh: 'Telegram', en: 'Telegram' },
+    'Twitter/X': { zh: 'Twitter/X', en: 'Twitter/X' },
+    Spotify: { zh: 'Spotify', en: 'Spotify' },
+    Shopee: { zh: 'Shopee', en: 'Shopee' },
+    Zalo: { zh: 'Zalo', en: 'Zalo' },
+    LinkedIn: { zh: 'LinkedIn', en: 'LinkedIn' },
+    'Website/SEO': { zh: '网站/SEO', en: 'Website/SEO' },
+    Others: { zh: '其他', en: 'Others' }
+  };
+  const item = map[String(label)] || null;
+  return item ? (item[lang] || item.en) : localizeServiceText(label, lang);
+}
+
+function localizeServiceText(text, lang) {
+  let out = String(text ?? '');
+  // Normalize common separators/spacing without changing service IDs.
+  out = out.replace(/\s+/g, ' ').trim();
+  const entries = Object.entries(SERVICE_TRANSLATIONS)
+    .sort((a, b) => b[0].length - a[0].length);
+  for (const [src, vals] of entries) {
+    const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
+    out = out.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
+  }
+  // Vietnamese punctuation/diacritics left in names should not leak through
+  // as mixed-language labels. Keep brand names and IDs intact.
+  return out.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
+}
+
 const CURRENCY = {
   MYR: { symbol: 'RM', locale: 'en-MY', toMyr: 1 },
   USD: { symbol: '$', locale: 'en-US', toMyr: 4.04 },

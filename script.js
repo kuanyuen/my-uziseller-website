@@ -29,7 +29,7 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
     grid.innerHTML = shown.slice(0, 150).map(s => `
       <article class="smm-card">
         <div class="smm-meta">#${escapeHtml(s.service)} · ${escapeHtml(s.platformLabel)}</div>
-        <h3>${escapeHtml(s.name)}</h3>
+        <h3>${escapeHtml(localizeServiceText(s.name, (typeof UzState !== 'undefined' && UzState.lang) || 'en'))}</h3>
         <div class="smm-meta">${t('card.min')} ${s.min.toLocaleString()} · ${t('card.max')} ${s.max.toLocaleString()} ${s.refill ? '· ' + t('card.refill') : ''}</div>
         <div class="smm-price">${formatPrice(s.prices[currency] ?? s.prices.MYR, currency)} <small>${t('card.perUnits')}</small></div>
         <button class="btn primary wide smm-order" onclick="UzOrderModal.open(window.__uzServices['${s.service}'])">${t('smm.orderNow')}</button>
@@ -53,7 +53,7 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
     const all = ['ALL', ...ordered];
     platforms.innerHTML = all.map(p => `
       <button class="smm-cat ${p===activePlatform?'active':''}" data-platform="${escapeHtml(p)}">
-        ${p==='ALL' ? `${t('smm.all')} (${services.length})` : `${escapeHtml(p)} (${counts[p]})`}
+        ${p==='ALL' ? `${t('smm.all')} (${services.length})` : `${escapeHtml(localizePlatformLabel(p, (typeof UzState !== 'undefined' && UzState.lang) || 'en'))} (${counts[p]})`}
       </button>`).join('');
     platforms.querySelectorAll('.smm-cat').forEach(btn => btn.addEventListener('click', () => {
       activePlatform = btn.dataset.platform;
