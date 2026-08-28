@@ -51,3 +51,7 @@ The frontend currently uses WhatsApp for the actual customer order button — th
 
 Before enabling automatic paid ordering, protect the `add`, `status`, and `balance` routes with your order/payment system and store orders in a database (for example Vercel KV/Redis or another database).
 
+
+
+### Vietnam filtering
+Only the product/service NAME is checked for explicit Vietnam-region/market indicators. Category, platform, description, and generic Vietnamese-language text do not cause removal.
