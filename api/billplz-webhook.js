@@ -4,6 +4,7 @@
 import { verifyXSignature } from "../lib/billplz.js";
 import { getOrderByBillId, saveOrder } from "../lib/store.js";
 import { placeOrder } from "../lib/smm.js";
+import { buyProduct } from "../lib/shop-apmmo.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") { res.status(405).end(); return; }
@@ -43,20 +44,35 @@ export default async function handler(req, res) {
   order.paidAt = new Date().toISOString();
 
   try {
-    const supplierResult = await placeOrder({
-      service: order.service,
-      link: order.link,
-      quantity: order.quantity
-    });
-
-    if (supplierResult && supplierResult.order) {
-      order.status = "processing";
-      order.supplierOrderId = supplierResult.order;
+    if (order.type === "subscription") {
+      const supplierResult = await buyProduct({
+        productId: order.productId,
+        quantity: order.quantity,
+        coupon: order.coupon || ""
+      });
+      if (supplierResult?.status === "success") {
+        order.status = "completed";
+        order.supplierTransactionId = supplierResult.trans_id || null;
+        order.deliveryData = supplierResult.data || [];
+        order.supplierResponse = supplierResult;
+      } else {
+        order.status = "needs_manual_review";
+        order.supplierResponse = supplierResult;
+      }
     } else {
-      // Payment succeeded but supplier rejected the order (bad link, service
-      // no longer available, etc.) — flag for manual handling.
-      order.status = "needs_manual_review";
-      order.supplierResponse = supplierResult;
+      const supplierResult = await placeOrder({
+        service: order.service,
+        link: order.link,
+        quantity: order.quantity
+      });
+
+      if (supplierResult && supplierResult.order) {
+        order.status = "processing";
+        order.supplierOrderId = supplierResult.order;
+      } else {
+        order.status = "needs_manual_review";
+        order.supplierResponse = supplierResult;
+      }
     }
   } catch (e) {
     order.status = "needs_manual_review";

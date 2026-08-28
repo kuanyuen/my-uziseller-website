@@ -184,21 +184,33 @@
 
   <!-- Tab 2: App Subscriptions -->
   <div class="tab-panel" id="tab-subscriptions">
-    <div class="cards">
-      <article class="card coming-soon">
-        <div class="card-icon">💬</div>
-        <h3>ChatGPT Plus</h3>
-        <p data-i18n="subs.comingSoon">Coming soon — contact us to be notified when this is available.</p>
-        <a class="btn ghost wide" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'm%20interested%20in%20a%20ChatGPT%20Plus%20subscription." target="_blank" rel="noopener" data-i18n="subs.inquire">Inquire on WhatsApp</a>
-      </article>
-      <article class="card coming-soon">
-        <div class="card-icon">🎨</div>
-        <h3>Canva Pro</h3>
-        <p data-i18n="subs.comingSoon">Coming soon — contact us to be notified when this is available.</p>
-        <a class="btn ghost wide" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'm%20interested%20in%20a%20Canva%20Pro%20subscription." target="_blank" rel="noopener" data-i18n="subs.inquire">Inquire on WhatsApp</a>
-      </article>
+    <div id="subscription-app" class="subscription-shop">
+      <div class="subscription-shop-head">
+        <div>
+          <div class="subscription-kicker" data-i18n="subs.shopKicker">APP SUBSCRIPTIONS</div>
+          <h3 data-i18n="subs.shopTitle">Choose your app, compare plans, and order</h3>
+          <p data-i18n="subs.shopLead">Live products from our supplier. Clear pricing, product details and fast checkout.</p>
+        </div>
+        <div class="subscription-search-wrap">
+          <span>⌕</span><input id="subscription-search" type="search" data-i18n-placeholder="subs.search" placeholder="Search products...">
+        </div>
+      </div>
+      <div id="subscription-status" class="subscription-status">Loading subscription products…</div>
+      <div class="subscription-shop-body">
+        <aside class="subscription-sidebar">
+          <div class="subscription-side-title" data-i18n="subs.categories">Categories</div>
+          <div id="subscription-categories" class="subscription-category-list"></div>
+        </aside>
+        <main class="subscription-main">
+          <div class="subscription-toolbar">
+            <strong data-i18n="subs.products">Products</strong>
+            <span id="subscription-result-count"></span>
+          </div>
+          <div id="subscription-products" class="subscription-product-grid"></div>
+        </main>
+      </div>
     </div>
-    <p class="tab-note" data-i18n="subs.note">More premium app subscriptions are being added regularly. Message us on WhatsApp if there's a specific app you'd like to see.</p>
+    <p class="tab-note" data-i18n="subs.note">Products are loaded live from the supplier API. Customer-facing prices include the 30% markup.</p>
   </div>
 
   <!-- Tab 3: SMM Panel (live catalogue) -->
@@ -243,5 +255,6 @@
 <script src="tabs.js"></script>
 <script src="order-modal.js"></script>
 <script src="script.js"></script>
+<script src="subscriptions.js"></script>
 </body>
 </html>

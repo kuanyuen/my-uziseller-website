@@ -12,9 +12,20 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
 
   function escapeHtml(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+  // Remove Vietnam/Vietnamese-only services before they reach the customer UI.
+  // The original API name is kept untouched for audit/filtering, but these
+  // services are excluded from the public catalogue.
+  function isVietnameseService(s){
+    const text = `${s.name || ''} ${s.category || ''} ${s.description || ''}`.toLowerCase();
+    const vietnameseMarks = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
+    const explicit = /\b(vietnam|vietnamese|viet nam|việt nam|việt|vn|clone việt|acc việt|profile việt|tiktok vn|facebook vn)\b/i;
+    return vietnameseMarks.test(text) || explicit.test(text);
+  }
+
   function visible(){
     const q = (search?.value || '').trim().toLowerCase();
     return services.filter(s => {
+      if (isVietnameseService(s)) return false;
       if (activePlatform !== 'ALL' && s.platformLabel !== activePlatform) return false;
       if (q && !(`${s.name} ${s.category}`.toLowerCase().includes(q))) return false;
       return true;

@@ -28,3 +28,17 @@
 
 当前版本主要是“安全的 API 测试层”，还没有数据库、客户账户、付款和正式订单系统。
 正式上线自动交付前，应再增加数据库和订单状态处理。
+当前版本主要是“安全的 API 测试层”，还没有数据库、客户账户、付款和正式订单系统。
+正式上线自动交付前，应再增加数据库和订单状态处理。
+
+## App Subscription API (SHOP.APPMMO.COM)
+
+Add these Vercel Environment Variables:
+
+- `SHOP_APMMO_API_KEY` = the API key for shop.appmmo.com (keep server-side only)
+- `SHOP_APMMO_BASE` = `https://shop.appmmo.com/api` (optional)
+- `SUBSCRIPTION_MARKUP_PERCENT` = `30` (optional; default 30)
+- `USD_TO_MYR` = your current USD/MYR display conversion (optional; default 4.25)
+- `CNY_TO_MYR` = your current CNY/MYR display conversion (optional; default 0.59)
+
+The subscription flow is: products.php → UziSeller product list → Billplz payment → Billplz webhook → buy_product → save returned `trans_id` and `data` to the order.

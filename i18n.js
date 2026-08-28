@@ -110,6 +110,12 @@ const I18N = {
   'subs.comingSoon': { en: 'Coming soon — contact us to be notified when this is available.', zh: '即将上线——联系我们以获得上线通知。' },
   'subs.inquire': { en: 'Inquire on WhatsApp', zh: 'WhatsApp 咨询' },
   'subs.note': { en: "More premium app subscriptions are being added regularly. Message us on WhatsApp if there's a specific app you'd like to see.", zh: '我们会持续新增更多高级应用订阅。如果您想要某个特定应用，欢迎通过WhatsApp告诉我们。' },
+  'subs.shopKicker': { en: 'APP SUBSCRIPTIONS', zh: '应用订阅' },
+  'subs.shopTitle': { en: 'Choose your app, compare plans, and order', zh: '选择应用、比较产品并下单' },
+  'subs.shopLead': { en: 'Live products from our supplier. Clear pricing, product details and fast checkout.', zh: '实时同步供应商产品，清晰价格、详细资料，方便快速下单。' },
+  'subs.search': { en: 'Search products...', zh: '搜索产品…' },
+  'subs.categories': { en: 'Categories', zh: '产品分类' },
+  'subs.products': { en: 'Products', zh: '产品' },
 
   'smm.loading': { en: 'Loading services…', zh: '正在加载服务…' },
   'smm.search': { en: 'Search services…', zh: '搜索服务…' },
