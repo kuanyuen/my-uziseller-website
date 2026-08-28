@@ -85,7 +85,7 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
     document.addEventListener('uz:currencychange', render);
     document.addEventListener('uz:langchange', () => { renderPlatformButtons(); render(); });
   } catch(e) {
-    status.textContent = 'Service catalogue is temporarily unavailable. Please contact us on WhatsApp.';
+    status.textContent = (e && e.message) ? `Service catalogue unavailable: ${e.message}` : 'Service catalogue is temporarily unavailable. Please contact us on WhatsApp.';
     grid.innerHTML = '';
     console.error(e);
   }

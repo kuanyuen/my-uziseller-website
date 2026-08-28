@@ -145,7 +145,7 @@ const I18N = {
 
   'smm.loading': { en: 'Loading services…', zh: '正在加载服务…' },
   'smm.search': { en: 'Search services…', zh: '搜索服务…' },
-  'smm.costNote': { en: 'Prices shown are the original supplier cost price — no markup applied.', zh: '所显示价格为供应商原始成本价，未加价。' },
+  'smm.costNote': { en: 'Customer prices include a 30% markup over supplier cost.', zh: '客户售价已在供应商成本价基础上加价 30%。' },
   'smm.orderNow': { en: 'Order Now', zh: '立即下单' },
   'smm.available': { en: 'services available', zh: '项服务可选' },
   'smm.none': { en: 'No services match this filter.', zh: '没有符合筛选条件的服务。' },

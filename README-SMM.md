@@ -24,9 +24,10 @@ Do not put the API key in `index.html`, `script.js`, GitHub, or any public file.
 - `GET /api/smm?action=balance` → server-side balance lookup.
 
 The public catalogue:
-- Currently shows the full supplier catalogue, including Vietnam-specific services, so you can identify them by the original API wording before we remove selected service IDs.
-- Keeps supplier service names/descriptions in their original API language so Vietnam-specific items are easy to identify.
-- Converts the supplier's VND rate to MYR/USD/CNY. No markup is applied — prices shown are the original supplier cost price. (If you later want a margin, reintroduce a multiplier in `api/smm.js`'s `publicServices` function.)
+- Removes only products whose PRODUCT NAME explicitly identifies Vietnam as the target region. Vietnamese-language wording by itself is NOT a reason for removal.
+- The Vietnam filter checks ONLY the product name, not category, platform, or description.
+- Keeps supplier service names/descriptions in their original API language so you can review the source catalogue.
+- Converts the supplier's VND rate to MYR/USD/CNY and applies the configured 30% customer markup.
 - Tags every service with a normalized `platformLabel` (Facebook / TikTok / Instagram / YouTube / Threads / Telegram / Twitter-X / Others) derived from the supplier's Vietnamese platform/category text, so the storefront can show platform filter buttons.
 
 ## Frontend (index.html / script.js)
