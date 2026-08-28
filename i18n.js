@@ -149,6 +149,9 @@ const I18N = {
 const SERVICE_TRANSLATIONS = {
   // common phrases (longest phrases should be listed first)
   'giá rẻ': { zh: '便宜', en: 'Cheap' },
+  'độc quyền': { zh: '独家', en: 'Exclusive' },
+  'độc': { zh: '独家', en: 'Exclusive' },
+  'quyền': { zh: '权利', en: 'Rights' },
   'đa quốc gia': { zh: '多国', en: 'Global' },
   'quốc gia': { zh: '国家', en: 'Country' },
   'dạng mới': { zh: '新版', en: 'New Type' },
@@ -309,16 +312,39 @@ function localizePlatformLabel(label, lang) {
 
 function localizeServiceText(text, lang) {
   let out = String(text ?? '');
-  // Normalize common separators/spacing without changing service IDs.
+  // Normalize spacing without changing service IDs.
   out = out.replace(/\s+/g, ' ').trim();
+
   const entries = Object.entries(SERVICE_TRANSLATIONS)
     .sort((a, b) => b[0].length - a[0].length);
-  for (const [src, vals] of entries) {
-    const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
-    out = out.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
-  }
-  // Vietnamese punctuation/diacritics left in names should not leak through
-  // as mixed-language labels. Keep brand names and IDs intact.
+
+  const translate = (value) => {
+    let result = String(value ?? '');
+    for (const [src, vals] of entries) {
+      const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${escaped}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
+      result = result.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
+    }
+    return result;
+  };
+
+  // First translate every bracketed section. If any Vietnamese text remains
+  // inside [ ... ], remove that bracketed section rather than showing a
+  // mixed-language supplier label to customers. This guarantees that
+  // unknown Vietnamese phrases from the supplier cannot leak into the UI.
+  out = out.replace(/\[([^\]]*)\]/g, (full, inner) => {
+    const translated = translate(inner).replace(/\s{2,}/g, ' ').trim();
+    const hasVietnamese = /[À-ỹĐđ]/i.test(translated);
+    return hasVietnamese ? '' : `[${translated}]`;
+  });
+
+  // Translate the rest of the service name as well.
+  out = translate(out);
+
+  // Final safety net: remove any remaining Vietnamese bracket content and
+  // clean up empty brackets / spacing.
+  out = out.replace(/\[[^\]]*[À-ỹĐđ][^\]]*\]/gi, '');
+  out = out.replace(/\[\s*\]/g, '');
   return out.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
 }
 
