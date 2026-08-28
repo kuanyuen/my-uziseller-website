@@ -8,6 +8,24 @@ const I18N = {
   'nav.home': { en: 'Home', zh: '首页' },
   'nav.products': { en: 'Products', zh: '商品' },
 
+  'eyebrow.hero': { en: 'UZISELLER · PREMIUM DIGITAL SERVICES', zh: 'UZISELLER · 优质数字服务' },
+  'eyebrow.about': { en: '01 · WHAT WE DO', zh: '01 · 我们是做什么的' },
+  'eyebrow.why': { en: '02 · WHY CHOOSE US', zh: '02 · 为什么选择我们' },
+  'eyebrow.agent': { en: '03 · PARTNER PROGRAM', zh: '03 · 代理合作计划' },
+  'eyebrow.products': { en: '04 · PRODUCTS', zh: '04 · 商品' },
+  'eyebrow.contact': { en: '05 · CONTACT', zh: '05 · 联系我们' },
+
+  'marquee.1': { en: 'AI SERVICES', zh: 'AI 服务' },
+  'marquee.1b': { en: 'AI SERVICES', zh: 'AI 服务' },
+  'marquee.2': { en: '☁ 5TB STORAGE', zh: '☁ 5TB 存储空间' },
+  'marquee.3': { en: '⚡ FAST SUPPORT', zh: '⚡ 快速支持' },
+  'marquee.4': { en: '🤝 PARTNER PROGRAM', zh: '🤝 代理合作计划' },
+
+  'contact.waLabel': { en: 'WHATSAPP', zh: 'WHATSAPP' },
+  'contact.wcLabel': { en: 'WECHAT', zh: '微信' },
+  'footer.copyright': { en: '© 2026 Uziseller. All rights reserved.', zh: '© 2026 Uziseller. 保留所有权利。' },
+  'meta.title': { en: 'Uziseller — Digital Growth & Premium Services', zh: 'Uziseller — 数字增长与优质服务' },
+
   'hero.title': { en: 'Built for Growth.<br><span>Powered by Trust.</span>', zh: '为增长而生。<br><span>值得信赖。</span>' },
   'hero.lead': { en: 'A complete digital-services ecosystem that saves you time and grows your revenue — AI accounts, premium subscriptions, and social-media growth tools, all in one place.', zh: '利用全面的数字化服务生态系统，优化您的时间并提升收益。我们提供优质资源、人工智能账户，以及增强社交媒体互动的营销工具。' },
   'hero.explore': { en: 'Explore Products', zh: '查看商品' },
@@ -97,12 +115,25 @@ const I18N = {
   'smm.search': { en: 'Search services…', zh: '搜索服务…' },
   'smm.costNote': { en: 'Prices shown are the original supplier cost price — no markup applied.', zh: '所显示价格为供应商原始成本价，未加价。' },
   'smm.orderNow': { en: 'Order Now', zh: '立即下单' },
+  'smm.available': { en: 'services available', zh: '项服务可选' },
+  'smm.none': { en: 'No services match this filter.', zh: '没有符合筛选条件的服务。' },
+  'smm.all': { en: 'All', zh: '全部' },
+
+  'card.min': { en: 'Min', zh: '最小' },
+  'card.max': { en: 'Max', zh: '最大' },
+  'card.refill': { en: 'Refill', zh: '补单' },
+  'card.perUnits': { en: '/ 1,000 units', zh: '/ 每千单位' },
 
   'order.link': { en: 'Link / target (profile or page URL)', zh: '链接 / 目标（主页或页面网址）' },
   'order.quantity': { en: 'Quantity', zh: '数量' },
   'order.name': { en: 'Your name', zh: '您的姓名' },
   'order.email': { en: 'Email (for payment receipt)', zh: '邮箱（用于接收付款收据）' },
   'order.pay': { en: 'Pay with Billplz →', zh: '使用 Billplz 付款 →' },
+  'order.creating': { en: 'Creating payment…', zh: '正在创建付款…' },
+  'order.fillAll': { en: 'Please fill in all fields.', zh: '请填写所有栏位。' },
+  'order.genericError': { en: 'Something went wrong.', zh: '出现了一些问题。' },
+  'order.networkError': { en: 'Network error. Please try again.', zh: '网络错误，请重试。' },
+  'order.minMax': { en: 'Min {min}, Max {max}', zh: '最小 {min}，最大 {max}' },
 
   'contact.title': { en: "Let's grow together.", zh: '一起成长。' },
   'contact.lead': { en: 'Questions, orders or partnership enquiries — reach us directly.', zh: '有任何问题、订单或合作咨询，欢迎直接联系我们。' },
@@ -128,6 +159,13 @@ function formatPrice(amountInMyr, currency) {
   return c.symbol + converted.toLocaleString(c.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function t(key, vars) {
+  const entry = I18N[key];
+  let str = entry ? (entry[UzState.lang] || entry.en) : key;
+  if (vars) Object.entries(vars).forEach(([k, v]) => { str = str.replace(`{${k}}`, v); });
+  return str;
+}
+
 function applyLanguage(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const entry = I18N[el.getAttribute('data-i18n')];
@@ -142,6 +180,10 @@ function applyLanguage(lang) {
     if (entry) el.placeholder = entry[lang] || entry.en;
   });
   document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('meta.title');
+  // Let other scripts (e.g. the SMM catalogue / order modal) know so they
+  // can re-render any text they built themselves via template strings.
+  document.dispatchEvent(new CustomEvent('uz:langchange', { detail: { lang } }));
 }
 
 function applyCurrency(currency) {

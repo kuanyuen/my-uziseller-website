@@ -30,14 +30,13 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
       <article class="smm-card">
         <div class="smm-meta">#${escapeHtml(s.service)} · ${escapeHtml(s.platformLabel)}</div>
         <h3>${escapeHtml(s.name)}</h3>
-        <div class="smm-meta">Min ${s.min.toLocaleString()} · Max ${s.max.toLocaleString()} ${s.refill ? '· Refill' : ''}</div>
-        <div class="smm-price">${formatPrice(s.prices[currency] ?? s.prices.MYR, currency)} <small>/ 1,000 units</small></div>
-        <button class="btn primary wide smm-order" onclick="UzOrderModal.open(window.__uzServices['${s.service}'])" data-i18n="smm.orderNow">Order Now</button>
+        <div class="smm-meta">${t('card.min')} ${s.min.toLocaleString()} · ${t('card.max')} ${s.max.toLocaleString()} ${s.refill ? '· ' + t('card.refill') : ''}</div>
+        <div class="smm-price">${formatPrice(s.prices[currency] ?? s.prices.MYR, currency)} <small>${t('card.perUnits')}</small></div>
+        <button class="btn primary wide smm-order" onclick="UzOrderModal.open(window.__uzServices['${s.service}'])">${t('smm.orderNow')}</button>
       </article>`).join('');
     status.textContent = shown.length
-      ? `${shown.length} service${shown.length===1?'':'s'} available`
-      : 'No services match this filter.';
-    if (typeof applyLanguage === 'function' && typeof UzState !== 'undefined') applyLanguage(UzState.lang);
+      ? `${shown.length} ${t('smm.available')}`
+      : t('smm.none');
   }
 
   function renderPlatformButtons(){
@@ -54,7 +53,7 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
     const all = ['ALL', ...ordered];
     platforms.innerHTML = all.map(p => `
       <button class="smm-cat ${p===activePlatform?'active':''}" data-platform="${escapeHtml(p)}">
-        ${p==='ALL' ? `All (${services.length})` : `${escapeHtml(p)} (${counts[p]})`}
+        ${p==='ALL' ? `${t('smm.all')} (${services.length})` : `${escapeHtml(p)} (${counts[p]})`}
       </button>`).join('');
     platforms.querySelectorAll('.smm-cat').forEach(btn => btn.addEventListener('click', () => {
       activePlatform = btn.dataset.platform;
@@ -72,6 +71,7 @@ document.querySelectorAll('.btn,.card,.feature-cards article,.steps-grid>div').f
     render();
     search?.addEventListener('input', render);
     document.addEventListener('uz:currencychange', render);
+    document.addEventListener('uz:langchange', () => { renderPlatformButtons(); render(); });
   } catch(e) {
     status.textContent = 'Service catalogue is temporarily unavailable. Please contact us on WhatsApp.';
     grid.innerHTML = '';

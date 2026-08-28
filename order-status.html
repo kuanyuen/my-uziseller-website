@@ -22,42 +22,57 @@
   <a class="brand" href="index.html#top"><img src="assets/logo.svg" alt="Uziseller logo"><span>Uziseller</span></a>
 </header>
 <div class="status-wrap">
-  <div class="status-panel" id="app"><p>Loading your order…</p></div>
+  <div class="status-panel" id="app"></div>
 </div>
 <script>
 const params = new URLSearchParams(location.search);
 const orderId = params.get('order');
 const app = document.getElementById('app');
+const lang = localStorage.getItem('uz_lang') || 'en';
 
 const LABELS = {
-  pending_payment: 'Waiting for payment confirmation…',
-  paid: 'Payment received — sending your order to the supplier…',
-  processing: 'Processing — order sent to supplier',
-  payment_failed: 'Payment failed',
-  needs_manual_review: "We're reviewing your order — we'll follow up shortly"
+  pending_payment: { en: 'Waiting for payment confirmation…', zh: '等待付款确认中…' },
+  paid: { en: 'Payment received — sending your order to the supplier…', zh: '已收到付款——正在提交订单给供应商…' },
+  processing: { en: 'Processing — order sent to supplier', zh: '处理中——订单已发送给供应商' },
+  payment_failed: { en: 'Payment failed', zh: '付款失败' },
+  needs_manual_review: { en: "We're reviewing your order — we'll follow up shortly", zh: '我们正在核实您的订单，稍后会与您联系' }
 };
+const TXT = {
+  loading: { en: 'Loading your order…', zh: '正在加载订单…' },
+  noOrder: { en: 'No order specified.', zh: '未指定订单。' },
+  notFound: { en: 'Order not found.', zh: '未找到该订单。' },
+  quantity: { en: 'Quantity', zh: '数量' },
+  total: { en: 'Total', zh: '总额' },
+  supplierRef: { en: 'Supplier order ref', zh: '供应商订单号' },
+  orderId: { en: 'Order ID', zh: '订单编号' },
+  back: { en: '← Back to store', zh: '← 返回商店' },
+  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' }
+};
+function tt(key){ return TXT[key][lang] || TXT[key].en; }
+app.innerHTML = `<p>${tt('loading')}</p>`;
 
 async function load(){
-  if (!orderId) { app.innerHTML = '<p>No order specified.</p>'; return; }
+  if (!orderId) { app.innerHTML = `<p>${tt('noOrder')}</p>`; return; }
   try {
     const r = await fetch('/api/order-status?id=' + encodeURIComponent(orderId));
     const j = await r.json();
-    if (j.status !== 'ok') { app.innerHTML = '<p>Order not found.</p>'; return; }
+    if (j.status !== 'ok') { app.innerHTML = `<p>${tt('notFound')}</p>`; return; }
     const o = j.order;
+    const label = LABELS[o.status] ? (LABELS[o.status][lang] || LABELS[o.status].en) : o.status;
     app.innerHTML = `
       <h2 style="margin-top:0">${o.name}</h2>
-      <p>Quantity: ${o.quantity.toLocaleString()}</p>
-      <p>Total: RM${Number(o.priceMYR).toFixed(2)}</p>
-      <span class="status-badge status-${o.status}">${LABELS[o.status] || o.status}</span>
-      ${o.supplierOrderId ? `<p class="status-hint">Supplier order ref: ${o.supplierOrderId}</p>` : ''}
-      <p class="status-hint">Order ID: ${o.id}</p>
-      <p style="margin-top:24px"><a href="index.html#products">← Back to store</a></p>
+      <p>${tt('quantity')}: ${o.quantity.toLocaleString()}</p>
+      <p>${tt('total')}: RM${Number(o.priceMYR).toFixed(2)}</p>
+      <span class="status-badge status-${o.status}">${label}</span>
+      ${o.supplierOrderId ? `<p class="status-hint">${tt('supplierRef')}: ${o.supplierOrderId}</p>` : ''}
+      <p class="status-hint">${tt('orderId')}: ${o.id}</p>
+      <p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>
     `;
     if (o.status === 'pending_payment' || o.status === 'paid') {
       setTimeout(load, 4000);
     }
   } catch(e) {
-    app.innerHTML = '<p>Could not load order status. Please refresh.</p>';
+    app.innerHTML = `<p>${tt('couldNotLoad')}</p>`;
   }
 }
 load();
