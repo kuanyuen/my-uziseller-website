@@ -134,6 +134,15 @@ const I18N = {
   'order.genericError': { en: 'Something went wrong.', zh: '出现了一些问题。' },
   'order.networkError': { en: 'Network error. Please try again.', zh: '网络错误，请重试。' },
   'order.minMax': { en: 'Min {min}, Max {max}', zh: '最小 {min}，最大 {max}' },
+  'order.description': { en: 'Service Description', zh: '商品简介' },
+  'order.noDescription': { en: 'No service description provided by the supplier.', zh: '供应商暂未提供商品简介。' },
+  'order.serviceType': { en: 'Service type', zh: '服务类型' },
+  'order.quantityRange': { en: 'Quantity range', zh: '数量范围' },
+  'order.refill': { en: 'Refill', zh: '补单' },
+  'order.cancel': { en: 'Cancel', zh: '可取消' },
+  'order.yes': { en: 'Yes', zh: '是' },
+  'order.no': { en: 'No', zh: '否' },
+  'order.averageTime': { en: 'Completion time', zh: '完成时间' },
 
   'contact.title': { en: "Let's grow together.", zh: '一起成长。' },
   'contact.lead': { en: 'Questions, orders or partnership enquiries — reach us directly.', zh: '有任何问题、订单或合作咨询，欢迎直接联系我们。' },
@@ -651,61 +660,32 @@ function localizePlatformLabel(label, lang) {
 }
 
 function localizeServiceText(text, lang) {
-  let out = String(text ?? '');
-  // Normalize spacing without changing service IDs.
-  out = out.replace(/\s+/g, ' ').trim();
+  // Supplier names stay exactly as returned by the API. The page-level
+  // translator handles the visible translation when the customer selects 中文.
+  return String(text ?? '').replace(/\s+/g, ' ').trim();
+}
+
+
+// Localize supplier-provided descriptions while keeping useful technical
+// English/brand terms. Vietnamese is never allowed to leak into the customer UI.
+function localizeServiceDescription(text, lang) {
+  let out = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!out) return '';
 
   const entries = Object.entries(SERVICE_TRANSLATIONS)
     .sort((a, b) => b[0].length - a[0].length);
-
-  const translate = (value) => {
-    let result = String(value ?? '');
-    for (const [src, vals] of entries) {
-      const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${escaped}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
-      result = result.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
-    }
-    return result;
-  };
-
-  // First translate every bracketed section. If any Vietnamese text remains
-  // inside [ ... ], remove that bracketed section rather than showing a
-  // mixed-language supplier label to customers. This guarantees that
-  // unknown Vietnamese phrases from the supplier cannot leak into the UI.
-  out = out.replace(/\[([^\]]*)\]/g, (full, inner) => {
-    const translated = translate(inner).replace(/\s{2,}/g, ' ').trim();
-    const hasVietnamese = /[À-ỹĐđ]/i.test(translated);
-    return hasVietnamese ? '' : `[${translated}]`;
-  });
-
-  // Translate the rest of the service name as well.
-  out = translate(out);
-
-  // Final safety net: remove any remaining Vietnamese bracket content and
-  // remove any still-untranslated Vietnamese words from the visible service
-  // name. This prevents supplier Vietnamese from ever leaking into the UI.
-  out = out.replace(/\[[^\]]*[À-ỹĐđ][^\]]*\]/gi, '');
-  out = out.replace(/\b[A-Za-zÀ-ỹĐđ]*[À-ỹĐđ][A-Za-zÀ-ỹĐđ]*\b/gi, '');
-  out = out.replace(/\[\s*\]/g, '');
-  out = out.replace(/\s*[-–—]\s*[-–—]\s*/g, ' - ');
-  out = out.replace(/\s+-\s*([,.;:)])/g, '$1');
-  out = out.replace(/([(:])\s+-/g, '$1');
-
-  // Language-specific last pass: if a supplier phrase was not in the
-  // dictionary, remove the foreign-script residue instead of displaying a
-  // mixed-language product name. Platform/brand names are kept because they
-  // use Latin letters and are intentionally not translated.
-  if (lang === 'en') {
-    out = out.replace(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]+/g, ' ');
-  } else if (lang === 'zh') {
-    out = out.replace(/\b[A-Za-z]{2,}\b/g, (word) => {
-      const keep = /^(Facebook|TikTok|Instagram|YouTube|Threads|Telegram|Twitter|Spotify|Shopee|Zalo|LinkedIn|SEO|VIP|API|SMM|Google|Gemini|Uziseller)$/i;
-      return keep.test(word) ? word : ' ';
-    });
+  for (const [src, vals] of entries) {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${escaped}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
+    out = out.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
   }
 
-  out = out.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
-  out = out.replace(/^\s*-\s*/, '').replace(/\s*-\s*$/, '').trim();
+  // Never show Vietnamese in the description. If a supplier introduces a
+  // phrase that is not yet in the dictionary, remove that word rather than
+  // exposing Vietnamese to customers.
+  out = out.replace(/\b[A-Za-zÀ-ỹĐđ]*[À-ỹĐđ][A-Za-zÀ-ỹĐđ]*\b/gi, ' ');
+  out = out.replace(/\[[^\]]*[À-ỹĐđ][^\]]*\]/gi, '');
+  out = out.replace(/\s{2,}/g, ' ').trim();
   return out;
 }
 
@@ -764,6 +744,46 @@ function applyCurrency(currency) {
   document.dispatchEvent(new CustomEvent('uz:currencychange', { detail: { currency } }));
 }
 
+function getGoogleTranslateSelect(){
+  return document.querySelector('.goog-te-combo');
+}
+
+function setGooglePageLanguage(target){
+  const code = target === 'zh' ? 'zh-CN' : 'en';
+  document.cookie = `googtrans=/auto/${code};path=/`;
+  document.cookie = `googtrans=/auto/${code};path=/;domain=${location.hostname}`;
+  const select = getGoogleTranslateSelect();
+  if (select) {
+    select.value = code;
+    select.dispatchEvent(new Event('change'));
+  } else {
+    // The Google translator may still be loading. Retry briefly.
+    let tries = 0;
+    const timer = setInterval(() => {
+      const s = getGoogleTranslateSelect();
+      if (s) {
+        clearInterval(timer);
+        s.value = code;
+        s.dispatchEvent(new Event('change'));
+      } else if (++tries > 30) clearInterval(timer);
+    }, 200);
+  }
+}
+
+function resetGoogleTranslation(){
+  document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+  document.cookie = `googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${location.hostname}`;
+  // Google Translate changes many DOM nodes itself. A reload is the cleanest
+  // way to restore the original API wording without touching service data.
+  location.reload();
+}
+
+function translateDynamicContent(){
+  if (UzState.lang !== 'zh') return;
+  // Re-trigger Google Translate after live SMM cards/modal content is added.
+  setTimeout(() => setGooglePageLanguage('zh'), 250);
+}
+
 function initSwitchers() {
   const langBtns = document.querySelectorAll('#lang-switcher button');
   const curBtns = document.querySelectorAll('#currency-switcher button');
@@ -771,10 +791,22 @@ function initSwitchers() {
   langBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === UzState.lang);
     btn.addEventListener('click', () => {
-      UzState.lang = btn.dataset.lang;
+      const next = btn.dataset.lang;
+      if (next === UzState.lang && next === 'zh') {
+        translateDynamicContent();
+        return;
+      }
+      UzState.lang = next;
       localStorage.setItem('uz_lang', UzState.lang);
       langBtns.forEach(b => b.classList.toggle('active', b === btn));
-      applyLanguage(UzState.lang);
+      if (next === 'zh') {
+        // First render our own static Chinese strings, then let Google Translate
+        // translate the complete page, including Vietnamese supplier content.
+        applyLanguage('zh');
+        translateDynamicContent();
+      } else {
+        resetGoogleTranslation();
+      }
     });
   });
 
@@ -790,6 +822,7 @@ function initSwitchers() {
 
   applyLanguage(UzState.lang);
   applyCurrency(UzState.currency);
+  if (UzState.lang === 'zh') translateDynamicContent();
 }
 
 document.addEventListener('DOMContentLoaded', initSwitchers);

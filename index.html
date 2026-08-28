@@ -25,10 +25,12 @@
   </nav>
 </header>
 
-<div class="lang-float" id="lang-switcher">
-  <button data-lang="en" class="active">EN</button>
+<div class="lang-float" id="lang-switcher" aria-label="Language">
+  <button data-lang="en" class="active">原文</button>
   <button data-lang="zh">中文</button>
 </div>
+<!-- Google Website Translator: translates the whole visible page, including live SMM API text. -->
+<div id="google_translate_element" class="google-translate-hidden" aria-hidden="true"></div>
 
 <main id="top">
 
@@ -226,6 +228,18 @@
   <div class="copyright" data-i18n="footer.copyright">© 2026 Uziseller. All rights reserved.</div>
 </footer>
 <script src="i18n.js"></script>
+<script>
+  function googleTranslateElementInit(){
+    if (!window.google || !google.translate) return;
+    new google.translate.TranslateElement({
+      pageLanguage: "auto",
+      includedLanguages: "zh-CN,en,vi",
+      autoDisplay: false,
+      multilanguagePage: true
+    }, "google_translate_element");
+  }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="tabs.js"></script>
 <script src="order-modal.js"></script>
 <script src="script.js"></script>

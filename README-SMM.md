@@ -24,8 +24,8 @@ Do not put the API key in `index.html`, `script.js`, GitHub, or any public file.
 - `GET /api/smm?action=balance` → server-side balance lookup.
 
 The public catalogue:
-- Removes clearly Vietnam-only services (keeps global/mixed ones).
-- Removes the literal `KingSmm.VN` string from displayed text.
+- Currently shows the full supplier catalogue, including Vietnam-specific services, so you can identify them by the original API wording before we remove selected service IDs.
+- Keeps supplier service names/descriptions in their original API language so Vietnam-specific items are easy to identify.
 - Converts the supplier's VND rate to MYR/USD/CNY. No markup is applied — prices shown are the original supplier cost price. (If you later want a margin, reintroduce a multiplier in `api/smm.js`'s `publicServices` function.)
 - Tags every service with a normalized `platformLabel` (Facebook / TikTok / Instagram / YouTube / Threads / Telegram / Twitter-X / Others) derived from the supplier's Vietnamese platform/category text, so the storefront can show platform filter buttons.
 
@@ -40,7 +40,7 @@ The `#smm` section on the homepage:
 ## Language & currency switcher
 
 - Top-right of the header: `EN / 中文` toggle and `RM / $ / ¥` toggle.
-- Language covers all static site copy (`index.html`) via `i18n.js` (dictionary of every translatable string). Product names/descriptions coming live from the supplier API are shown as-is (Vietnamese/English mix from the source) since they can't be reliably auto-translated.
+- Language covers the static site copy (`index.html`) via `i18n.js`. Supplier service names, descriptions, categories, service types, and completion-time text are intentionally left in the original API language for catalogue review. The site UI itself remains bilingual.
 - Currency covers both the SMM catalogue (server computes MYR/USD/CNY per service) and the fixed-price Gemini offer (converted client-side from its RM base price using the same rates as the switcher).
 - Both choices persist in the visitor's browser (`localStorage`) across visits.
 - To add more site copy in the future, tag the element with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text containing HTML like `<span>` or `<br>`), or `data-i18n-placeholder="key"` (input placeholders), then add the `en`/`zh` pair to the `I18N` dictionary in `i18n.js`.

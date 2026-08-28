@@ -21,6 +21,12 @@ const UzOrderModal = (() => {
         <input id="om-qty" type="number">
         <div class="order-modal-hint" id="om-qty-hint"></div>
 
+        <div class="order-modal-description-wrap">
+          <div class="order-modal-description-title" id="om-description-title"></div>
+          <div class="order-modal-description" id="om-description"></div>
+          <div class="order-modal-details" id="om-details"></div>
+        </div>
+
         <div class="order-modal-total" id="om-total">RM0.00</div>
 
         <label id="om-label-name"></label>
@@ -52,15 +58,28 @@ const UzOrderModal = (() => {
     overlay.querySelector('#om-label-qty').textContent = t('order.quantity');
     overlay.querySelector('#om-label-name').textContent = t('order.name');
     overlay.querySelector('#om-label-email').textContent = t('order.email');
+    overlay.querySelector('#om-description-title').textContent = t('order.description');
     const btn = overlay.querySelector('#om-submit');
     if (!btn.disabled) btn.textContent = t('order.pay');
     if (currentService) {
       overlay.querySelector('#om-title').textContent =
-        localizeServiceText(currentService.name, (typeof UzState !== 'undefined' && UzState.lang) || 'en');
+        currentService.name;
       overlay.querySelector('#om-meta').textContent =
-        `${localizePlatformLabel(currentService.platformLabel, (typeof UzState !== 'undefined' && UzState.lang) || 'en')} · ${t('order.minMax', { min: currentService.min.toLocaleString(), max: currentService.max.toLocaleString() })}`;
+        `${currentService.platformLabel} · ${t('order.minMax', { min: currentService.min.toLocaleString(), max: currentService.max.toLocaleString() })}`;
       overlay.querySelector('#om-qty-hint').textContent =
         t('order.minMax', { min: currentService.min || 1, max: currentService.max || '—' });
+
+      const lang = (typeof UzState !== 'undefined' && UzState.lang) || 'en';
+      const desc = currentService.description;
+      overlay.querySelector('#om-description').textContent = desc || t('order.noDescription');
+
+      const details = [];
+      if (currentService.type) details.push(`${t('order.serviceType')}: ${currentService.type}`);
+      details.push(`${t('order.quantityRange')}: ${currentService.min || 0} - ${currentService.max || '—'}`);
+      if (currentService.averageTime) details.push(`${t('order.averageTime')}: ${currentService.averageTime}`);
+      details.push(`${t('order.refill')}: ${currentService.refill ? t('order.yes') : t('order.no')}`);
+      details.push(`${t('order.cancel')}: ${currentService.cancel ? t('order.yes') : t('order.no')}`);
+      overlay.querySelector('#om-details').textContent = details.join(' · ');
     }
   }
 
@@ -79,7 +98,7 @@ const UzOrderModal = (() => {
   function open(service) {
     if (!overlay) build();
     currentService = service;
-    overlay.querySelector('#om-title').textContent = localizeServiceText(service.name, (typeof UzState !== 'undefined' && UzState.lang) || 'en');
+    overlay.querySelector('#om-title').textContent = service.name;
     const qtyInput = overlay.querySelector('#om-qty');
     qtyInput.value = service.min || 1;
     qtyInput.min = service.min || 1;
@@ -93,6 +112,7 @@ const UzOrderModal = (() => {
     refreshText();
     updateTotal();
     overlay.classList.add('open');
+    if (typeof translateDynamicContent === 'function') translateDynamicContent();
   }
 
   function close() {
