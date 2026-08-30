@@ -150,6 +150,12 @@ const I18N = {
   'smm.available': { en: 'services available', zh: '项服务可选' },
   'smm.none': { en: 'No services match this filter.', zh: '没有符合筛选条件的服务。' },
   'smm.all': { en: 'All', zh: '全部' },
+  'smm.searchBtn': { en: 'Search', zh: '搜索' },
+  'smm.clear': { en: 'Clear', zh: '清除' },
+  'smm.loadMore': { en: 'Load more services', zh: '加载更多服务' },
+  'smm.tryAgain': { en: 'Try another keyword or category.', zh: '请尝试其他关键词或分类。' },
+  'smm.searchingFor': { en: 'search', zh: '搜索' },
+  'smm.error': { en: 'Unable to load the service catalogue.', zh: '无法加载服务目录。' },
 
   'card.min': { en: 'Min', zh: '最小' },
   'card.max': { en: 'Max', zh: '最大' },

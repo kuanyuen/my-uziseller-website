@@ -35,8 +35,10 @@ The public catalogue:
 The `#smm` section on the homepage:
 - Fetches `/api/smm?action=services` on load.
 - Renders platform filter buttons (auto-generated from whatever platforms are actually present in the data, with counts).
-- Has a search box that filters by name/category.
-- Shows up to 150 matching services as cards with price, min/max, and a WhatsApp order button.
+- Has a real search control: typing filters live, the Search button runs the search, and Enter works on mobile/desktop keyboards.
+- Search covers Service ID, service name, category, platform, description and service type.
+- Shows 60 matching services at a time with a Load More control, so the full catalogue remains reachable without rendering all 1,000+ cards at once.
+- Each card shows the service description, price, min/max, and an Order Now button that opens the detailed order modal.
 
 ## Language & currency switcher
 
