@@ -29,8 +29,6 @@
   <button data-lang="en" class="active">EN</button>
   <button data-lang="zh">中文</button>
 </div>
-<!-- Google Website Translator: translates the whole visible page, including live SMM API text. -->
-<div id="google_translate_element" class="google-translate-hidden" aria-hidden="true"></div>
 
 <main id="top">
 
@@ -265,8 +263,6 @@
               <label class="smm-service-select"><span data-smm="serviceLabel">服务</span><select id="smm-service-select"></select></label>
             </div>
 
-            <div id="smm-service-detail" class="smm-service-detail"></div>
-
             <div class="smm-order-form">
               <div class="smm-field wide-field">
                 <div class="smm-field-head"><label for="smm-link" data-smm="linkLabel">链接</label><button type="button" id="smm-multi-toggle" class="smm-mini-toggle" data-smm="multiToggle">批量多个链接</button></div>
@@ -316,6 +312,22 @@
           <div id="smm-services" class="smm-services-list"></div>
           <button id="smm-load-more" class="smm-load-more" type="button" data-smm="loadMore">加载更多</button>
         </main>
+
+        <aside class="smm-info-panel">
+          <div class="smm-info-card">
+            <div class="smm-info-card-head">
+              <div>
+                <div class="smm-kicker" data-smm="serviceInfoKicker">SERVICE INFO</div>
+                <h3 data-smm="serviceInfoTitle">服务信息</h3>
+              </div>
+              <span class="smm-info-live" data-smm="serviceInfoLive">API</span>
+            </div>
+            <div id="smm-service-detail" class="smm-service-detail">
+              <div class="smm-detail-empty" data-smm="selectServiceHint">请选择一个服务查看详细资料。</div>
+            </div>
+            <div class="smm-info-note" data-smm="serviceInfoNote">服务资料、数量限制与客户售价会随当前 API 服务自动更新。</div>
+          </div>
+        </aside>
       </div>
     </div>
   </div>
@@ -338,18 +350,6 @@
   <div class="copyright" data-i18n="footer.copyright">© 2026 Uziseller. All rights reserved.</div>
 </footer>
 <script src="i18n.js"></script>
-<script>
-  function googleTranslateElementInit(){
-    if (!window.google || !google.translate) return;
-    new google.translate.TranslateElement({
-      pageLanguage: "auto",
-      includedLanguages: "zh-CN,en,vi",
-      autoDisplay: false,
-      multilanguagePage: true
-    }, "google_translate_element");
-  }
-</script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="tabs.js"></script>
 <script src="order-modal.js"></script>
 <script src="script.js"></script>

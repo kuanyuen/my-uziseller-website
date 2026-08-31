@@ -20,6 +20,9 @@ const UzOrderModal = (() => {
   };
 
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function localizeText(text){ return typeof localizeServiceText==='function' ? localizeServiceText(text, (typeof UzState!=='undefined'&&UzState.lang==='zh')?'zh':'en') : String(text??''); }
+  function localizeDesc(text){ return typeof localizeServiceDescription==='function' ? localizeServiceDescription(text, (typeof UzState!=='undefined'&&UzState.lang==='zh')?'zh':'en') : String(text??''); }
+  function localizePlatform(text){ return typeof localizePlatformLabel==='function' ? localizePlatformLabel(text, (typeof UzState!=='undefined'&&UzState.lang==='zh')?'zh':'en') : String(text??''); }
   function formatTotal(){
     const currency=(typeof UzState!=='undefined'&&UzState.currency)||'MYR';
     const qty=Number(currentPayload?.quantity||0), links=(currentPayload?.links||[]).length||1;
@@ -60,8 +63,8 @@ const UzOrderModal = (() => {
     overlay.querySelector('#om-submit').textContent=l.pay;
     overlay.querySelector('#om-total').textContent=formatTotal();
     if(currentService){
-      overlay.querySelector('#om-title').textContent=currentService.name;
-      overlay.querySelector('#om-meta').textContent=`#${currentService.service} · ${currentService.platformLabel} · ${currentService.category||''}`;
+      overlay.querySelector('#om-title').textContent=localizeText(currentService.name);
+      overlay.querySelector('#om-meta').textContent=`#${currentService.service} · ${localizePlatform(currentService.platformLabel)} · ${localizeText(currentService.category||'')}`;
       const p=currentPayload||{}, rows=[];
       rows.push([l.link,`${(p.links||[]).length} ${l.links}`]);
       rows.push([l.quantity,Number(p.quantity||0).toLocaleString()]);

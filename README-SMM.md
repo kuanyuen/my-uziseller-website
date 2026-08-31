@@ -7,6 +7,7 @@ Set these on the Vercel project (Production, and Preview if you want to test the
 - `SMM_API_URL` = `https://smm.appmmo.com/api/v2`
 - `SMM_API_KEY` = your real SMM API key
 - `VND_TO_MYR_RATE` = optional, defaults to `0.000156`. The supplier's `rate` field is in **Vietnamese Dong** — this converts it to MYR for display.
+- `SMM_MARKUP_PERCENT` = optional, defaults to `30`. The same markup is applied to every public SMM service price.
 - `USD_TO_MYR_RATE` = optional, defaults to `4.04` (1 USD ≈ 4.04 MYR).
 - `CNY_TO_MYR_RATE` = optional, defaults to `0.60` (1 CNY ≈ 0.60 MYR).
 
@@ -26,8 +27,8 @@ Do not put the API key in `index.html`, `script.js`, GitHub, or any public file.
 The public catalogue:
 - Removes only products whose PRODUCT NAME explicitly identifies Vietnam as the target region. Vietnamese-language wording by itself is NOT a reason for removal.
 - The Vietnam filter checks ONLY the product name, not category, platform, or description.
-- Keeps supplier service names/descriptions in their original API language so you can review the source catalogue.
-- Converts the supplier's VND rate to MYR/USD/CNY and applies the configured 30% customer markup.
+- Keeps supplier data unchanged internally, while the customer-facing layer localizes service names, categories, descriptions, service types and completion-time text into English/Chinese.
+- Converts the supplier's VND rate to MYR/USD/CNY and applies the configured customer markup to every service.
 - Tags every service with a normalized `platformLabel` (Facebook / TikTok / Instagram / YouTube / Threads / Telegram / Twitter-X / Others) derived from the supplier's Vietnamese platform/category text, so the storefront can show platform filter buttons.
 
 ## Frontend (index.html / script.js)
@@ -37,13 +38,13 @@ The `#smm` section on the homepage:
 - Renders platform filter buttons (auto-generated from whatever platforms are actually present in the data, with counts).
 - Has a real search control: typing filters live, the Search button runs the search, and Enter works on mobile/desktop keyboards.
 - Search covers Service ID, service name, category, platform, description and service type.
-- Shows 60 matching services at a time with a Load More control, so the full catalogue remains reachable without rendering all 1,000+ cards at once.
+- Shows 40 matching services at a time with a Load More control, so the full catalogue remains reachable without rendering all 1,000+ cards at once.
 - Each card shows the service description, price, min/max, and an Order Now button that opens the detailed order modal.
 
 ## Language & currency switcher
 
 - Top-right of the header: `EN / 中文` toggle and `RM / $ / ¥` toggle.
-- Language covers the static site copy (`index.html`) via `i18n.js`. Supplier service names, descriptions, categories, service types, and completion-time text are intentionally left in the original API language for catalogue review. The site UI itself remains bilingual.
+- Language covers both static site copy and dynamic SMM catalogue content. Supplier Service IDs/API fields stay unchanged; only customer-facing labels are localized.
 - Currency covers both the SMM catalogue (server computes MYR/USD/CNY per service) and the fixed-price Gemini offer (converted client-side from its RM base price using the same rates as the switcher).
 - Both choices persist in the visitor's browser (`localStorage`) across visits.
 - To add more site copy in the future, tag the element with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text containing HTML like `<span>` or `<br>`), or `data-i18n-placeholder="key"` (input placeholders), then add the `en`/`zh` pair to the `I18N` dictionary in `i18n.js`.

@@ -28,7 +28,7 @@
   const L = {
     en: {
       all:'All', searchPlaceholder:'Enter service name or ID to search quickly', searching:'Searching', loading:'Loading services…',
-      available:'services available', platform:'Platform', category:'Category', service:'Service', selectPlatform:'Select platform',
+      available:'services available', platform:'Platform', category:'Category', service:'Service', rate1000:'Price / 1000', markup:'Markup', selectPlatform:'Select platform',
       selectCategory:'Select category', selectService:'Select service', orderTitle:'Quick order', minMax:'Min {min} · Max {max}',
       noDescription:'The supplier did not return a description for this service.', type:'Type', avg:'Average time', refill:'Refill',
       cancel:'Cancel', dripfeed:'Dripfeed', yes:'Yes', no:'No', notSupported:'Not supported', orderNow:'Order now', choose:'Choose',
@@ -41,11 +41,15 @@
       count:'{n} shown · {total} total', noResult:'No services found', try:'Try another platform, category, or keyword.',
       details:'Service details', searchBtn:'Search', clear:'Clear', noticeTitle:'How to order', notice1:'Choose platform → category → service, then review the full service details.',
       notice2:'Customer price includes a 30% markup. Payment is settled in MYR.', notice3:'After payment is confirmed, the order is submitted automatically to the supplier.',
-      orderStatus:'Order status', support:'Support', backProducts:'Products'
+      orderStatus:'Order status', support:'Support', backProducts:'Products',
+      serviceInfoKicker:'SERVICE INFO', serviceInfoTitle:'Service information', serviceInfoLive:'LIVE API',
+      selectServiceHint:'Select a service to view its full details.', serviceId:'Service ID', serviceName:'Service name',
+      serviceType:'Service type', completion:'Completion time', limits:'Quantity limits', pricePer1000:'Price / 1000',
+      capabilities:'Capabilities', global:'Global service'
     },
     zh: {
       all:'全部', searchPlaceholder:'输入服务名称或 ID 进行快速搜索', searching:'搜索中', loading:'正在加载服务…',
-      available:'项服务可选', platform:'平台', category:'分类', service:'服务', selectPlatform:'选择平台',
+      available:'项服务可选', platform:'平台', category:'分类', service:'服务', rate1000:'每 1000 价格', markup:'加价', selectPlatform:'选择平台',
       selectCategory:'选择分类', selectService:'选择服务', orderTitle:'快速下单', minMax:'最低 {min} · 最高 {max}',
       noDescription:'供应商没有返回该服务的简介。', type:'服务类型', avg:'平均完成时间', refill:'补充', cancel:'取消',
       dripfeed:'Dripfeed', yes:'支持', no:'不支持', notSupported:'不支持', orderNow:'立即下单', choose:'选择',
@@ -58,7 +62,11 @@
       count:'显示 {n} / 共 {total}', noResult:'没有找到符合条件的服务', try:'请更换平台、分类或关键词。', details:'服务详情',
       searchBtn:'搜索', clear:'清除', noticeTitle:'下单说明', notice1:'选择平台 → 分类 → 服务，然后查看完整服务详情。',
       notice2:'客户售价已包含 30% 加价，付款统一按 MYR 结算。', notice3:'付款确认后，系统会自动将订单提交到上游供应商。',
-      orderStatus:'订单查询', support:'客服', backProducts:'商品'
+      orderStatus:'订单查询', support:'客服', backProducts:'商品',
+      serviceInfoKicker:'SERVICE INFO', serviceInfoTitle:'服务信息', serviceInfoLive:'实时 API',
+      selectServiceHint:'请选择一个服务查看详细资料。', serviceId:'服务 ID', serviceName:'服务名称',
+      serviceType:'服务类型', completion:'完成时间', limits:'数量限制', pricePer1000:'每千元价格',
+      capabilities:'服务功能', global:'全球服务'
     }
   };
   const lang = () => (typeof UzState !== 'undefined' && UzState.lang === 'zh') ? 'zh' : 'en';
@@ -87,11 +95,24 @@
       if (platform !== 'ALL' && s.platformLabel !== platform) return;
       const c = s.category || 'Other'; set.set(c, (set.get(c)||0)+1);
     });
-    return [...set.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+    return [...set.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+  }
+
+  function localizeText(text){
+    if (typeof localizeServiceText === 'function') return localizeServiceText(text, lang());
+    return String(text ?? '').replace(/\s+/g,' ').trim();
+  }
+  function localizeDesc(text){
+    if (typeof localizeServiceDescription === 'function') return localizeServiceDescription(text, lang());
+    return localizeText(text);
+  }
+  function localizePlatform(text){
+    if (typeof localizePlatformLabel === 'function') return localizePlatformLabel(text, lang());
+    return String(text ?? '');
   }
 
   function rebuildSelect(select, options, placeholder, selected){
-    select.innerHTML = [`<option value="ALL">${esc(placeholder)}</option>`, ...options.map(([value,count])=>`<option value="${esc(value)}">${esc(value)} (${count})</option>`)].join('');
+    select.innerHTML = [`<option value="ALL">${esc(placeholder)}</option>`, ...options.map(([value,count])=>`<option value="${esc(value)}">${esc(localizeText(value))} (${count})</option>`)].join('');
     if (selected && options.some(x=>x[0]===selected)) select.value = selected; else select.value = 'ALL';
   }
 
@@ -100,7 +121,7 @@
     const priority = ['Facebook','TikTok','Instagram','YouTube','Threads','Telegram','Twitter/X','Shopee','Spotify','Website/SEO'];
     const ordered = [...priority.filter(p=>counts[p]), ...Object.keys(counts).filter(p=>!priority.includes(p)).sort()];
     const all = [['ALL',services.length], ...ordered.map(p=>[p,counts[p]])];
-    els.platforms.innerHTML = all.map(([p,c]) => `<button type="button" class="smm-platform ${activePlatform===p?'active':''}" data-platform="${esc(p)}"><span>${p==='ALL'?'⌂':platformIcon(p)}</span><b>${esc(p==='ALL'?t('all'):p)}</b><em>${c}</em></button>`).join('');
+    els.platforms.innerHTML = all.map(([p,c]) => `<button type="button" class="smm-platform ${activePlatform===p?'active':''}" data-platform="${esc(p)}"><span>${p==='ALL'?'⌂':platformIcon(p)}</span><b>${esc(p==='ALL'?t('all'):localizePlatform(p))}</b><em>${c}</em></button>`).join('');
     els.platforms.querySelectorAll('.smm-platform').forEach(btn=>btn.addEventListener('click',()=>{
       activePlatform = btn.dataset.platform; activeCategory='ALL'; selectedServiceId='';
       rebuildSelect(els.platformSelect, ordered.map(p=>[p,counts[p]]), t('selectPlatform'), activePlatform);
@@ -116,30 +137,51 @@
   function rebuildServiceSelect(){
     const pool = services.filter(s => (activePlatform==='ALL'||s.platformLabel===activePlatform) && (activeCategory==='ALL'||s.category===activeCategory));
     const byName = pool.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
-    els.serviceSelect.innerHTML = [`<option value="">${esc(t('selectService'))}</option>`, ...byName.map(s=>`<option value="${esc(s.service)}">#${esc(s.service)} · ${esc(s.name)}</option>`)].join('');
+    els.serviceSelect.innerHTML = [`<option value="">${esc(t('selectService'))}</option>`, ...byName.map(s=>`<option value="${esc(s.service)}">#${esc(s.service)} · ${esc(localizeText(s.name))}</option>`)].join('');
     if (selectedServiceId && byName.some(s=>String(s.service)===String(selectedServiceId))) els.serviceSelect.value = selectedServiceId;
   }
 
   function serviceDescription(service){
-    if (!service) return '';
+    if (!service) return `<div class="smm-detail-empty">${esc(t('selectServiceHint'))}</div>`;
     const currency = currentCurrency();
     const price = service.prices?.[currency] ?? service.prices?.MYR ?? 0;
-    const badges = [
-      `<span class="smm-badge">#${esc(service.service)}</span>`,
-      `<span class="smm-badge">${esc(service.type || 'Default')}</span>`,
-      service.refill ? `<span class="smm-badge good">${esc(t('refill'))}</span>` : '',
-      service.cancel ? `<span class="smm-badge good">${esc(t('cancel'))}</span>` : '',
-      service.dripfeed ? `<span class="smm-badge good">${esc(t('dripfeed'))}</span>` : ''
-    ].join('');
-    return `<div class="smm-detail-head"><div class="smm-detail-icon">${esc(platformIcon(service.platformLabel))}</div><div><small>${esc(service.platformLabel)} · ${esc(service.category)}</small><h4>${esc(service.name)}</h4></div></div>
-      <div class="smm-badges">${badges}</div>
-      <div class="smm-detail-grid">
-        <div><span>${esc(t('type'))}</span><b>${esc(service.type || 'Default')}</b></div>
-        <div><span>${esc(t('minMax'))}</span><b>${Number(service.min||0).toLocaleString()} · ${Number(service.max||0).toLocaleString()}</b></div>
-        <div><span>${esc(t('avg'))}</span><b>${esc(service.averageTime || '—')}</b></div>
-        <div><span>Rate / 1000</span><b>${formatPrice(price, currency)}</b></div>
+    const type = service.type || 'Default';
+    const min = Number(service.min || 0);
+    const max = Number(service.max || 0);
+    const avg = service.averageTime || '—';
+    const capabilities = [];
+    if (service.refill) capabilities.push(t('refill'));
+    if (service.cancel) capabilities.push(t('cancel'));
+    if (service.dripfeed) capabilities.push(t('dripfeed'));
+    if (!capabilities.length) capabilities.push(t('global'));
+    return `<div class="smm-side-service-title">
+        <div class="smm-detail-icon">${esc(platformIcon(service.platformLabel))}</div>
+        <div class="smm-side-service-copy">
+          <small>#${esc(service.service)} · ${esc(localizePlatform(service.platformLabel))} · ${esc(localizeText(service.category))}</small>
+          <h4>${esc(localizeText(service.name))}</h4>
+        </div>
       </div>
-      <div class="smm-detail-desc"><strong>${esc(t('details'))}</strong><p>${esc(service.description || t('noDescription'))}</p></div>`;
+      <div class="smm-side-rows">
+        <div class="smm-side-row"><span>${esc(t('serviceId'))}</span><b>${esc(service.service)}</b></div>
+        <div class="smm-side-row"><span>${esc(t('serviceName'))}</span><b>${esc(localizeText(service.name))}</b></div>
+        <div class="smm-side-row"><span>${esc(t('serviceType'))}</span><b><em class="smm-type-pill">${esc(localizeText(type))}</em></b></div>
+        <div class="smm-side-row"><span>${esc(t('completion'))}</span><b class="smm-green">${esc(localizeText(avg))}</b></div>
+        <div class="smm-side-row"><span>${esc(t('limits'))}</span><b>${min.toLocaleString()} - ${max.toLocaleString()}</b></div>
+        <div class="smm-side-row smm-price-row"><span>${esc(t('pricePer1000'))}</span><b>${esc(formatCustomerPrice(price, currency))}</b></div>
+      </div>
+      <div class="smm-side-cap-wrap">
+        <span>${esc(t('capabilities'))}</span>
+        <div class="smm-badges">${capabilities.map(x=>`<span class="smm-badge good">${esc(x)}</span>`).join('')}</div>
+      </div>
+      <div class="smm-detail-desc"><strong>${esc(t('details'))}</strong><p>${esc(localizeDesc(service.description || t('noDescription')) || t('noDescription'))}</p></div>`;
+  }
+
+  function formatCustomerPrice(amount, currency){
+    const cur = currency || currentCurrency();
+    if (cur === 'MYR') return `RM ${Number(amount||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    if (cur === 'USD') return `$ ${Number(amount||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    if (cur === 'CNY') return `¥ ${Number(amount||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    return `${cur} ${Number(amount||0).toFixed(2)}`;
   }
 
   function formatPricePer1000(service){
@@ -168,7 +210,7 @@
 
   function resetFormForSelection(){
     const s = serviceById(selectedServiceId);
-    if (!s) { els.detail.innerHTML = `<div class="smm-detail-empty">${esc(t('selectService'))}</div>`; return; }
+    if (!s) { els.detail.innerHTML = `<div class="smm-detail-empty">${esc(t('selectServiceHint'))}</div>`; return; }
     els.detail.innerHTML = serviceDescription(s);
     const min=Number(s.min||1), max=Number(s.max||0);
     els.qty.min=min; if(max) els.qty.max=max; els.qty.value=min;
@@ -186,7 +228,7 @@
     els.status.textContent=`${pool.length} ${t('available')}${query?` · ${t('searching')} “${esc(query)}”`:''}`;
     const page=pool.slice(0,visibleLimit);
     els.list.innerHTML=page.map(s=>`<article class="smm-service-row ${String(s.service)===String(selectedServiceId)?'selected':''}" data-id="${esc(s.service)}">
-      <div class="smm-row-main"><div class="smm-row-icon">${esc(platformIcon(s.platformLabel))}</div><div class="smm-row-copy"><small>#${esc(s.service)} · ${esc(s.platformLabel)} · ${esc(s.category)}</small><h4>${esc(s.name)}</h4><p>${esc(s.description||t('noDescription'))}</p><div class="smm-row-meta"><span>${esc(t('minMax'))}: ${Number(s.min||0).toLocaleString()}–${Number(s.max||0).toLocaleString()}</span>${s.refill?`<span>${esc(t('refill'))}</span>`:''}${s.cancel?`<span>${esc(t('cancel'))}</span>`:''}${s.dripfeed?`<span>${esc(t('dripfeed'))}</span>`:''}</div></div></div>
+      <div class="smm-row-main"><div class="smm-row-icon">${esc(platformIcon(s.platformLabel))}</div><div class="smm-row-copy"><small>#${esc(s.service)} · ${esc(localizePlatform(s.platformLabel))} · ${esc(localizeText(s.category))}</small><h4>${esc(localizeText(s.name))}</h4><p>${esc(localizeDesc(s.description||t('noDescription'))||t('noDescription'))}</p><div class="smm-row-meta"><span>${esc(t('minMax'))}: ${Number(s.min||0).toLocaleString()}–${Number(s.max||0).toLocaleString()}</span>${s.refill?`<span>${esc(t('refill'))}</span>`:''}${s.cancel?`<span>${esc(t('cancel'))}</span>`:''}${s.dripfeed?`<span>${esc(t('dripfeed'))}</span>`:''}</div></div></div>
       <div class="smm-row-price"><small>${esc(t('orderValue'))}/1000</small><strong>${esc(formatPricePer1000(s))}</strong><button type="button" class="smm-row-btn" data-id="${esc(s.service)}">${esc(t('choose'))} →</button></div>
     </article>`).join('') || `<div class="smm-empty"> <strong>${esc(t('noResult'))}</strong><span>${esc(t('try'))}</span></div>`;
     els.list.querySelectorAll('[data-id]').forEach(node=>node.addEventListener('click',()=>selectService(node.dataset.id)));

@@ -23,3 +23,8 @@
 10. Order status page shows both SMM and subscription orders.
 
 - SMM storefront review: verify platform/category/service selectors, single-link orders, multi-link orders, comments, scheduled orders, Dripfeed, price calculation, Billplz checkout, webhook submission, and order-status polling.
+
+## Latest UI/data checks
+- SMM dynamic service names/categories/descriptions are localized for English/Chinese without Google Translate.
+- Every public SMM service price is calculated from supplier VND rate, then applies `SMM_MARKUP_PERCENT` (default 30%), with MYR/USD/CNY display.
+- Customer-facing modal also localizes the selected service name/platform/category.

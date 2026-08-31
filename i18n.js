@@ -194,6 +194,24 @@ const I18N = {
 // Supplier names are often returned in Vietnamese. We keep the original
 // service ID/name for ordering, but localize only what customers see.
 const SERVICE_TRANSLATIONS = {
+  // Exact high-frequency SMM combinations from supplier catalogue names.
+  'facebook tăng bình luận': { zh: 'Facebook 增加评论', en: 'Facebook Increase Comments' },
+  'facebook tăng like': { zh: 'Facebook 增加点赞', en: 'Facebook Increase Likes' },
+  'facebook tăng follow': { zh: 'Facebook 增加粉丝', en: 'Facebook Increase Followers' },
+  'facebook tăng view': { zh: 'Facebook 增加观看次数', en: 'Facebook Increase Views' },
+  'like post facebook': { zh: 'Facebook 帖子点赞', en: 'Facebook Post Likes' },
+  'comment facebook': { zh: 'Facebook 评论', en: 'Facebook Comments' },
+  'facebook comment': { zh: 'Facebook 评论', en: 'Facebook Comments' },
+  'comment facebook dạng mới': { zh: 'Facebook 评论 · 新版', en: 'Facebook Comments · New Type' },
+  'tiktok tăng like': { zh: 'TikTok 增加点赞', en: 'TikTok Increase Likes' },
+  'tiktok tăng follow': { zh: 'TikTok 增加粉丝', en: 'TikTok Increase Followers' },
+  'tiktok tăng view': { zh: 'TikTok 增加观看次数', en: 'TikTok Increase Views' },
+  'instagram tăng like': { zh: 'Instagram 增加点赞', en: 'Instagram Increase Likes' },
+  'instagram tăng follow': { zh: 'Instagram 增加粉丝', en: 'Instagram Increase Followers' },
+  'youtube tăng view': { zh: 'YouTube 增加观看次数', en: 'YouTube Increase Views' },
+  'youtube tăng sub': { zh: 'YouTube 增加订阅', en: 'YouTube Increase Subscribers' },
+  'youtube tăng subscriber': { zh: 'YouTube 增加订阅者', en: 'YouTube Increase Subscribers' },
+  'youtube comment': { zh: 'YouTube 评论', en: 'YouTube Comments' },
   // common phrases (longest phrases should be listed first)
   // Vietnamese phrases frequently used by the supplier (including phrases
   // that were not covered by the original word-by-word dictionary).
@@ -698,9 +716,83 @@ function localizePlatformLabel(label, lang) {
 }
 
 function localizeServiceText(text, lang) {
-  // Supplier names stay exactly as returned by the API. The page-level
-  // translator handles the visible translation when the customer selects 中文.
-  return String(text ?? '').replace(/\s+/g, ' ').trim();
+  // Supplier service names/categories are dynamic, so static data-i18n cannot
+  // translate them. Normalize the supplier text with the same phrase dictionary
+  // used for descriptions, then apply common Vietnamese word translations.
+  let out = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!out) return '';
+
+  const entries = Object.entries(SERVICE_TRANSLATIONS)
+    .sort((a, b) => b[0].length - a[0].length);
+  for (const [src, vals] of entries) {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${escaped}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
+    out = out.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
+  }
+
+  // A second pass covers common short words that often remain inside dynamic
+  // service names such as “Facebook Tăng Bình Luận (6)”.
+  const shortWords = {
+    'tăng': {zh:'增加',en:'Increase'}, 'thêm': {zh:'增加',en:'Add'},
+    'bình': {zh:'评论',en:'Comment'}, 'luận': {zh:'评论',en:'Comment'},
+    'mới': {zh:'新',en:'New'}, 'dạng': {zh:'类型',en:'Type'},
+    'tất': {zh:'全部',en:'All'}, 'cả': {zh:'全部',en:'All'},
+    'không': {zh:'不',en:'No'}, 'tụt': {zh:'掉',en:'Drop'},
+    'không tụt': {zh:'不掉',en:'No Drop'}, 'nhanh': {zh:'快速',en:'Fast'},
+    'chậm': {zh:'慢速',en:'Slow'}, 'ổn': {zh:'稳定',en:'Stable'},
+    'định': {zh:'稳定',en:'Stable'}, 'rẻ': {zh:'便宜',en:'Cheap'},
+    'cao': {zh:'高质量',en:'High'}, 'thấp': {zh:'低',en:'Low'},
+    'thật': {zh:'真实',en:'Real'}, 'thực': {zh:'真实',en:'Real'},
+    'người': {zh:'用户',en:'Users'}, 'theo': {zh:'关注',en:'Follow'},
+    'dõi': {zh:'关注',en:'Follow'}, 'lượt': {zh:'次',en:''},
+    'xem': {zh:'观看',en:'View'}, 'thích': {zh:'点赞',en:'Like'},
+    'chia': {zh:'分享',en:'Share'}, 'sẻ': {zh:'分享',en:'Share'},
+    'lưu': {zh:'收藏',en:'Save'}, 'yêu': {zh:'喜欢',en:'Favorite'},
+    'cầu': {zh:'请求',en:'Request'}, 'kết': {zh:'连接',en:'Connect'},
+    'bạn': {zh:'好友',en:'Friend'}, 'tài': {zh:'账号',en:'Account'},
+    'khoản': {zh:'账号',en:'Account'}, 'trang': {zh:'页面',en:'Page'},
+    'bài': {zh:'帖子',en:'Post'}, 'đăng': {zh:'发布',en:'Post'},
+    'mua': {zh:'购买',en:'Buy'}, 'bán': {zh:'销售',en:'Sell'},
+    'giá': {zh:'价格',en:'Price'}, 'dịch': {zh:'服务',en:'Service'},
+    'vụ': {zh:'服务',en:'Service'}, 'quốc': {zh:'国家',en:'Country'},
+    'gia': {zh:'国家',en:'Country'}, 'toàn': {zh:'全局',en:'Global'},
+    'có': {zh:'有',en:'With'}, 'cho': {zh:'用于',en:'For'},
+    'mỗi': {zh:'每',en:'Per'}, 'ngày': {zh:'天',en:'Day'},
+    'giờ': {zh:'小时',en:'Hour'}, 'phút': {zh:'分钟',en:'Minutes'},
+    'thời': {zh:'时间',en:'Time'}, 'gian': {zh:'时间',en:'Time'},
+    'hoàn': {zh:'完成',en:'Complete'}, 'thành': {zh:'完成',en:'Complete'},
+    'đơn': {zh:'订单',en:'Order'}, 'hàng': {zh:'订单',en:'Order'},
+    'bảo': {zh:'保障',en:'Protection'}, 'hành': {zh:'保修',en:'Warranty'},
+    'chính': {zh:'官方',en:'Official'}, 'hãng': {zh:'官方',en:'Official'},
+    'tự': {zh:'自动',en:'Auto'}, 'động': {zh:'自动',en:'matic'},
+    'chất': {zh:'质量',en:'Quality'}, 'lượng': {zh:'质量',en:'Quality'},
+    'thử': {zh:'测试',en:'Test'}, 'nghiệm': {zh:'测试',en:'Test'},
+    'độc': {zh:'独家',en:'Exclusive'}, 'quyền': {zh:'权利',en:'Rights'},
+    'bằng': {zh:'通过',en:'By'}, 'trên': {zh:'在',en:'On'},
+    'từ': {zh:'从',en:'From'}, 'đến': {zh:'至',en:'To'},
+    'nội': {zh:'内容',en:'Content'}, 'dung': {zh:'内容',en:'Content'},
+    'bạn': {zh:'好友',en:'Friend'}, 'mạng': {zh:'网络',en:'Network'},
+    'xã': {zh:'社交',en:'Social'}, 'hội': {zh:'社交',en:'Social'},
+    'kênh': {zh:'频道',en:'Channel'}, 'nhóm': {zh:'群组',en:'Group'},
+    'thành': {zh:'成员',en:'Member'}, 'viên': {zh:'成员',en:'Member'},
+    'bình': {zh:'评论',en:'Comment'}, 'luận': {zh:'评论',en:'Comment'},
+  };
+  const wordEntries = Object.entries(shortWords).sort((a,b)=>b[0].length-a[0].length);
+  for (const [src, vals] of wordEntries) {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(^|[^A-Za-zÀ-ỹĐđ])${escaped}(?=$|[^A-Za-zÀ-ỹĐđ])`, 'gi');
+    out = out.replace(re, (m, prefix) => prefix + (vals[lang] || vals.en));
+  }
+
+  // Clean up punctuation/spaces introduced by replacements.
+  out = out.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?)])/g, '$1').replace(/([(])\s+/g, '$1').trim();
+
+  // Do not leak untranslated Vietnamese into the customer-facing UI.
+  const hasVietnamese = /[À-ỹĐđ]/.test(out);
+  if (hasVietnamese) {
+    out = out.replace(/\b[A-Za-zÀ-ỹĐđ]*[À-ỹĐđ][A-Za-zÀ-ỹĐđ]*\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+  }
+  return out;
 }
 
 
@@ -782,44 +874,10 @@ function applyCurrency(currency) {
   document.dispatchEvent(new CustomEvent('uz:currencychange', { detail: { currency } }));
 }
 
-function getGoogleTranslateSelect(){
-  return document.querySelector('.goog-te-combo');
-}
-
-function setGooglePageLanguage(target){
-  const code = target === 'zh' ? 'zh-CN' : 'en';
-  document.cookie = `googtrans=/auto/${code};path=/`;
-  document.cookie = `googtrans=/auto/${code};path=/;domain=${location.hostname}`;
-  const select = getGoogleTranslateSelect();
-  if (select) {
-    select.value = code;
-    select.dispatchEvent(new Event('change'));
-  } else {
-    // The Google translator may still be loading. Retry briefly.
-    let tries = 0;
-    const timer = setInterval(() => {
-      const s = getGoogleTranslateSelect();
-      if (s) {
-        clearInterval(timer);
-        s.value = code;
-        s.dispatchEvent(new Event('change'));
-      } else if (++tries > 30) clearInterval(timer);
-    }, 200);
-  }
-}
-
-function resetGoogleTranslation(){
-  document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-  document.cookie = `googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${location.hostname}`;
-  // Google Translate changes many DOM nodes itself. A reload is the cleanest
-  // way to restore the original API wording without touching service data.
-  location.reload();
-}
-
 function translateDynamicContent(){
-  if (UzState.lang !== 'zh') return;
-  // Re-trigger Google Translate after live SMM cards/modal content is added.
-  setTimeout(() => setGooglePageLanguage('zh'), 250);
+  // Dynamic SMM content is localized by script.js directly. Do not run a
+  // second machine-translation pass because it can overwrite product names,
+  // selectors and already-translated Vietnamese phrases.
 }
 
 function initSwitchers() {
@@ -830,21 +888,11 @@ function initSwitchers() {
     btn.classList.toggle('active', btn.dataset.lang === UzState.lang);
     btn.addEventListener('click', () => {
       const next = btn.dataset.lang;
-      if (next === UzState.lang && next === 'zh') {
-        translateDynamicContent();
-        return;
-      }
+      if (next === UzState.lang) return;
       UzState.lang = next;
       localStorage.setItem('uz_lang', UzState.lang);
       langBtns.forEach(b => b.classList.toggle('active', b === btn));
-      if (next === 'zh') {
-        // First render our own static Chinese strings, then let Google Translate
-        // translate the complete page, including Vietnamese supplier content.
-        applyLanguage('zh');
-        translateDynamicContent();
-      } else {
-        resetGoogleTranslation();
-      }
+      applyLanguage(next);
     });
   });
 
@@ -860,7 +908,6 @@ function initSwitchers() {
 
   applyLanguage(UzState.lang);
   applyCurrency(UzState.currency);
-  if (UzState.lang === 'zh') translateDynamicContent();
 }
 
 document.addEventListener('DOMContentLoaded', initSwitchers);

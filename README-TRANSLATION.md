@@ -1,6 +1,8 @@
-# UziSeller 页面一键翻译
+# UziSeller 页面语言系统
 
-- 默认/原文：保留 SMM.APPMMO API 原始服务名称与简介，方便筛选越南商品。
-- 中文：点击左下角“中文”，先应用站内中文 UI，再调用 Google Website Translator 翻译整页，包括 API 动态加载的 SMM 商品名称与简介。
-- 切回“原文”会刷新页面并恢复 API 原文，不修改 Service ID 或供应商数据。
-- 需要用户浏览器能够访问 translate.google.com。
+- 默认语言：英文。
+- 中文：静态 UI 与 SMM 动态服务名称、分类、类型、完成时间、服务简介均由站内本地化逻辑直接渲染。
+- 不再依赖 Google Website Translator，避免动态服务被二次翻译、翻译失败或出现越南语残留。
+- Service ID、API 参数及供应商原始数据不修改；翻译只发生在顾客看到的文字层。
+- 新增/未知越南语词汇会经过通用词典处理；如供应商以后新增特殊词汇，可继续追加到 `SERVICE_TRANSLATIONS`。
+- 货币显示支持 MYR / USD / CNY，SMM 客户价格统一先按 MYR 计算并应用加价，再转换显示。
