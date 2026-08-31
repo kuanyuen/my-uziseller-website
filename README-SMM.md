@@ -54,3 +54,12 @@ The frontend currently uses WhatsApp for the actual customer order button — th
 
 Before enabling automatic paid ordering, protect the `add`, `status`, and `balance` routes with your order/payment system and store orders in a database (for example Vercel KV/Redis or another database).
 
+
+
+## Customer-facing panel update
+
+The SMM tab is now structured around the same ordering flow as the supplier storefront: quick service search, platform/category/service selection, service information, target link(s), quantity, comments when applicable, scheduled execution, Dripfeed when supported, order total, review step, payment, and customer order-status tracking.
+
+The catalogue is also presented as a compact service list so customers can compare ID, platform, category, min/max, refill/cancel/Dripfeed availability, and customer price before selecting a service.
+
+Bulk links are supported by the checkout flow as separate supplier orders under one UziSeller payment. Supplier status is re-checked from the customer order-status page after submission.

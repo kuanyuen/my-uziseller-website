@@ -210,18 +210,114 @@
     <p class="tab-note" data-i18n="subs.note">Products are loaded live from the supplier API. Customer-facing prices include the 30% markup.</p>
   </div>
 
-  <!-- Tab 3: SMM Panel (live catalogue) -->
+  <!-- Tab 3: SMM Panel — APPMMO-like customer storefront -->
   <div class="tab-panel" id="tab-smm">
-    <p class="tab-note" data-i18n="smm.costNote">Customer prices include a 30% markup over supplier cost.</p>
-    <div id="smm-status" class="smm-status" data-i18n="smm.loading">Loading services…</div>
-    <div class="smm-search-row">
-      <div class="smm-search-wrap"><span aria-hidden="true">⌕</span><input id="smm-search" class="smm-search" type="search" autocomplete="off" data-i18n-placeholder="smm.search" placeholder="Search services…"></div>
-      <button id="smm-search-btn" class="smm-search-btn" type="button" data-i18n="smm.searchBtn">Search</button>
-      <button id="smm-clear-btn" class="smm-clear-btn" type="button" data-i18n="smm.clear">Clear</button>
+    <div class="smm-market">
+      <div class="smm-topbar">
+        <div class="smm-topbar-copy">
+          <strong data-smm="orderTitle">创建订单</strong>
+          <span data-smm="orderSub">Social Media Marketing Services · UziSeller</span>
+        </div>
+        <div class="smm-topbar-actions">
+          <a href="#products" data-smm="backProducts">商品</a>
+          <a href="order-status.html" data-smm="orderStatus">订单查询</a>
+          <a href="https://wa.me/601163630234" target="_blank" rel="noopener" data-smm="support">客服</a>
+        </div>
+      </div>
+
+      <div class="smm-announcement">
+        <div class="smm-announcement-title" data-smm="noticeTitle">使用说明</div>
+        <div class="smm-announcement-grid">
+          <span data-smm="notice1">选择平台 → 分类 → 服务，然后查看完整服务详情。</span>
+          <span data-smm="notice2">客户售价已包含 UziSeller 30% 加价，付款使用 MYR。</span>
+          <span data-smm="notice3">下单后由系统自动提交至上游服务商，并同步订单状态。</span>
+        </div>
+      </div>
+
+      <div class="smm-toolbar">
+        <label class="smm-quick-search">
+          <span>⌕</span>
+          <input id="smm-search" type="search" autocomplete="off" placeholder="输入服务名称或 ID 进行快速搜索">
+        </label>
+        <button id="smm-search-btn" class="smm-btn smm-btn-primary" type="button" data-smm="searchBtn">搜索</button>
+        <button id="smm-clear-btn" class="smm-btn" type="button" data-smm="clear">清除</button>
+      </div>
+
+      <div class="smm-order-layout">
+        <aside class="smm-sidebar">
+          <div class="smm-sidebar-title" data-smm="platformTitle">平台</div>
+          <div id="smm-platforms" class="smm-platform-list"></div>
+        </aside>
+
+        <main class="smm-main">
+          <div class="smm-form-card">
+            <div class="smm-form-heading">
+              <div>
+                <div class="smm-kicker" data-smm="formKicker">快速下单</div>
+                <h3 data-smm="formTitle">选择服务并填写订单</h3>
+              </div>
+              <div id="smm-status" class="smm-status">正在加载服务…</div>
+            </div>
+
+            <div class="smm-select-grid">
+              <label><span data-smm="platformLabel">平台</span><select id="smm-platform-select"></select></label>
+              <label><span data-smm="categoryLabel">分类</span><select id="smm-category-select"></select></label>
+              <label class="smm-service-select"><span data-smm="serviceLabel">服务</span><select id="smm-service-select"></select></label>
+            </div>
+
+            <div id="smm-service-detail" class="smm-service-detail"></div>
+
+            <div class="smm-order-form">
+              <div class="smm-field wide-field">
+                <div class="smm-field-head"><label for="smm-link" data-smm="linkLabel">链接</label><button type="button" id="smm-multi-toggle" class="smm-mini-toggle" data-smm="multiToggle">批量多个链接</button></div>
+                <textarea id="smm-link" rows="3" placeholder="https://..." data-smm-placeholder="linkPlaceholder"></textarea>
+                <small id="smm-link-hint" data-smm="linkHint">一个链接一行。批量下单时每行使用相同数量。</small>
+              </div>
+
+              <div id="smm-comments-wrap" class="smm-field wide-field" hidden>
+                <label for="smm-comments" data-smm="commentsLabel">评论内容</label>
+                <textarea id="smm-comments" rows="4" placeholder="每行一条评论"></textarea>
+                <small data-smm="commentsHint">只在评论类服务需要时填写。</small>
+              </div>
+
+              <div class="smm-field">
+                <label for="smm-qty" data-smm="qtyLabel">数量</label>
+                <input id="smm-qty" type="number" inputmode="numeric" min="1" value="1">
+                <small id="smm-qty-hint">最低 — · 最高 —</small>
+              </div>
+
+              <div class="smm-field">
+                <label data-smm="scheduleLabel">预约执行</label>
+                <div class="smm-toggle-row"><input id="smm-schedule-toggle" type="checkbox"><span data-smm="optional">可选</span></div>
+                <input id="smm-schedule" type="datetime-local" disabled>
+              </div>
+
+              <div class="smm-field">
+                <label data-smm="dripfeedLabel">拆分订单（Dripfeed）</label>
+                <div class="smm-toggle-row"><input id="smm-dripfeed-toggle" type="checkbox" disabled><span id="smm-dripfeed-cap" data-smm="notSupported">此服务不支持</span></div>
+              </div>
+
+              <div id="smm-dripfeed-options" class="smm-dripfeed-options" hidden>
+                <label><span data-smm="runsLabel">拆分成多少单</span><input id="smm-runs" type="number" min="2" value="2"></label>
+                <label><span data-smm="intervalLabel">每单间隔（分钟）</span><input id="smm-interval" type="number" min="1" value="10"></label>
+              </div>
+
+              <div class="smm-order-summary">
+                <div><span data-smm="orderValue">订单金额</span><strong id="smm-total">RM 0.00</strong><small data-smm="taxNote">不额外收取展示页税费</small></div>
+                <div class="smm-summary-actions"><button id="smm-review-btn" class="smm-btn smm-btn-primary" type="button" data-smm="reviewOrder">确认订单</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="smm-list-head">
+            <div><strong data-smm="catalogueTitle">服务目录</strong><span id="smm-result-count"></span></div>
+            <span data-smm="catalogueHint">点击服务可快速填入上方订单表单</span>
+          </div>
+          <div id="smm-services" class="smm-services-list"></div>
+          <button id="smm-load-more" class="smm-load-more" type="button" data-smm="loadMore">加载更多</button>
+        </main>
+      </div>
     </div>
-    <div id="smm-platforms" class="smm-categories"></div>
-    <div id="smm-services" class="smm-services"></div>
-    <button id="smm-load-more" class="btn ghost wide smm-load-more" type="button" data-i18n="smm.loadMore">Load more services</button>
   </div>
 </section>
 

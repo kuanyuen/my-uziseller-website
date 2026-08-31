@@ -21,3 +21,5 @@
 8. SMM order creates a Billplz payment page.
 9. Billplz callback updates the order and supplier submission happens once.
 10. Order status page shows both SMM and subscription orders.
+
+- SMM storefront review: verify platform/category/service selectors, single-link orders, multi-link orders, comments, scheduled orders, Dripfeed, price calculation, Billplz checkout, webhook submission, and order-status polling.

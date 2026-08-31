@@ -63,18 +63,38 @@ export default async function handler(req, res) {
         order.supplierResponse = supplierResult;
       }
     } else {
-      const supplierResult = await placeOrder({
-        service: order.service,
-        link: order.link,
-        quantity: order.quantity
-      });
-
-      if (supplierResult && supplierResult.order) {
+      const links = Array.isArray(order.links) && order.links.length ? order.links : [order.link];
+      const supplierOrders = [];
+      const failures = [];
+      for (const targetLink of links) {
+        try {
+          const supplierResult = await placeOrder({
+            service: order.service,
+            link: targetLink,
+            quantity: order.quantity,
+            comments: order.comments || '',
+            schedule: order.schedule || '',
+            dripfeed: !!order.dripfeed,
+            runs: order.runs || 2,
+            interval: order.interval || 10
+          });
+          if (supplierResult && supplierResult.order) supplierOrders.push(String(supplierResult.order));
+          else failures.push(supplierResult);
+        } catch (err) {
+          failures.push({ error: err.message });
+        }
+      }
+      if (supplierOrders.length === links.length) {
         order.status = "processing";
-        order.supplierOrderId = supplierResult.order;
+        order.supplierOrderIds = supplierOrders;
+        order.supplierOrderId = supplierOrders[0] || null;
+      } else if (supplierOrders.length) {
+        order.status = "partial_supplier_submission";
+        order.supplierOrderIds = supplierOrders;
+        order.supplierFailures = failures;
       } else {
         order.status = "needs_manual_review";
-        order.supplierResponse = supplierResult;
+        order.supplierFailures = failures;
       }
     }
   } catch (e) {

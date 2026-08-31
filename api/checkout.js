@@ -16,10 +16,13 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return json(res, 405, { status: "error", msg: "Method not allowed" });
 
   try {
-    const { serviceId, link, quantity, email, name } = req.body || {};
-    if (!serviceId || !link || !quantity || !email || !name) {
-      return json(res, 400, { status: "error", msg: "serviceId, link, quantity, email and name are required" });
+    const { serviceId, link, links, quantity, email, name, comments = "", schedule = "", dripfeed = false, runs = 2, interval = 10 } = req.body || {};
+    const rawLinks = Array.isArray(links) ? links : (link ? [link] : []);
+    const cleanLinks = rawLinks.map(v => String(v || '').trim()).filter(Boolean);
+    if (!serviceId || !cleanLinks.length || !quantity || !email || !name) {
+      return json(res, 400, { status: "error", msg: "serviceId, link(s), quantity, email and name are required" });
     }
+    if (cleanLinks.length > 50) return json(res, 400, { status: "error", msg: "Maximum 50 links per checkout" });
 
     const service = await getServiceById(serviceId);
     if (!service) return json(res, 404, { status: "error", msg: "Service not found (it may no longer be offered by the supplier)" });
@@ -34,7 +37,7 @@ export default async function handler(req, res) {
     // Billplz (FPX/card) settles in MYR regardless of which currency the
     // customer was browsing in — that's just a display preference.
     // service.prices.MYR already includes the 30% customer-facing markup.
-    const totalMYR = Math.round(((service.prices.MYR * qty) / 1000) * 100) / 100;
+    const totalMYR = Math.round(((service.prices.MYR * qty * cleanLinks.length) / 1000) * 100) / 100;
     const amountCents = Math.round(totalMYR * 100);
     if (amountCents < 100) {
       return json(res, 400, { status: "error", msg: "Order amount too small (minimum RM1.00)" });
@@ -58,8 +61,14 @@ export default async function handler(req, res) {
       service: service.service,
       name: service.name,
       platformLabel: service.platformLabel,
-      link,
+      link: cleanLinks[0],
+      links: cleanLinks,
       quantity: qty,
+      comments: String(comments || ""),
+      schedule: String(schedule || ""),
+      dripfeed: !!dripfeed,
+      runs: Math.max(2, Number(runs) || 2),
+      interval: Math.max(1, Number(interval) || 10),
       priceMYR: totalMYR,
       email,
       customerName: name,
