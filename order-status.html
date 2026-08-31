@@ -14,6 +14,8 @@
 .status-paid,.status-processing{background:rgba(123,255,160,.12);color:#7bffa0}
 .status-payment_failed,.status-needs_manual_review{background:rgba(255,110,130,.12);color:#ff6e82}
 .status-hint{color:var(--muted);font-size:13px;margin-top:6px}
+
+.delivery-box{margin-top:22px;padding:18px;border:1px solid #b9a9ff;background:linear-gradient(135deg,rgba(115,80,255,.10),rgba(72,173,238,.07));border-radius:14px}.delivery-box h3{margin:0 0 6px;font-size:18px}.delivery-item{display:flex;gap:12px;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}.delivery-index{font-weight:800;color:#8c79ef;min-width:28px}.delivery-values{flex:1}.delivery-field{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.delivery-field:last-child{border-bottom:0}.delivery-field span{font-size:11px;color:var(--muted)}.delivery-field code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;color:var(--text,#fff)}.copy-delivery{border:1px solid #8d79ef;background:transparent;color:inherit;border-radius:7px;padding:5px 9px;cursor:pointer;font-size:11px}
 </style>
 </head>
 <body>
@@ -49,12 +51,18 @@ const TXT = {
   quantity: { en: 'Quantity', zh: '数量' },
   total: { en: 'Total', zh: '总额' },
   supplierRef: { en: 'Supplier order ref', zh: '供应商订单号' },
+  supplierTxn: { en: 'Supplier transaction', zh: '供应商交易号' },
   links: { en: 'Target links', zh: '目标链接数量' },
   schedule: { en: 'Scheduled', zh: '预约时间' },
   dripfeed: { en: 'Dripfeed', zh: 'Dripfeed' },
   orderId: { en: 'Order ID', zh: '订单编号' },
   back: { en: '← Back to store', zh: '← 返回商店' },
-  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' }
+  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' },
+  delivery: { en: 'Digital delivery', zh: '数字商品交付' },
+  deliveryHint: { en: 'Your purchased item is ready below. Keep this page or save the information securely.', zh: '您购买的商品已准备好，请在下方查看。建议妥善保存这些资料。' },
+  copy: { en: 'Copy', zh: '复制' },
+  copied: { en: 'Copied', zh: '已复制' },
+  unavailable: { en: 'Delivery data is not available yet.', zh: '交付资料暂时还没有返回。' }
 
 };
 function tt(key){ return TXT[key][lang] || TXT[key].en; }
@@ -80,18 +88,26 @@ async function load(){
     if (j.status !== 'ok') { app.innerHTML = `<p>${tt('notFound')}</p>`; return; }
     const o = j.order;
     const label = LABELS[o.status] ? (LABELS[o.status][lang] || LABELS[o.status].en) : o.status;
+    const delivery = Array.isArray(o.deliveryData) ? o.deliveryData : [];
+    const deliveryHtml = o.deliveryAvailable && delivery.length
+      ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('deliveryHint')}</p>${delivery.map((row,idx)=>{const fields=Array.isArray(row?.fields)?row.fields:[String(row?.raw??row??'')]; return `<div class="delivery-item"><div class="delivery-index">#${idx+1}</div><div class="delivery-values">${fields.map((v,i)=>`<div class="delivery-field"><span>${fields.length>1 ? (lang==='zh'?`字段 ${i+1}`:`Field ${i+1}`) : (lang==='zh'?'内容':'Value')}</span><code>${esc(v)}</code><button class="copy-delivery" data-copy="${esc(v)}">${tt('copy')}</button></div>`).join('')}</div></div>`;}).join('')}</div>`
+      : (o.status === 'completed' && o.name && /subscription|digital|app/i.test(String(o.type||'')+' '+String(o.name||'')) ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('unavailable')}</p></div>` : '');
     app.innerHTML = `
-      <h2 style="margin-top:0">${o.name}</h2>
+      <h2 style="margin-top:0">${esc(o.name)}</h2>
       <p>${tt('quantity')}: ${Number(o.quantity||0).toLocaleString()}</p>
       <p>${tt('links')}: ${Number(o.linksCount||1)}</p>
       <p>${tt('total')}: RM${Number(o.priceMYR).toFixed(2)}</p>
-      ${o.schedule ? `<p>${tt('schedule')}: ${o.schedule}</p>` : ''}
+      ${o.schedule ? `<p>${tt('schedule')}: ${esc(o.schedule)}</p>` : ''}
       ${o.dripfeed ? `<p>${tt('dripfeed')}: Yes</p>` : ''}
-      <span class="status-badge status-${o.status}">${label}</span>
-      ${o.supplierOrderId ? `<p class="status-hint">${tt('supplierRef')}: ${o.supplierOrderId}</p>` : ''}
-      <p class="status-hint">${tt('orderId')}: ${o.id}</p>
+      <span class="status-badge status-${esc(o.status)}">${esc(label)}</span>
+      ${o.supplierOrderId ? `<p class="status-hint">${tt('supplierRef')}: ${esc(o.supplierOrderId)}</p>` : ''}
+      ${o.supplierTransactionId ? `<p class="status-hint">${tt('supplierTxn')}: ${esc(o.supplierTransactionId)}</p>` : ''}
+      ${o.supplierOrderStatus ? `<p class="status-hint">Supplier status: ${esc(String(o.supplierOrderStatus))}</p>` : ''}
+      <p class="status-hint">${tt('orderId')}: ${esc(o.id)}</p>
+      ${deliveryHtml}
       <p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>
     `;
+    document.querySelectorAll('.copy-delivery').forEach((btn)=>btn.onclick=async()=>{const value=btn.dataset.copy||''; try{await navigator.clipboard.writeText(value);}catch{const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();} const original=btn.textContent;btn.textContent=tt('copied');setTimeout(()=>btn.textContent=original,1200);});
     if (['pending_payment','paid','processing','partial_supplier_submission','partial'].includes(o.status)) {
       setTimeout(load, 5000);
     }

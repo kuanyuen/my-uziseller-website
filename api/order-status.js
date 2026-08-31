@@ -2,6 +2,7 @@
 // needs to see, never internal fields like email/link.
 import { getOrder, saveOrder } from "../lib/store.js";
 import { getSupplierOrderStatus } from "../lib/smm.js";
+import { getOrder as getShopOrder } from "../lib/shop-apmmo.js";
 
 export default async function handler(req, res) {
   const id = req.query.id;
@@ -13,6 +14,25 @@ export default async function handler(req, res) {
   // Keep customer-facing status current by checking the supplier when an
   // order has already been paid/submitted. This is read-only from the user's
   // perspective; the API key remains server-side.
+  // Keep customer-facing digital-product orders current through SHOP.APPMMO.
+  // Supplier transaction details are read server-side only.
+  if (order.type === "subscription" && order.supplierTransactionId && ["completed","processing","paid"].includes(order.status)) {
+    try {
+      const supplier = await getShopOrder(order.supplierTransactionId);
+      order.supplierOrderStatus = supplier?.status || supplier?.data?.status || null;
+      order.supplierOrderResponse = supplier;
+      // We only downgrade/upgrade when the supplier clearly signals a terminal state.
+      const text = JSON.stringify(supplier).toLowerCase();
+      if (/cancel|failed|refund|error/.test(text) && !/success|completed/.test(text)) order.status = "supplier_issue";
+      else if (/complete|success|delivered|finish/.test(text)) order.status = "completed";
+      else order.status = "processing";
+      order.updatedAt = new Date().toISOString();
+      await saveOrder(order);
+    } catch (e) {
+      // Keep the previous local status if the supplier order endpoint is unavailable.
+    }
+  }
+
   const ids = Array.isArray(order.supplierOrderIds) && order.supplierOrderIds.length
     ? order.supplierOrderIds
     : (order.supplierOrderId ? [order.supplierOrderId] : []);
@@ -39,16 +59,20 @@ export default async function handler(req, res) {
     status: "ok",
     order: {
       id: order.id,
+      type: order.type || null,
       name: order.name || order.productName || "Order",
       quantity: order.quantity,
       priceMYR: order.priceMYR,
       status: order.status,
       supplierOrderId: order.supplierOrderId || null,
       supplierOrderIds: order.supplierOrderIds || [],
+      supplierTransactionId: order.supplierTransactionId || null,
       linksCount: Array.isArray(order.links) ? order.links.length : 1,
       schedule: order.schedule || null,
       dripfeed: !!order.dripfeed,
-      createdAt: order.createdAt
+      createdAt: order.createdAt,
+      deliveryAvailable: !!order.deliveryAvailable,
+      deliveryData: order.type === "subscription" && Array.isArray(order.deliveryData) ? order.deliveryData : []
     }
   });
 }

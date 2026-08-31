@@ -42,3 +42,16 @@ Add these Vercel Environment Variables:
 - `CNY_TO_MYR` = your current CNY/MYR display conversion (optional; default 0.59)
 
 The subscription flow is: products.php → UziSeller product list → Billplz payment → Billplz webhook → buy_product → save returned `trans_id` and `data` to the order.
+
+### SHOP.APPMMO API coverage
+
+The storefront uses the supplier endpoints visible in the supplier API documentation:
+- `GET /api/profile.php?api_key=...` — supplier account/profile (admin-only proxy)
+- `GET /api/products.php?api_key=...` — product/category catalogue
+- `GET /api/product.php?api_key=...&product=ID` — full product detail
+- `GET /api/order.php?api_key=...` — supplier transaction/order detail (server-side polling)
+- `POST /api/buy_product` — supplier purchase submission after successful payment
+
+The browser never receives `SHOP_APMMO_API_KEY`.
+### Digital-product auto delivery
+After a successful `buy_product` response, UziSeller stores `trans_id` plus each entry in `data[]`. String entries such as `A|B` are preserved as fields without assuming that the fields are specifically an account, password, key, or code. Customers can view and copy the returned delivery values from `order-status.html` after payment.

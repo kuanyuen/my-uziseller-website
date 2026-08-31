@@ -53,10 +53,23 @@ export default async function handler(req, res) {
         quantity: order.quantity,
         coupon: order.coupon || ""
       });
-      if (supplierResult?.status === "success") {
+      const supplierOk = supplierResult?.status === "success" || supplierResult?.success === true || supplierResult?.ok === true;
+      if (supplierOk) {
+        const tx = supplierResult.trans_id || supplierResult.transaction_id || supplierResult.order_id || supplierResult.order || supplierResult.id || supplierResult.data?.trans_id || supplierResult.data?.transaction_id || supplierResult.data?.order_id || supplierResult.data?.order || null;
+        const rawDelivery = Array.isArray(supplierResult.data)
+          ? supplierResult.data
+          : (Array.isArray(supplierResult.result) ? supplierResult.result : (Array.isArray(supplierResult.data?.items) ? supplierResult.data.items : []));
         order.status = "completed";
-        order.supplierTransactionId = supplierResult.trans_id || null;
-        order.deliveryData = supplierResult.data || [];
+        order.supplierTransactionId = tx ? String(tx) : null;
+        order.deliveryData = rawDelivery.map((item) => {
+          if (typeof item !== "string") return { raw: item };
+          const text = item.trim();
+          const parts = text.split("|");
+          return parts.length >= 2
+            ? { raw: text, fields: parts.map((v) => String(v).trim()) }
+            : { raw: text, fields: [text] };
+        });
+        order.deliveryAvailable = order.deliveryData.length > 0;
         order.supplierResponse = supplierResult;
       } else {
         order.status = "needs_manual_review";

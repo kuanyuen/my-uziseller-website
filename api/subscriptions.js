@@ -112,6 +112,28 @@ export default async function handler(req,res) {
       return json(res,200,{status:"success",products,raw:r.data},60);
     }
 
+    if (action === "profile") {
+      // Supplier account/balance is admin-only. Never expose this to customers.
+      const key = process.env.SHOP_APMMO_API_KEY;
+      const password = req.headers["x-admin-password"];
+      if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+        return json(res, 401, { status: "error", msg: "Unauthorized" });
+      }
+      const r = await upstream("/profile.php");
+      return json(res, r.status, { status: "success", data: r.data });
+    }
+
+    if (action === "order") {
+      const ref = String(req.query.order || req.query.trans_id || "").trim();
+      if (!ref) return json(res,400,{status:"error",msg:"Missing order reference"});
+      const firstTry = await upstream("/order.php", { trans_id: ref });
+      if (firstTry.status < 400 && firstTry.data?.status !== "error") {
+        return json(res, firstTry.status, { status:"success", data:firstTry.data });
+      }
+      const secondTry = await upstream("/order.php", { order: ref });
+      return json(res, secondTry.status, { status: secondTry.status < 400 && secondTry.data?.status !== "error" ? "success" : "error", data: secondTry.data });
+    }
+
     if (action === "product") {
       if (!req.query.product) return json(res,400,{status:"error",msg:"Missing product"});
       const r=await upstream("/product.php",{product:req.query.product});

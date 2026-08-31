@@ -4,7 +4,7 @@
   const lang=()=>((typeof UzState!=='undefined'&&UzState.lang)||'en');
   const currency=()=>((typeof UzState!=='undefined'&&UzState.currency)||'MYR');
   const t2=(en,zh)=>lang()==='zh'?zh:en;
-  const rates={MYR:1,USD:Number(window.USD_TO_MYR||4.04),CNY:Number(window.CNY_TO_MYR||.60),VND:Number(window.VND_TO_MYR||.000156)};
+  const rates={MYR:1,USD:Number(window.USD_TO_MYR_RATE||window.USD_TO_MYR||4.04),CNY:Number(window.CNY_TO_MYR_RATE||window.CNY_TO_MYR||.60),VND:Number(window.VND_TO_MYR_RATE||window.VND_TO_MYR||.000156)};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const first=(o,keys,fb='')=>{for(const k of keys)if(o&&o[k]!==undefined&&o[k]!==null&&String(o[k]).trim()!=='')return o[k];return fb};
   const num=(v,fb=0)=>{const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)?n:fb};
@@ -64,7 +64,7 @@
     return s.replace(/\s{2,}/g,' ').trim();
   }
 
-  let products=[],active='ALL',query='',sort='default',visibleLimit=24;
+  let products=[],active='ALL',activeCategory='ALL',query='',sort='default',visibleLimit=24;
   function priceFor(p,qty=1){
     const supplierCur=String(p.currency||'VND').toUpperCase();
     const r=rates[supplierCur]||rates.VND;
@@ -74,7 +74,7 @@
     return `${cur==='MYR'?'RM':cur==='USD'?'$':'¥'}${out.toLocaleString(cur==='CNY'?'zh-CN':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   }
   function iconFor(p){const raw=first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],first(p.raw||{},['icon','icon_url','image','image_url','logo','thumbnail'],'')); return raw?`<img src="${esc(raw)}" alt="" loading="lazy" onerror="this.remove()">`:`<span>${esc((localize(p.name)||'P').trim().slice(0,1).toUpperCase())}</span>`;}
-  const normalize=p=>({id:String(first(p,['id','ID','product_id','productId'],'')),name:String(first(p,['name','title','product_name','productName'],'Product')),category:String(first(p,['category','category_name','categoryName','group','group_name'],'Other')),description:String(first(p,['description','desc','content','detail','details','product_description','productDescription','short_description','shortDescription','info','intro'],'')),icon:String(first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],'')),price:num(first(p,['price','Price','selling_price','sale_price','cost','amount','unit_price'],0)),currency:String(first(p,['currency','currency_code','unit'],'VND')).toUpperCase(),min:Math.max(1,num(first(p,['min','minimum','min_amount','min_qty','min_quantity'],1),1)),max:Math.max(1,num(first(p,['max','maximum','max_amount','max_qty','max_quantity'],1),1)),raw:p,group:groupFor(p)});
+  const normalize=p=>({id:String(first(p,['id','ID','product_id','productId'],'')),name:String(first(p,['name','title','product_name','productName'],'Product')),category:String(first(p,['category','category_name','categoryName','group','group_name'],'Other')),description:String(first(p,['description','desc','content','detail','details','product_description','productDescription','short_description','shortDescription','info','intro'],'')),icon:String(first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],'')),price:num(first(p,['price','Price','selling_price','sale_price','cost','amount','unit_price'],0)),currency:String(first(p,['currency','currency_code','unit'],'VND')).toUpperCase(),min:Math.max(1,num(first(p,['min','minimum','min_amount','min_qty','min_quantity'],1),1)),max:Math.max(1,num(first(p,['max','maximum','max_amount','max_qty','max_quantity'],1),1)),stock:first(p,['stock','inventory','available','quantity_available','qty'],''),raw:p,group:groupFor(p)});
 
   function savedOrderIds(){try{return JSON.parse(localStorage.getItem('uz_order_ids')||'[]').filter(Boolean)}catch{return []}}
   function renderShell(){
@@ -126,11 +126,17 @@
   function buildCategories(){
     const counts={}; products.forEach(p=>counts[p.group]=(counts[p.group]||0)+1);
     const all=GROUPS.filter(g=>counts[g.key]).map(g=>[g.key,counts[g.key]]);
-    document.getElementById('shop-cats').innerHTML=`<button class="shop-cat ${active==='ALL'?'active':''}" data-cat="ALL"><span>⌂</span><b>${esc(t2('All Products','全部商品'))}</b><em>${products.length}</em></button>`+all.map(([k,n])=>`<button class="shop-cat ${active===k?'active':''}" data-cat="${k}"><span>${esc(groupIcon(k))}</span><b>${esc(groupLabel(k))}</b><em>${n}</em></button>`).join('');
-    document.querySelectorAll('.shop-cat').forEach(b=>b.onclick=()=>{active=b.dataset.cat;visibleLimit=24;buildCategories();renderList()});
+    const groupFiltered=active==='ALL'?products:products.filter(p=>p.group===active);
+    const catCounts={}; groupFiltered.forEach(p=>{const key=String(p.category||'Other');catCounts[key]=(catCounts[key]||0)+1});
+    const cats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).slice(0,30);
+    const side=`<button class="shop-cat ${active==='ALL'?'active':''}" data-cat="ALL"><span>⌂</span><b>${esc(t2('All Products','全部商品'))}</b><em>${products.length}</em></button>`+all.map(([k,n])=>`<button class="shop-cat ${active===k?'active':''}" data-cat="${k}"><span>${esc(groupIcon(k))}</span><b>${esc(groupLabel(k))}</b><em>${n}</em></button>`).join('');
+    const catbar=`<div class="shop-supplier-catbar"><button class="shop-supplier-cat ${activeCategory==='ALL'?'active':''}" data-supplier-cat="ALL">${esc(t2('All types','全部分类'))}</button>${cats.map(([k,n])=>`<button class="shop-supplier-cat ${activeCategory===k?'active':''}" data-supplier-cat="${esc(k)}">${esc(localize(k))}<em>${n}</em></button>`).join('')}</div>`;
+    document.getElementById('shop-cats').innerHTML=side+catbar;
+    document.querySelectorAll('.shop-cat').forEach(b=>b.onclick=()=>{active=b.dataset.cat;activeCategory='ALL';visibleLimit=24;buildCategories();renderList()});
+    document.querySelectorAll('.shop-supplier-cat').forEach(b=>b.onclick=()=>{activeCategory=b.dataset.supplierCat;visibleLimit=24;buildCategories();renderList()});
   }
   function filtered(){
-    let list=products.filter(p=>{const ok=active==='ALL'||p.group===active; const hay=`${p.name} ${p.category} ${p.description}`.toLowerCase(); return ok&&(!query||hay.includes(query)||localize(p.name).toLowerCase().includes(query)||localize(p.category).toLowerCase().includes(query));});
+    let list=products.filter(p=>{const ok=(active==='ALL'||p.group===active)&&(activeCategory==='ALL'||String(p.category||'')===activeCategory); const hay=`${p.name} ${p.category} ${p.description}`.toLowerCase(); return ok&&(!query||hay.includes(query)||localize(p.name).toLowerCase().includes(query)||localize(p.category).toLowerCase().includes(query));});
     if(sort==='priceAsc') list.sort((a,b)=>Number(a.price)-Number(b.price));
     if(sort==='priceDesc') list.sort((a,b)=>Number(b.price)-Number(a.price));
     return list;
@@ -139,7 +145,7 @@
     const list=filtered(), shown=list.slice(0,visibleLimit);
     document.getElementById('shop-count').textContent=`${shown.length} / ${list.length} ${t2('available','可选')}`;
     document.getElementById('shop-more').hidden=shown.length>=list.length||!list.length;
-    document.getElementById('shop-list').innerHTML=shown.map(p=>`<article class="shop-product-row" data-id="${esc(p.id)}"><div class="shop-product-main"><div class="shop-product-icon">${iconFor(p)}</div><div class="shop-product-copy"><small>#${esc(p.id)} · ${esc(groupLabel(p.group))}</small><h3>${esc(localize(p.name))}</h3><p>${esc(stripHtml(localize(p.description))||t2('Click “View details” to read full product information.','点击「查看详情」读取完整商品资料。'))}</p><div class="shop-meta"><span>${esc(localize(p.category))}</span><span>${esc(p.min)}–${esc(p.max)} ${esc(t2('units','件'))}</span></div></div></div><div class="shop-buy"><div><small>${esc(t2('Selling price','销售价'))}</small><strong>${esc(priceFor(p))}</strong><span>${esc(t2('Supplier + 30%','供应商 +30%'))}</span></div><button data-id="${esc(p.id)}">${esc(t2('View details','查看详情'))} <b>→</b></button></div></article>`).join('')||`<div class="shop-empty"><strong>${esc(t2('No products found.','没有找到商品。'))}</strong><p>${esc(t2('Try another category or keyword.','请尝试其他分类或关键词。'))}</p></div>`;
+    document.getElementById('shop-list').innerHTML=shown.map(p=>`<article class="shop-product-row" data-id="${esc(p.id)}"><div class="shop-product-main"><div class="shop-product-icon">${iconFor(p)}</div><div class="shop-product-copy"><small>#${esc(p.id)} · ${esc(groupLabel(p.group))}</small><h3>${esc(localize(p.name))}</h3><p>${esc(stripHtml(localize(p.description))||t2('Click “View details” to read full product information.','点击「查看详情」读取完整商品资料。'))}</p><div class="shop-meta"><span>${esc(localize(p.category))}</span><span>${esc(p.min)}–${esc(p.max)} ${esc(t2('units','件'))}</span>${p.stock!==''?`<span>${esc(t2('Stock','库存'))}: ${esc(p.stock)}</span>`:''}</div></div></div><div class="shop-buy"><div><small>${esc(t2('Selling price','销售价'))}</small><strong>${esc(priceFor(p))}</strong><span>${esc(t2('Supplier + 30%','供应商 +30%'))}</span></div><button data-id="${esc(p.id)}">${esc(t2('View details','查看详情'))} <b>→</b></button></div></article>`).join('')||`<div class="shop-empty"><strong>${esc(t2('No products found.','没有找到商品。'))}</strong><p>${esc(t2('Try another category or keyword.','请尝试其他分类或关键词。'))}</p></div>`;
     document.querySelectorAll('.shop-product-row').forEach(row=>row.onclick=e=>{if(e.target.closest('button'))return;openDetail(products.find(x=>String(x.id)===String(row.dataset.id)))});
     document.querySelectorAll('.shop-buy button').forEach(b=>b.onclick=e=>{e.stopPropagation();openDetail(products.find(x=>String(x.id)===String(b.dataset.id)))});
   }
@@ -176,6 +182,6 @@
     const r=await fetch('/api/subscriptions?action=products',{headers:{Accept:'application/json'}}),j=await r.json();if(!r.ok||j.status==='error')throw new Error(j.msg||'Catalogue unavailable');products=(j.products||[]).map(normalize).filter(p=>p.id&&p.name);
     buildCategories();renderList();
     document.addEventListener('uz:currencychange',renderList);
-    document.addEventListener('uz:langchange',()=>{active='ALL';renderShell();buildCategories();renderList()});
+    document.addEventListener('uz:langchange',()=>{active='ALL';activeCategory='ALL';renderShell();buildCategories();renderList()});
   }catch(e){document.getElementById('shop-list').innerHTML=`<div class="shop-empty"><strong>${esc(t2('Catalogue temporarily unavailable','商品目录暂时无法加载'))}</strong><p>${esc(e.message)}</p></div>`;console.error(e)}
 })();
