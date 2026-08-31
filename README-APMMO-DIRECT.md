@@ -15,3 +15,9 @@ The required variable name is exactly:
 `SHOP_APPMMO_API_KEY`
 
 Set it for Production, Preview and Development as needed, then redeploy.
+
+## 2026-08 marketplace refinement
+- The customer storefront now mirrors the supplier shop's information architecture more closely: category sidebar, product list, live search, sorting, recent-order shortcut, payment/help shortcuts, right-side account/order panel, and detailed product modal.
+- Supplier product IDs/details remain dynamic; customer-facing names/categories use UziSeller localization rules.
+- SHOP product prices default to VND when the supplier response omits a currency, then convert using `VND_TO_MYR` and apply `SUBSCRIPTION_MARKUP_PERCENT`.
+- Customer prices never expose supplier cost.

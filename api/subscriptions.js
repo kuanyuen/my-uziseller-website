@@ -74,7 +74,7 @@ function normalizeProduct(p, index) {
     description: String(first(p,["description","desc","content","detail","details","product_description","productDescription","short_description","shortDescription","info","intro"],"")),
     icon: String(first(p,["icon","icon_url","iconUrl","image","image_url","imageUrl","logo","logo_url","thumbnail","thumb"],"")),
     price: rawPrice,
-    currency: String(first(p,["currency","unit","currency_code"],"USD")),
+    currency: String(first(p,["currency","unit","currency_code"],"VND")),
     min: Math.max(1,num(first(p,["min","minimum","min_amount","min_qty","min_quantity"],1),1)),
     max: Math.max(1,num(first(p,["max","maximum","max_amount","max_qty","max_quantity"],1),1)),
     raw:p
