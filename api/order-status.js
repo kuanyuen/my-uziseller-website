@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     status: "ok",
     order: {
       id: order.id,
-      name: order.name,
+      name: order.name || order.productName || "Order",
       quantity: order.quantity,
       priceMYR: order.priceMYR,
       status: order.status,

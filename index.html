@@ -1,119 +1,262 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Uziseller · APMMO API Test</title>
-<style>
-body{margin:0;background:#070611;color:#f7f5ff;font-family:Inter,Arial,sans-serif;padding:30px}
-.wrap{max-width:900px;margin:auto}.panel{border:1px solid #252139;background:#0f0c1e;border-radius:18px;padding:24px;margin:16px 0}
-h1{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-input,button{padding:12px;border-radius:10px;border:1px solid #34304a;background:#141126;color:white}
-input{min-width:220px}button{cursor:pointer;background:#6242e8;border-color:#7658ff;font-weight:700}
-pre{white-space:pre-wrap;word-break:break-word;background:#080711;padding:16px;border-radius:12px;min-height:120px}
-small{color:#aaa5c2}
-</style>
+<meta name="description" content="Uziseller — Digital Growth & Premium Services.">
+<title>Uziseller — Digital Growth & Premium Services</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap">
-  <div class="panel">
-    <h1>APMMO API 测试</h1>
-    <small>这个页面用于测试 API。API Key 不会放在浏览器里。</small>
-    <div class="row"><input id="password" type="password" placeholder="输入后台密码"><button onclick="savePassword()">保存</button></div>
-  </div>
-
-  <div class="panel">
-    <h3>1. 账户</h3>
-    <button onclick="run('profile')">获取余额 / 账户信息</button>
-  </div>
-
-  <div class="panel">
-    <h3>2. 商品</h3>
-    <button onclick="run('products')">获取商品列表</button>
-    <div class="row"><input id="product" placeholder="商品 ID，例如 3"><button onclick="product()">获取商品详情</button></div>
-  </div>
-
-  <div class="panel">
-    <h3>3. 查询订单</h3>
-    <div class="row"><input id="order" placeholder="供应商订单号"><button onclick="order()">查询订单</button></div>
-  </div>
-
-  <div class="panel">
-    <h3>4. 测试购买</h3>
-    <small>只有在你确认供应商商品 ID 和数量后才点击。会真实产生购买。</small>
-    <div class="row">
-      <input id="buyId" placeholder="商品 ID">
-      <input id="amount" placeholder="数量">
-      <input id="coupon" placeholder="优惠券（可留空）">
-      <button onclick="buy()">真实购买</button>
+<div class="noise"></div>
+<header class="nav">
+  <div class="nav-left">
+    <a class="brand" href="#top"><img src="assets/logo.svg" alt="Uziseller logo"><span>Uziseller</span></a>
+    <div class="switcher" id="currency-switcher">
+      <button data-currency="MYR" class="active">RM</button>
+      <button data-currency="CNY">¥</button>
+      <button data-currency="USD">$</button>
     </div>
   </div>
+  <nav>
+    <a href="#top" data-i18n="nav.home">Home</a><a href="#products" data-i18n="nav.products">Products</a>
+    <a class="nav-cta" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'm%20interested%20in%20your%20services." target="_blank" rel="noopener">WhatsApp</a>
+  </nav>
+</header>
 
-  <div class="panel">
-    <h3>5. 最近订单（Billplz付款 → 自动下单追踪）</h3>
-    <button onclick="loadOrders()">刷新订单列表</button>
-    <div id="ordersList" style="margin-top:14px;font-size:13px"></div>
+<div class="lang-float" id="lang-switcher" aria-label="Language">
+  <button data-lang="en" class="active">EN</button>
+  <button data-lang="zh">中文</button>
+</div>
+<!-- Google Website Translator: translates the whole visible page, including live SMM API text. -->
+<div id="google_translate_element" class="google-translate-hidden" aria-hidden="true"></div>
+
+<main id="top">
+
+<!-- ============ HOME ============ -->
+<section class="hero">
+  <div class="orb orb-a"></div><div class="orb orb-b"></div>
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="dot"></span> <span data-i18n="eyebrow.hero">UZISELLER · PREMIUM DIGITAL SERVICES</span></div>
+    <h1 data-i18n-html="hero.title">Built for Growth.<br><span>Powered by Trust.</span></h1>
+    <p class="lead" data-i18n="hero.lead">A complete digital-services ecosystem that saves you time and grows your revenue — AI accounts, premium subscriptions, and social-media growth tools, all in one place.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#products"><span data-i18n="hero.explore">Explore Products</span> <span>→</span></a>
+      <a class="btn ghost" href="#agent" data-i18n="hero.partner">Become a Partner</a>
+    </div>
+    <div class="mini-proof">
+      <div><strong data-i18n="hero.proof1t">Fast</strong><span data-i18n="hero.proof1s">Support & delivery</span></div>
+      <div><strong data-i18n="hero.proof2t">Flexible</strong><span data-i18n="hero.proof2s">Customer-first service</span></div>
+      <div><strong data-i18n="hero.proof3t">Growing</strong><span data-i18n="hero.proof3s">More products coming</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="glass-product">
+      <div class="google-mark">G</div>
+      <div class="product-kicker" data-i18n="hero.featured">FEATURED PRODUCT</div>
+      <h2 data-i18n-html="hero.productTitle">Google AI Pro<br><span>+ 5TB Google One</span></h2>
+      <div class="pill" data-i18n="hero.access">18-Month Access</div>
+      <div class="price-row"><span class="old" data-price-old="60">RM1,763.82</span><span class="save" data-i18n="hero.save">SAVE</span></div>
+      <div class="price" data-price="60">RM60</div>
+      <div class="small" data-i18n="hero.noHidden">One-time payment · No hidden fees</div>
+      <a class="btn primary wide" href="javascript:void(0)" onclick="UzTabs.goTo('gemini')" data-i18n="hero.orderWa">View & Order</a>
+    </div>
+  </div>
+</section>
+
+<section class="section about-section" id="about">
+  <div class="section-head center">
+    <span class="eyebrow" data-i18n="eyebrow.about">01 · WHAT WE DO</span>
+    <h2 data-i18n-html="about.title">A digital ecosystem<br><span>built to save you time.</span></h2>
+    <p data-i18n="about.lead">We use a complete digital-services ecosystem to optimize your time and grow your revenue — offering resources, AI accounts, and enhanced social-media engagement.</p>
   </div>
 
-  <div class="panel"><h3>API 返回</h3><pre id="out">等待操作…</pre></div>
-</div>
+  <div class="category-grid">
+    <article class="category-card">
+      <div class="category-icon">📦</div>
+      <h3 data-i18n="about.cat1title">Resources & AI Store</h3>
+      <p data-i18n="about.cat1lead">A comprehensive library of high-quality digital resources for work and content creation.</p>
+      <ul class="category-list">
+        <li data-i18n="about.cat1b1">Premium accounts (ChatGPT, Canva and more)</li>
+      </ul>
+      <a class="btn ghost wide" href="#products" onclick="UzTabs.goTo('subscriptions')" data-i18n="about.cat1cta">Browse Subscriptions →</a>
+    </article>
+
+    <article class="category-card">
+      <div class="category-icon">📈</div>
+      <h3 data-i18n="about.cat2title">Professional SMM Panel</h3>
+      <p data-i18n="about.cat2lead">Boost your brand's credibility and influence across social media platforms.</p>
+      <ul class="category-list">
+        <li data-i18n="about.cat2b1">Multi-platform (Facebook, TikTok, Instagram and more)</li>
+        <li data-i18n="about.cat2b2">Automated system — no delay, high security</li>
+        <li data-i18n="about.cat2b3">Ultra-low wholesale pricing for resellers</li>
+      </ul>
+      <a class="btn ghost wide" href="#products" onclick="UzTabs.goTo('smm')" data-i18n="about.cat2cta">Browse SMM Services →</a>
+    </article>
+  </div>
+</section>
+
+<section class="section why-section">
+  <div class="section-head center">
+    <span class="eyebrow" data-i18n="eyebrow.why">02 · WHY CHOOSE US</span>
+    <h2 data-i18n="why.title">Why choose us?</h2>
+    <p data-i18n="why.lead">We aim to offer some of the best service in the industry.</p>
+  </div>
+  <div class="bento-grid">
+    <div class="bento-card bento-wide">
+      <h3 data-i18n="why.c1t">Round-the-Clock Support</h3>
+      <p data-i18n="why.c1s">Our support team is ready to help you, whenever you need it.</p>
+      <div class="support-rows">
+        <div class="support-row"><span data-i18n="why.c1r1">WhatsApp live chat</span><span>+</span></div>
+        <div class="support-row highlight"><span data-i18n="why.c1r2">24/7 order support</span><span>+</span></div>
+        <div class="support-row"><span data-i18n="why.c1r3">Dedicated reseller support</span><span>+</span></div>
+      </div>
+    </div>
+    <div class="bento-card bento-visual">
+      <h3 data-i18n="why.c2t">Instant Delivery</h3>
+      <p data-i18n="why.c2s">Once purchased, your product is ready right away.</p>
+      <div class="bento-glyph">⚡</div>
+    </div>
+    <div class="bento-card">
+      <h3 data-i18n="why.c3t">Clear Instructions</h3>
+      <p data-i18n="why.c3s" class="link-text">Step-by-step guidance on how to use our products correctly.</p>
+    </div>
+    <div class="bento-card">
+      <h3 data-i18n="why.c4t">No Hidden Fees</h3>
+      <p data-i18n="why.c4s">Our pricing is simple and transparent — you only pay for the service you use.</p>
+    </div>
+    <div class="bento-card bento-stat">
+      <h3 data-i18n-html="why.statNumber">Growing daily</h3>
+      <p data-i18n="why.statLabel">Orders successfully delivered to happy customers and resellers.</p>
+    </div>
+  </div>
+</section>
+
+<section class="agent" id="agent">
+  <div class="agent-copy">
+    <span class="eyebrow" data-i18n="eyebrow.agent">03 · PARTNER PROGRAM</span>
+    <h2 data-i18n-html="agent.title">Build your business<br><span>with Uziseller.</span></h2>
+    <p data-i18n="agent.lead">We are building a partner-focused digital services platform. If you have customers, a community or a sales channel, talk to us about reseller cooperation.</p>
+    <div class="agent-points"><span data-i18n="agent.p1">✓ Partner pricing</span><span data-i18n="agent.p2">✓ Product support</span><span data-i18n="agent.p3">✓ Long-term cooperation</span></div>
+    <a class="btn primary" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'm%20interested%20in%20becoming%20a%20partner." target="_blank" rel="noopener" data-i18n="agent.cta">Become a Partner →</a>
+  </div>
+</section>
+
+<!-- ============ PRODUCTS ============ -->
+<section class="section products-section" id="products">
+  <div class="section-head center">
+    <span class="eyebrow" data-i18n="eyebrow.products">04 · PRODUCTS</span>
+    <h2 data-i18n="products.title">Products</h2>
+    <p data-i18n="products.lead">Browse, compare and order — everything your customers and resellers need in one place.</p>
+  </div>
+
+  <div class="products-tabs" id="products-tabs">
+    <button class="tab-btn active" data-tab="gemini" data-i18n="products.tab1">Google AI Pro</button>
+    <button class="tab-btn" data-tab="subscriptions" data-i18n="products.tab2">App Subscriptions</button>
+    <button class="tab-btn" data-tab="smm" data-i18n="products.tab3">SMM Panel</button>
+  </div>
+
+  <!-- Tab 1: Google AI Pro -->
+  <div class="tab-panel active" id="tab-gemini">
+    <div class="product-grid">
+      <div class="feature-panel">
+        <div class="big-icon">✦</div>
+        <h3 data-i18n="gemini.title">Google AI Pro + 5TB Google One</h3>
+        <div class="pill" data-i18n="gemini.badge">18-Month On-Mail Access</div>
+        <p data-i18n="gemini.desc">Instant 18-month access to Gemini 3.1 Pro AI + 5TB Google Drive storage. Use the provided trial link for auto-activation — no student ID required. Perfect starter option.</p>
+        <div class="feature-list">
+          <div><b data-i18n="gemini.f1t">18 months</b><span data-i18n="gemini.f1s">Access period stated for this offer</span></div>
+          <div><b data-i18n="gemini.f2t">5TB</b><span data-i18n="gemini.f2s">Google One storage included</span></div>
+          <div><b data-price="60">RM60</b><span data-i18n="gemini.f3s">Uziseller price</span></div>
+        </div>
+        <a class="btn primary wide" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'd%20like%20to%20order%20the%2018-month%20Google%20AI%20Pro%20%2B%205TB%20offer." target="_blank" rel="noopener" style="margin-top:20px" data-i18n="gemini.order">Order via WhatsApp</a>
+      </div>
+      <div class="feature-cards">
+        <article><span>01</span><h3 data-i18n="product.c1t">AI Productivity</h3><p data-i18n="product.c1s">Use premium AI capabilities for writing, research, coding and creative work.</p></article>
+        <article><span>02</span><h3 data-i18n="product.c2t">Cloud Storage</h3><p data-i18n="product.c2s">Large cloud storage for files, photos and other supported Google services.</p></article>
+        <article><span>03</span><h3 data-i18n="product.c3t">Your Own Account</h3><p data-i18n="product.c3s">The offer is presented as an activation link rather than a shared account.</p></article>
+        <article><span>04</span><h3 data-i18n="product.c4t">Simple Activation</h3><p data-i18n="product.c4s">Purchase → receive link → sign in → activate.</p></article>
+      </div>
+    </div>
+    <div class="notice"><strong data-i18n="steps.importantLabel">Important:</strong> <span data-i18n="steps.notice">The activation link for this offer is stated to be valid for 12 hours. Please use it promptly. Availability and feature eligibility may depend on the applicable offer and account/region.</span></div>
+  </div>
+
+  <!-- Tab 2: App Subscriptions -->
+  <div class="tab-panel" id="tab-subscriptions">
+    <div id="subscription-app" class="subscription-shop">
+      <div class="subscription-shop-head">
+        <div>
+          <div class="subscription-kicker" data-i18n="subs.shopKicker">APP SUBSCRIPTIONS</div>
+          <h3 data-i18n="subs.shopTitle">Choose your app, compare plans, and order</h3>
+          <p data-i18n="subs.shopLead">Live products from our supplier. Clear pricing, product details and fast checkout.</p>
+        </div>
+        <div class="subscription-search-wrap">
+          <span>⌕</span><input id="subscription-search" type="search" data-i18n-placeholder="subs.search" placeholder="Search products...">
+        </div>
+      </div>
+      <div id="subscription-status" class="subscription-status">Loading subscription products…</div>
+      <div class="subscription-catalog-head">
+        <div class="subscription-categories-block">
+          <div class="subscription-side-title" data-i18n="subs.categories">Categories</div>
+          <div id="subscription-categories" class="subscription-category-list"></div>
+        </div>
+        <div class="subscription-catalog-count"><strong data-i18n="subs.products">Products</strong><span id="subscription-result-count"></span></div>
+      </div>
+      <main class="subscription-main">
+        <div id="subscription-products" class="subscription-product-grid"></div>
+      </main>
+    </div>
+    <p class="tab-note" data-i18n="subs.note">Products are loaded live from the supplier API. Customer-facing prices include the 30% markup.</p>
+  </div>
+
+  <!-- Tab 3: SMM Panel (live catalogue) -->
+  <div class="tab-panel" id="tab-smm">
+    <p class="tab-note" data-i18n="smm.costNote">Customer prices include a 30% markup over supplier cost.</p>
+    <div id="smm-status" class="smm-status" data-i18n="smm.loading">Loading services…</div>
+    <div class="smm-search-row">
+      <div class="smm-search-wrap"><span aria-hidden="true">⌕</span><input id="smm-search" class="smm-search" type="search" autocomplete="off" data-i18n-placeholder="smm.search" placeholder="Search services…"></div>
+      <button id="smm-search-btn" class="smm-search-btn" type="button" data-i18n="smm.searchBtn">Search</button>
+      <button id="smm-clear-btn" class="smm-clear-btn" type="button" data-i18n="smm.clear">Clear</button>
+    </div>
+    <div id="smm-platforms" class="smm-categories"></div>
+    <div id="smm-services" class="smm-services"></div>
+    <button id="smm-load-more" class="btn ghost wide smm-load-more" type="button" data-i18n="smm.loadMore">Load more services</button>
+  </div>
+</section>
+
+<section class="marquee"><div data-i18n="marquee.1">AI SERVICES</div><div data-i18n="marquee.2">☁ 5TB STORAGE</div><div data-i18n="marquee.3">⚡ FAST SUPPORT</div><div data-i18n="marquee.4">🤝 PARTNER PROGRAM</div><div data-i18n="marquee.1b">AI SERVICES</div></section>
+
+<section class="contact">
+  <span class="eyebrow" data-i18n="eyebrow.contact">05 · CONTACT</span><h2 data-i18n="contact.title">Let's grow together.</h2><p data-i18n="contact.lead">Questions, orders or partnership enquiries — reach us directly.</p>
+  <div class="contact-actions">
+    <a class="contact-item" href="https://wa.me/601163630234" target="_blank" rel="noopener"><small data-i18n="contact.waLabel">WHATSAPP</small><strong>011 6363 0234</strong></a>
+    <a class="contact-item" href="weixin://dl/chat?UziShopeeseller"><small data-i18n="contact.wcLabel">WECHAT</small><strong>UziShopeeseller</strong></a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="footer-brand"><img src="assets/logo.svg" alt=""><strong>Uziseller</strong><span data-i18n="footer.tag1">Digital Growth & Premium Services</span></div>
+  <div class="footer-tag" data-i18n="footer.tag2">Built for Growth. Powered by Trust.</div>
+  <div class="copyright" data-i18n="footer.copyright">© 2026 Uziseller. All rights reserved.</div>
+</footer>
+<script src="i18n.js"></script>
 <script>
-function pwd(){return sessionStorage.getItem("uz_admin_password")||document.getElementById("password").value}
-function savePassword(){sessionStorage.setItem("uz_admin_password",document.getElementById("password").value);out("后台密码已保存到本次浏览器会话。")}
-function out(x){document.getElementById("out").textContent=typeof x==="string"?x:JSON.stringify(x,null,2)}
-async function req(url,opt={}){
-  opt.headers=Object.assign({},opt.headers||{},{"x-admin-password":pwd()});
-  const r=await fetch(url,opt); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j=t}
-  out(j); return j;
-}
-function run(a){return req("/api/apmmo?action="+encodeURIComponent(a))}
-function product(){return req("/api/apmmo?action=product&product="+encodeURIComponent(document.getElementById("product").value))}
-function order(){return req("/api/apmmo?action=order&order="+encodeURIComponent(document.getElementById("order").value))}
-function buy(){
-  if(!confirm("这会真实调用供应商购买接口并产生订单。确定继续吗？")) return;
-  return req("/api/apmmo?action=buy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-    ID:document.getElementById("buyId").value,
-    Amount:document.getElementById("amount").value,
-    Coupon:document.getElementById("coupon").value
-  })})
-}
-
-const STATUS_LABEL = {
-  pending_payment: "待付款",
-  paid: "已付款",
-  processing: "处理中（已发给供应商）",
-  payment_failed: "付款失败",
-  needs_manual_review: "⚠️ 需人工处理"
-};
-const STATUS_COLOR = {
-  pending_payment: "#f5bb4d",
-  paid: "#7bffa0",
-  processing: "#7bffa0",
-  payment_failed: "#ff6e82",
-  needs_manual_review: "#ff6e82"
-};
-
-async function loadOrders(){
-  const r = await req("/api/admin-orders");
-  const box = document.getElementById("ordersList");
-  if (!r.orders || !r.orders.length) { box.innerHTML = "<small>暂无订单</small>"; return; }
-  box.innerHTML = `<table style="width:100%;border-collapse:collapse">
-    <tr style="text-align:left;color:#aaa5c2">
-      <th style="padding:6px">时间</th><th>服务</th><th>数量</th><th>金额(RM)</th>
-      <th>状态</th><th>供应商订单号</th><th>邮箱</th>
-    </tr>
-    ${r.orders.map(o => `
-      <tr style="border-top:1px solid #201c33">
-        <td style="padding:6px">${new Date(o.createdAt).toLocaleString()}</td>
-        <td>${o.name || o.service}</td>
-        <td>${o.quantity}</td>
-        <td>${Number(o.priceMYR).toFixed(2)}</td>
-        <td style="color:${STATUS_COLOR[o.status]||'#fff'}">${STATUS_LABEL[o.status]||o.status}</td>
-        <td>${o.supplierOrderId || (o.supplierError ? '错误: '+o.supplierError : '—')}</td>
-        <td>${o.email||''}</td>
-      </tr>`).join("")}
-  </table>`;
-}
+  function googleTranslateElementInit(){
+    if (!window.google || !google.translate) return;
+    new google.translate.TranslateElement({
+      pageLanguage: "auto",
+      includedLanguages: "zh-CN,en,vi",
+      autoDisplay: false,
+      multilanguagePage: true
+    }, "google_translate_element");
+  }
 </script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="tabs.js"></script>
+<script src="order-modal.js"></script>
+<script src="script.js"></script>
+<script src="subscriptions.js"></script>
 </body>
 </html>

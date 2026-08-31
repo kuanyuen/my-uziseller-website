@@ -42,6 +42,9 @@ export default async function handler(req, res) {
 
   order.status = "paid";
   order.paidAt = new Date().toISOString();
+  // Persist before calling the supplier. Billplz retries callbacks if the
+  // handler is slow; saving here prevents duplicate supplier orders.
+  await saveOrder(order);
 
   try {
     if (order.type === "subscription") {
