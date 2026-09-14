@@ -1,4 +1,4 @@
-const APMMO_BASE = "https://shop.appmmo.com/api";
+const APMMO_BASE = process.env.SHOP_APMMO_BASE || "https://shop.appmmo.com/api";
 
 function json(res, status, body) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
@@ -12,8 +12,8 @@ function auth(req) {
 }
 
 async function callUpstream(path, options = {}) {
-  const apiKey = process.env.APMMO_API_KEY;
-  if (!apiKey) throw new Error("APMMO_API_KEY is not configured");
+  const apiKey = process.env.SHOP_APMMO_API_KEY;
+  if (!apiKey) throw new Error("SHOP_APMMO_API_KEY is not configured");
 
   const url = new URL(APMMO_BASE + path);
   if (options.params) {
@@ -48,12 +48,12 @@ export default async function handler(req, res) {
     const action = String(req.query.action || "");
 
     if (req.method === "GET" && action === "profile") {
-      const r = await callUpstream("/profile.php", { params: { api_key: process.env.APMMO_API_KEY }});
+      const r = await callUpstream("/profile.php", { params: { api_key: process.env.SHOP_APMMO_API_KEY }});
       return json(res, r.httpStatus, r.data);
     }
 
     if (req.method === "GET" && action === "products") {
-      const r = await callUpstream("/products.php", { params: { api_key: process.env.APMMO_API_KEY }});
+      const r = await callUpstream("/products.php", { params: { api_key: process.env.SHOP_APMMO_API_KEY }});
       return json(res, r.httpStatus, r.data);
     }
 
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       const product = req.query.product;
       if (!product) return json(res, 400, { status: "error", msg: "Missing product" });
       const r = await callUpstream("/product.php", {
-        params: { api_key: process.env.APMMO_API_KEY, product }
+        params: { api_key: process.env.SHOP_APMMO_API_KEY, product }
       });
       return json(res, r.httpStatus, r.data);
     }
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
       const order = req.query.order;
       if (!order) return json(res, 400, { status: "error", msg: "Missing order" });
       const r = await callUpstream("/order.php", {
-        params: { api_key: process.env.APMMO_API_KEY, order }
+        params: { api_key: process.env.SHOP_APMMO_API_KEY, order }
       });
       return json(res, r.httpStatus, r.data);
     }
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
           ID,
           Amount,
           Coupon,
-          api_key: process.env.APMMO_API_KEY
+          api_key: process.env.SHOP_APMMO_API_KEY
         }
       });
       return json(res, r.httpStatus, r.data);

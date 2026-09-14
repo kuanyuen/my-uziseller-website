@@ -36,6 +36,7 @@ const num = (v, fallback=0) => {
   const n=Number(String(v ?? "").replace(/[^0-9.\-]/g,""));
   return Number.isFinite(n) ? n : fallback;
 };
+const isAdmin = (req) => !!process.env.ADMIN_PASSWORD && req.headers["x-admin-password"] === process.env.ADMIN_PASSWORD;
 
 // APPMMO has used a few response shapes over time. Walk the response instead of
 // assuming that products are always data[] or products[].
@@ -67,6 +68,14 @@ function collectProducts(node, inheritedCategory="", out=[]) {
 function normalizeProduct(p, index) {
   const id = String(first(p,["id","ID","product_id","productId"], index+1));
   const rawPrice = num(first(p,["price","Price","selling_price","sale_price","cost","amount","unit_price"],0));
+  const currency = String(first(p,["currency","unit","currency_code"],"VND")).toUpperCase();
+  const vndToMyr = Number(process.env.SHOP_VND_TO_MYR_RATE || process.env.VND_TO_MYR_RATE || process.env.VND_TO_MYR || 0.000156);
+  const usdToMyr = Number(process.env.SHOP_USD_TO_MYR_RATE || process.env.USD_TO_MYR_RATE || process.env.USD_TO_MYR || 4.04);
+  const cnyToMyr = Number(process.env.SHOP_CNY_TO_MYR_RATE || process.env.CNY_TO_MYR_RATE || process.env.CNY_TO_MYR || 0.60);
+  const markupPercent = Number(process.env.SUBSCRIPTION_MARKUP_PERCENT || 30);
+  const rates = { MYR: 1, VND: vndToMyr, USD: usdToMyr, CNY: cnyToMyr };
+  const basePriceMYR = rawPrice * (rates[currency] || rates.VND);
+  const markedMyr = Math.round(basePriceMYR * (1 + markupPercent / 100) * 100) / 100;
   return {
     id,
     name: String(first(p,["name","title","product_name","productName"],`Product ${id}`)),
@@ -74,7 +83,14 @@ function normalizeProduct(p, index) {
     description: String(first(p,["description","desc","content","detail","details","product_description","productDescription","short_description","shortDescription","info","intro"],"")),
     icon: String(first(p,["icon","icon_url","iconUrl","image","image_url","imageUrl","logo","logo_url","thumbnail","thumb"],"")),
     price: rawPrice,
-    currency: String(first(p,["currency","unit","currency_code"],"VND")),
+    currency,
+    basePriceMYR: Math.round(basePriceMYR * 100) / 100,
+    markupPercent,
+    prices: {
+      MYR: markedMyr,
+      USD: Math.round((markedMyr / usdToMyr) * 100) / 100,
+      CNY: Math.round((markedMyr / cnyToMyr) * 100) / 100
+    },
     min: Math.max(1,num(first(p,["min","minimum","min_amount","min_qty","min_quantity"],1),1)),
     max: Math.max(1,num(first(p,["max","maximum","max_amount","max_qty","max_quantity"],1),1)),
     raw:p
@@ -114,9 +130,7 @@ export default async function handler(req,res) {
 
     if (action === "profile") {
       // Supplier account/balance is admin-only. Never expose this to customers.
-      const key = process.env.SHOP_APMMO_API_KEY;
-      const password = req.headers["x-admin-password"];
-      if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+      if (!isAdmin(req)) {
         return json(res, 401, { status: "error", msg: "Unauthorized" });
       }
       const r = await upstream("/profile.php");
@@ -124,6 +138,9 @@ export default async function handler(req,res) {
     }
 
     if (action === "order") {
+      if (!isAdmin(req)) {
+        return json(res, 401, { status: "error", msg: "Unauthorized" });
+      }
       const ref = String(req.query.order || req.query.trans_id || "").trim();
       if (!ref) return json(res,400,{status:"error",msg:"Missing order reference"});
       const firstTry = await upstream("/order.php", { trans_id: ref });

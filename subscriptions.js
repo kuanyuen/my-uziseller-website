@@ -66,15 +66,13 @@
 
   let products=[],active='ALL',activeCategory='ALL',query='',sort='default',visibleLimit=24;
   function priceFor(p,qty=1){
-    const supplierCur=String(p.currency||'VND').toUpperCase();
-    const r=rates[supplierCur]||rates.VND;
-    const myr=num(p.price,0)*r*(1+Number(window.SUBSCRIPTION_MARKUP_PERCENT||30)/100)*qty;
     const cur=currency();
-    const out=cur==='MYR'?myr:cur==='USD'?myr/rates.USD:myr/rates.CNY;
-    return `${cur==='MYR'?'RM':cur==='USD'?'$':'¥'}${out.toLocaleString(cur==='CNY'?'zh-CN':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    const per=p?.prices?.[cur] ?? p?.prices?.MYR ?? 0;
+    const total=per*qty;
+    return `${cur==='MYR'?'RM':cur==='USD'?'$':'¥'}${total.toLocaleString(cur==='CNY'?'zh-CN':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   }
   function iconFor(p){const raw=first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],first(p.raw||{},['icon','icon_url','image','image_url','logo','thumbnail'],'')); return raw?`<img src="${esc(raw)}" alt="" loading="lazy" onerror="this.remove()">`:`<span>${esc((localize(p.name)||'P').trim().slice(0,1).toUpperCase())}</span>`;}
-  const normalize=p=>({id:String(first(p,['id','ID','product_id','productId'],'')),name:String(first(p,['name','title','product_name','productName'],'Product')),category:String(first(p,['category','category_name','categoryName','group','group_name'],'Other')),description:String(first(p,['description','desc','content','detail','details','product_description','productDescription','short_description','shortDescription','info','intro'],'')),icon:String(first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],'')),price:num(first(p,['price','Price','selling_price','sale_price','cost','amount','unit_price'],0)),currency:String(first(p,['currency','currency_code','unit'],'VND')).toUpperCase(),min:Math.max(1,num(first(p,['min','minimum','min_amount','min_qty','min_quantity'],1),1)),max:Math.max(1,num(first(p,['max','maximum','max_amount','max_qty','max_quantity'],1),1)),stock:first(p,['stock','inventory','available','quantity_available','qty'],''),raw:p,group:groupFor(p)});
+  const normalize=p=>({id:String(first(p,['id','ID','product_id','productId'],'')),name:String(first(p,['name','title','product_name','productName'],'Product')),category:String(first(p,['category','category_name','categoryName','group','group_name'],'Other')),description:String(first(p,['description','desc','content','detail','details','product_description','productDescription','short_description','shortDescription','info','intro'],'')),icon:String(first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],'')),price:num(first(p,['price','Price','selling_price','sale_price','cost','amount','unit_price'],0)),prices:first(p,['prices'],null),currency:String(first(p,['currency','currency_code','unit'],'VND')).toUpperCase(),min:Math.max(1,num(first(p,['min','minimum','min_amount','min_qty','min_quantity'],1),1)),max:Math.max(1,num(first(p,['max','maximum','max_amount','max_qty','max_quantity'],1),1)),stock:first(p,['stock','inventory','available','quantity_available','qty'],''),raw:p,group:groupFor(p)});
 
   function savedOrderIds(){try{return JSON.parse(localStorage.getItem('uz_order_ids')||'[]').filter(Boolean)}catch{return []}}
   function renderShell(){

@@ -15,7 +15,7 @@ async function getProduct(id){
 function num(v,fb=0){const n=Number(String(v).replace(/[^0-9.\-]/g,""));return Number.isFinite(n)?n:fb}
 function priceOf(p){return num(p?.price ?? p?.Price ?? p?.selling_price ?? p?.sale_price ?? p?.cost ?? p?.amount,0)}
 function currencyOf(p){return String(p?.currency||p?.unit||"VND").toUpperCase()}
-function toMyr(amount,currency){const rates={MYR:1,VND:Number(process.env.VND_TO_MYR||0.000156),USD:Number(process.env.USD_TO_MYR||4.04),CNY:Number(process.env.CNY_TO_MYR||0.60)};return amount*(rates[currency]||1)}
+function toMyr(amount,currency){const rates={MYR:1,VND:Number(process.env.SHOP_VND_TO_MYR_RATE||process.env.VND_TO_MYR_RATE||process.env.VND_TO_MYR||0.000156),USD:Number(process.env.SHOP_USD_TO_MYR_RATE||process.env.USD_TO_MYR_RATE||process.env.USD_TO_MYR||4.04),CNY:Number(process.env.SHOP_CNY_TO_MYR_RATE||process.env.CNY_TO_MYR_RATE||process.env.CNY_TO_MYR||0.60)};return amount*(rates[currency]||1)}
 export default async function handler(req,res){
   if(req.method!=="POST") return json(res,405,{status:"error",msg:"Method not allowed"});
   try{
