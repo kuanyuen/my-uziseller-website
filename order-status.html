@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order Status — Uziseller</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<style>
+.status-wrap{max-width:520px;margin:80px auto;padding:0 20px}
+.status-panel{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:22px;padding:36px}
+.status-badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:13px;font-weight:700;margin:12px 0}
+.status-pending_payment{background:rgba(245,187,77,.15);color:#f5bb4d}
+.status-paid,.status-processing{background:rgba(123,255,160,.12);color:#7bffa0}
+.status-payment_failed,.status-needs_manual_review{background:rgba(255,110,130,.12);color:#ff6e82}
+.status-hint{color:var(--muted);font-size:13px;margin-top:6px}
+
+.delivery-box{margin-top:22px;padding:18px;border:1px solid #b9a9ff;background:linear-gradient(135deg,rgba(115,80,255,.10),rgba(72,173,238,.07));border-radius:14px}.delivery-box h3{margin:0 0 6px;font-size:18px}.delivery-item{display:flex;gap:12px;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}.delivery-index{font-weight:800;color:#8c79ef;min-width:28px}.delivery-values{flex:1}.delivery-field{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.delivery-field:last-child{border-bottom:0}.delivery-field span{font-size:11px;color:var(--muted)}.delivery-field code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;color:var(--text,#fff)}.copy-delivery{border:1px solid #8d79ef;background:transparent;color:inherit;border-radius:7px;padding:5px 9px;cursor:pointer;font-size:11px}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<header class="nav">
+  <a class="brand" href="index.html#top"><img src="assets/logo.svg" alt="Uziseller logo"><span>Uziseller</span></a>
+</header>
+<div class="status-wrap">
+  <div class="status-panel" id="app"></div>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const orderId = params.get('order');
+const app = document.getElementById('app');
+const lang = localStorage.getItem('uz_lang') || 'en';
+const savedIds = (() => { try { return JSON.parse(localStorage.getItem('uz_order_ids')||'[]'); } catch { return []; } })();
+
+const LABELS = {
+  pending_payment: { en: 'Waiting for payment confirmation…', zh: '等待付款确认中…' },
+  paid: { en: 'Payment received — sending your order to the supplier…', zh: '已收到付款——正在提交订单给供应商…' },
+  processing: { en: 'Processing — order sent to supplier', zh: '处理中——订单已发送给供应商' },
+  payment_failed: { en: 'Payment failed', zh: '付款失败' },
+  needs_manual_review: { en: "We're reviewing your order — we'll follow up shortly", zh: '我们正在核实您的订单，稍后会与您联系' },
+  completed: { en: 'Completed', zh: '已完成' },
+  partial: { en: 'Partially completed', zh: '部分完成' },
+  partial_supplier_submission: { en: 'Partially sent to supplier — being reviewed', zh: '部分已提交供应商——正在核实' },
+  supplier_issue: { en: 'Supplier returned an issue — support is reviewing', zh: '供应商返回异常——客服正在处理' }
+};
+const TXT = {
+  loading: { en: 'Loading your order…', zh: '正在加载订单…' },
+  noOrder: { en: 'No order specified.', zh: '未指定订单。' },
+  notFound: { en: 'Order not found.', zh: '未找到该订单。' },
+  quantity: { en: 'Quantity', zh: '数量' },
+  total: { en: 'Total', zh: '总额' },
+  supplierRef: { en: 'Supplier order ref', zh: '供应商订单号' },
+  supplierTxn: { en: 'Supplier transaction', zh: '供应商交易号' },
+  links: { en: 'Target links', zh: '目标链接数量' },
+  schedule: { en: 'Scheduled', zh: '预约时间' },
+  dripfeed: { en: 'Dripfeed', zh: 'Dripfeed' },
+  orderId: { en: 'Order ID', zh: '订单编号' },
+  back: { en: '← Back to store', zh: '← 返回商店' },
+  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' },
+  delivery: { en: 'Digital delivery', zh: '数字商品交付' },
+  deliveryHint: { en: 'Your purchased item is ready below. Keep this page or save the information securely.', zh: '您购买的商品已准备好，请在下方查看。建议妥善保存这些资料。' },
+  copy: { en: 'Copy', zh: '复制' },
+  copied: { en: 'Copied', zh: '已复制' },
+  unavailable: { en: 'Delivery data is not available yet.', zh: '交付资料暂时还没有返回。' }
+
+};
+function tt(key){ return TXT[key][lang] || TXT[key].en; }
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadHistory(){
+  if(orderId || !savedIds.length) return false;
+  app.innerHTML = `<h2 style="margin-top:0">${lang==='zh'?'我的订单':'My orders'}</h2><p class="status-hint">${lang==='zh'?'此设备浏览器保存的订单记录':'Orders saved in this browser on this device.'}</p><div id="history"></div><p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>`;
+  const history=document.getElementById('history');
+  const rows=[];
+  for(const id of savedIds.slice(0,20)){
+    try{const r=await fetch('/api/order-status?id='+encodeURIComponent(id));const j=await r.json();if(j.status==='ok'){const o=j.order;rows.push(`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><a href="order-status.html?order=${encodeURIComponent(o.id)}">${esc(o.name)}</a><div class="status-hint">${esc(o.id)} · ${esc(String(o.status))} · RM${Number(o.priceMYR||0).toFixed(2)}</div></div>`);}}catch{}
+  }
+  history.innerHTML=rows.join('')||`<p>${lang==='zh'?'暂时没有可显示的订单。':'No saved orders to show.'}</p>`;
+  return true;
+}
+app.innerHTML = `<p>${tt('loading')}</p>`;
+
+async function load(){
+  if (!orderId) { if(await loadHistory()) return; app.innerHTML = `<p>${tt('noOrder')}</p>`; return; }
+  try {
+    const r = await fetch('/api/order-status?id=' + encodeURIComponent(orderId));
+    const j = await r.json();
+    if (j.status !== 'ok') { app.innerHTML = `<p>${tt('notFound')}</p>`; return; }
+    const o = j.order;
+    const label = LABELS[o.status] ? (LABELS[o.status][lang] || LABELS[o.status].en) : o.status;
+    const delivery = Array.isArray(o.deliveryData) ? o.deliveryData : [];
+    const deliveryHtml = o.deliveryAvailable && delivery.length
+      ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('deliveryHint')}</p>${delivery.map((row,idx)=>{const fields=Array.isArray(row?.fields)?row.fields:[String(row?.raw??row??'')]; return `<div class="delivery-item"><div class="delivery-index">#${idx+1}</div><div class="delivery-values">${fields.map((v,i)=>`<div class="delivery-field"><span>${fields.length>1 ? (lang==='zh'?`字段 ${i+1}`:`Field ${i+1}`) : (lang==='zh'?'内容':'Value')}</span><code>${esc(v)}</code><button class="copy-delivery" data-copy="${esc(v)}">${tt('copy')}</button></div>`).join('')}</div></div>`;}).join('')}</div>`
+      : (o.status === 'completed' && o.name && /subscription|digital|app/i.test(String(o.type||'')+' '+String(o.name||'')) ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('unavailable')}</p></div>` : '');
+    app.innerHTML = `
+      <h2 style="margin-top:0">${esc(o.name)}</h2>
+      <p>${tt('quantity')}: ${Number(o.quantity||0).toLocaleString()}</p>
+      <p>${tt('links')}: ${Number(o.linksCount||1)}</p>
+      <p>${tt('total')}: RM${Number(o.priceMYR).toFixed(2)}</p>
+      ${o.schedule ? `<p>${tt('schedule')}: ${esc(o.schedule)}</p>` : ''}
+      ${o.dripfeed ? `<p>${tt('dripfeed')}: Yes</p>` : ''}
+      <span class="status-badge status-${esc(o.status)}">${esc(label)}</span>
+      ${o.supplierOrderId ? `<p class="status-hint">${tt('supplierRef')}: ${esc(o.supplierOrderId)}</p>` : ''}
+      ${o.supplierTransactionId ? `<p class="status-hint">${tt('supplierTxn')}: ${esc(o.supplierTransactionId)}</p>` : ''}
+      ${o.supplierOrderStatus ? `<p class="status-hint">Supplier status: ${esc(String(o.supplierOrderStatus))}</p>` : ''}
+      <p class="status-hint">${tt('orderId')}: ${esc(o.id)}</p>
+      ${deliveryHtml}
+      <p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>
+    `;
+    document.querySelectorAll('.copy-delivery').forEach((btn)=>btn.onclick=async()=>{const value=btn.dataset.copy||''; try{await navigator.clipboard.writeText(value);}catch{const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();} const original=btn.textContent;btn.textContent=tt('copied');setTimeout(()=>btn.textContent=original,1200);});
+    if (['pending_payment','paid','processing','partial_supplier_submission','partial'].includes(o.status)) {
+      setTimeout(load, 5000);
+    }
+  } catch(e) {
+    app.innerHTML = `<p>${tt('couldNotLoad')}</p>`;
+  }
+}
+load();
+</script>
+</body>
+</html>
