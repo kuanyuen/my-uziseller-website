@@ -3,118 +3,242 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Order Status — Uziseller</title>
+<title>Order Status & Card Delivery — Uziseller</title>
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 <style>
-.status-wrap{max-width:520px;margin:80px auto;padding:0 20px}
-.status-panel{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:22px;padding:36px}
+.status-wrap{max-width:640px;margin:50px auto 80px;padding:0 20px}
+.status-panel{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:22px;padding:32px;box-shadow:0 20px 40px rgba(0,0,0,.3)}
 .status-badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:13px;font-weight:700;margin:12px 0}
 .status-pending_payment{background:rgba(245,187,77,.15);color:#f5bb4d}
 .status-paid,.status-processing{background:rgba(123,255,160,.12);color:#7bffa0}
+.status-completed{background:rgba(123,255,160,.2);color:#7bffa0;border:1px solid rgba(123,255,160,.4)}
 .status-payment_failed,.status-needs_manual_review{background:rgba(255,110,130,.12);color:#ff6e82}
 .status-hint{color:var(--muted);font-size:13px;margin-top:6px}
 
-.delivery-box{margin-top:22px;padding:18px;border:1px solid #b9a9ff;background:linear-gradient(135deg,rgba(115,80,255,.10),rgba(72,173,238,.07));border-radius:14px}.delivery-box h3{margin:0 0 6px;font-size:18px}.delivery-item{display:flex;gap:12px;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}.delivery-index{font-weight:800;color:#8c79ef;min-width:28px}.delivery-values{flex:1}.delivery-field{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.delivery-field:last-child{border-bottom:0}.delivery-field span{font-size:11px;color:var(--muted)}.delivery-field code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;color:var(--text,#fff)}.copy-delivery{border:1px solid #8d79ef;background:transparent;color:inherit;border-radius:7px;padding:5px 9px;cursor:pointer;font-size:11px}
+/* Search Box */
+.lookup-form{display:flex;gap:8px;margin-bottom:24px}
+.lookup-input{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;border-radius:10px;padding:10px 14px;font-size:14px;outline:0}
+.lookup-input:focus{border-color:var(--brand,#6366f1)}
+.lookup-btn{border:0;background:var(--brand,#6366f1);color:#fff;font-weight:700;padding:10px 18px;border-radius:10px;cursor:pointer}
+
+/* Delivery Card */
+.delivery-box{margin-top:22px;padding:20px;border:1px solid #10b981;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(6,78,59,.1));border-radius:14px}
+.delivery-box h3{margin:0 0 6px;font-size:18px;color:#7bffa0}
+.delivery-item{display:flex;gap:12px;margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(0,0,0,.3)}
+.delivery-index{font-weight:800;color:#7bffa0;min-width:28px}
+.delivery-values{flex:1}
+.delivery-field{display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.delivery-field:last-child{border-bottom:0}
+.delivery-field span{font-size:11px;color:var(--muted)}
+.delivery-field code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;color:#fff;background:rgba(255,255,255,.08);padding:3px 6px;border-radius:4px}
+.copy-delivery{border:1px solid #10b981;background:rgba(16,185,129,.2);color:#7bffa0;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:11px;font-weight:700}
+.copy-delivery:hover{background:#10b981;color:#000}
 </style>
 </head>
 <body>
 <div class="noise"></div>
 <header class="nav">
   <a class="brand" href="index.html#top"><img src="assets/logo.svg" alt="Uziseller logo"><span>Uziseller</span></a>
+  <nav>
+    <a href="index.html#products">Browse Products</a>
+    <a href="https://wa.me/601163630234" target="_blank" rel="noopener">WhatsApp Support</a>
+  </nav>
 </header>
 <div class="status-wrap">
-  <div class="status-panel" id="app"></div>
+  <div class="status-panel">
+    <!-- 快速搜索框 -->
+    <form class="lookup-form" id="lookupForm">
+      <input class="lookup-input" id="lookupInput" type="text" placeholder="输入订单编号 (Order ID) 快速查询" autocomplete="off">
+      <button class="lookup-btn" type="submit">查询</button>
+    </form>
+
+    <div id="app"></div>
+  </div>
 </div>
+
 <script>
 const params = new URLSearchParams(location.search);
-const orderId = params.get('order');
+let orderId = params.get('order');
 const app = document.getElementById('app');
-const lang = localStorage.getItem('uz_lang') || 'en';
+const lookupForm = document.getElementById('lookupForm');
+const lookupInput = document.getElementById('lookupInput');
+const lang = localStorage.getItem('uz_lang') || 'zh';
 const savedIds = (() => { try { return JSON.parse(localStorage.getItem('uz_order_ids')||'[]'); } catch { return []; } })();
+
+if (orderId) lookupInput.value = orderId;
+
+lookupForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const val = lookupInput.value.trim();
+  if (val) {
+    history.pushState(null, '', `order-status.html?order=${encodeURIComponent(val)}`);
+    orderId = val;
+    load();
+  }
+});
 
 const LABELS = {
   pending_payment: { en: 'Waiting for payment confirmation…', zh: '等待付款确认中…' },
-  paid: { en: 'Payment received — sending your order to the supplier…', zh: '已收到付款——正在提交订单给供应商…' },
-  processing: { en: 'Processing — order sent to supplier', zh: '处理中——订单已发送给供应商' },
-  payment_failed: { en: 'Payment failed', zh: '付款失败' },
-  needs_manual_review: { en: "We're reviewing your order — we'll follow up shortly", zh: '我们正在核实您的订单，稍后会与您联系' },
-  completed: { en: 'Completed', zh: '已完成' },
-  partial: { en: 'Partially completed', zh: '部分完成' },
-  partial_supplier_submission: { en: 'Partially sent to supplier — being reviewed', zh: '部分已提交供应商——正在核实' },
-  supplier_issue: { en: 'Supplier returned an issue — support is reviewing', zh: '供应商返回异常——客服正在处理' }
+  paid: { en: 'Payment received — sending your order to supplier…', zh: '已收到付款——系统正在全自动采购与提交…' },
+  processing: { en: 'Processing — order sent to supplier', zh: '正在处理——订单已自动提交给上游' },
+  payment_failed: { en: 'Payment failed', zh: '付款未成功' },
+  needs_manual_review: { en: "We're reviewing your order — we'll follow up shortly", zh: '系统正在核实订单，稍后将自动重试或人工补发' },
+  completed: { en: 'Completed — Ready for Delivery', zh: '✅ 已完成 —— 卡密/服务已全自动交付' },
+  partial: { en: 'Partially completed', zh: '部分已完成' },
+  partial_supplier_submission: { en: 'Partially sent to supplier', zh: '部分已提交上游' },
+  supplier_issue: { en: 'Supplier returned an issue', zh: '上游返回异常' }
 };
-const TXT = {
-  loading: { en: 'Loading your order…', zh: '正在加载订单…' },
-  noOrder: { en: 'No order specified.', zh: '未指定订单。' },
-  notFound: { en: 'Order not found.', zh: '未找到该订单。' },
-  quantity: { en: 'Quantity', zh: '数量' },
-  total: { en: 'Total', zh: '总额' },
-  supplierRef: { en: 'Supplier order ref', zh: '供应商订单号' },
-  supplierTxn: { en: 'Supplier transaction', zh: '供应商交易号' },
-  links: { en: 'Target links', zh: '目标链接数量' },
-  schedule: { en: 'Scheduled', zh: '预约时间' },
-  dripfeed: { en: 'Dripfeed', zh: 'Dripfeed' },
-  orderId: { en: 'Order ID', zh: '订单编号' },
-  back: { en: '← Back to store', zh: '← 返回商店' },
-  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' },
-  delivery: { en: 'Digital delivery', zh: '数字商品交付' },
-  deliveryHint: { en: 'Your purchased item is ready below. Keep this page or save the information securely.', zh: '您购买的商品已准备好，请在下方查看。建议妥善保存这些资料。' },
-  copy: { en: 'Copy', zh: '复制' },
-  copied: { en: 'Copied', zh: '已复制' },
-  unavailable: { en: 'Delivery data is not available yet.', zh: '交付资料暂时还没有返回。' }
 
+const TXT = {
+  loading: { en: 'Loading your order…', zh: '正在加载订单详情与卡密…' },
+  noOrder: { en: 'Enter an Order ID above or select from your recent history.', zh: '请在上方输入订单号，或查看下方的近期订单。' },
+  notFound: { en: 'Order not found. Please double-check your Order ID.', zh: '未找到该订单，请核对订单编号。' },
+  quantity: { en: 'Quantity', zh: '数量' },
+  total: { en: 'Total', zh: '总金额' },
+  supplierRef: { en: 'Supplier Order Ref', zh: '上游订单号' },
+  supplierTxn: { en: 'Supplier Transaction', zh: '上游交易单号' },
+  links: { en: 'Target Links', zh: '目标链接数' },
+  orderId: { en: 'Order ID', zh: '订单编号' },
+  back: { en: '← Back to store', zh: '← 返回商品首页' },
+  couldNotLoad: { en: 'Could not load order status. Please refresh.', zh: '无法加载订单状态，请刷新页面。' },
+  delivery: { en: '🔑 Instant Digital Delivery / Account Credentials', zh: '🔑 全自动卡密交付结果 / 账号信息' },
+  deliveryHint: { en: 'Your purchased credentials/links are ready below. Please save them immediately.', zh: '您的卡密或激活信息已自动出库，请即刻保存。' },
+  copy: { en: 'Copy', zh: '复制' },
+  copied: { en: 'Copied!', zh: '已复制！' },
+  historyTitle: { en: 'Recent Orders (This Device)', zh: '本设备最近的购买记录' }
 };
+
 function tt(key){ return TXT[key][lang] || TXT[key].en; }
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function esc(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 async function loadHistory(){
-  if(orderId || !savedIds.length) return false;
-  app.innerHTML = `<h2 style="margin-top:0">${lang==='zh'?'我的订单':'My orders'}</h2><p class="status-hint">${lang==='zh'?'此设备浏览器保存的订单记录':'Orders saved in this browser on this device.'}</p><div id="history"></div><p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>`;
-  const history=document.getElementById('history');
-  const rows=[];
-  for(const id of savedIds.slice(0,20)){
-    try{const r=await fetch('/api/order-status?id='+encodeURIComponent(id));const j=await r.json();if(j.status==='ok'){const o=j.order;rows.push(`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><a href="order-status.html?order=${encodeURIComponent(o.id)}">${esc(o.name)}</a><div class="status-hint">${esc(o.id)} · ${esc(String(o.status))} · RM${Number(o.priceMYR||0).toFixed(2)}</div></div>`);}}catch{}
+  if (orderId || !savedIds.length) return false;
+  app.innerHTML = `
+    <h3 style="margin-top:0">${tt('historyTitle')}</h3>
+    <p class="status-hint">${lang==='zh'?'自动保存在本浏览器中的订单：':'Orders saved locally in this browser:'}</p>
+    <div id="history"></div>
+    <p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>
+  `;
+  const history = document.getElementById('history');
+  const rows = [];
+  for (const id of savedIds.slice(0, 15)) {
+    try {
+      const r = await fetch('/api/order-status?id=' + encodeURIComponent(id));
+      const j = await r.json();
+      if (j.status === 'ok') {
+        const o = j.order;
+        rows.push(`
+          <div style="padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <a href="order-status.html?order=${encodeURIComponent(o.id)}" style="font-weight:700">${esc(o.name)}</a>
+              <div class="status-hint">${esc(o.id)} · RM${Number(o.priceMYR||0).toFixed(2)}</div>
+            </div>
+            <span class="status-badge status-${esc(o.status)}" style="margin:0">${esc(LABELS[o.status]?.[lang]||o.status)}</span>
+          </div>
+        `);
+      }
+    } catch {}
   }
-  history.innerHTML=rows.join('')||`<p>${lang==='zh'?'暂时没有可显示的订单。':'No saved orders to show.'}</p>`;
+  history.innerHTML = rows.join('') || `<p>${lang==='zh'?'暂无历史订单。':'No saved orders found.'}</p>`;
   return true;
 }
-app.innerHTML = `<p>${tt('loading')}</p>`;
 
 async function load(){
-  if (!orderId) { if(await loadHistory()) return; app.innerHTML = `<p>${tt('noOrder')}</p>`; return; }
+  if (!orderId) {
+    if (await loadHistory()) return;
+    app.innerHTML = `<p>${tt('noOrder')}</p><p style="margin-top:20px"><a href="index.html#products">${tt('back')}</a></p>`;
+    return;
+  }
+
+  app.innerHTML = `<p>${tt('loading')}</p>`;
+
   try {
     const r = await fetch('/api/order-status?id=' + encodeURIComponent(orderId));
     const j = await r.json();
-    if (j.status !== 'ok') { app.innerHTML = `<p>${tt('notFound')}</p>`; return; }
+    if (j.status !== 'ok') {
+      app.innerHTML = `<p>${tt('notFound')}</p><p style="margin-top:20px"><a href="index.html#products">${tt('back')}</a></p>`;
+      return;
+    }
     const o = j.order;
     const label = LABELS[o.status] ? (LABELS[o.status][lang] || LABELS[o.status].en) : o.status;
     const delivery = Array.isArray(o.deliveryData) ? o.deliveryData : [];
-    const deliveryHtml = o.deliveryAvailable && delivery.length
-      ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('deliveryHint')}</p>${delivery.map((row,idx)=>{const fields=Array.isArray(row?.fields)?row.fields:[String(row?.raw??row??'')]; return `<div class="delivery-item"><div class="delivery-index">#${idx+1}</div><div class="delivery-values">${fields.map((v,i)=>`<div class="delivery-field"><span>${fields.length>1 ? (lang==='zh'?`字段 ${i+1}`:`Field ${i+1}`) : (lang==='zh'?'内容':'Value')}</span><code>${esc(v)}</code><button class="copy-delivery" data-copy="${esc(v)}">${tt('copy')}</button></div>`).join('')}</div></div>`;}).join('')}</div>`
-      : (o.status === 'completed' && o.name && /subscription|digital|app/i.test(String(o.type||'')+' '+String(o.name||'')) ? `<div class="delivery-box"><h3>${tt('delivery')}</h3><p class="status-hint">${tt('unavailable')}</p></div>` : '');
+
+    let deliveryHtml = "";
+    if (o.deliveryAvailable && delivery.length) {
+      deliveryHtml = `
+        <div class="delivery-box">
+          <h3>${tt('delivery')}</h3>
+          <p class="status-hint" style="color:#fff">${tt('deliveryHint')}</p>
+          ${delivery.map((row, idx) => {
+            const fields = Array.isArray(row?.fields) ? row.fields : [String(row?.raw ?? row ?? '')];
+            return `
+              <div class="delivery-item">
+                <div class="delivery-index">#${idx + 1}</div>
+                <div class="delivery-values">
+                  ${fields.map((v, i) => `
+                    <div class="delivery-field">
+                      <span>${fields.length > 1 ? (lang==='zh'?`账号/密钥 ${i+1}`:`Field ${i+1}`) : (lang==='zh'?'卡密内容':'Value')}</span>
+                      <code>${esc(v)}</code>
+                      <button class="copy-delivery" data-copy="${esc(v)}" type="button">${tt('copy')}</button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
     app.innerHTML = `
-      <h2 style="margin-top:0">${esc(o.name)}</h2>
-      <p>${tt('quantity')}: ${Number(o.quantity||0).toLocaleString()}</p>
-      <p>${tt('links')}: ${Number(o.linksCount||1)}</p>
-      <p>${tt('total')}: RM${Number(o.priceMYR).toFixed(2)}</p>
-      ${o.schedule ? `<p>${tt('schedule')}: ${esc(o.schedule)}</p>` : ''}
-      ${o.dripfeed ? `<p>${tt('dripfeed')}: Yes</p>` : ''}
-      <span class="status-badge status-${esc(o.status)}">${esc(label)}</span>
-      ${o.supplierOrderId ? `<p class="status-hint">${tt('supplierRef')}: ${esc(o.supplierOrderId)}</p>` : ''}
-      ${o.supplierTransactionId ? `<p class="status-hint">${tt('supplierTxn')}: ${esc(o.supplierTransactionId)}</p>` : ''}
-      ${o.supplierOrderStatus ? `<p class="status-hint">Supplier status: ${esc(String(o.supplierOrderStatus))}</p>` : ''}
-      <p class="status-hint">${tt('orderId')}: ${esc(o.id)}</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2 style="margin:0 0 6px">${esc(o.name)}</h2>
+          <div class="status-hint">${tt('orderId')}: <strong>${esc(o.id)}</strong></div>
+        </div>
+        <span class="status-badge status-${esc(o.status)}">${esc(label)}</span>
+      </div>
+
+      <div style="margin:18px 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px">
+        <p style="margin:4px 0">${tt('quantity')}: <strong>${Number(o.quantity||1).toLocaleString()}</strong></p>
+        <p style="margin:4px 0">${tt('total')}: <strong style="color:#7bffa0">RM ${Number(o.priceMYR).toFixed(2)}</strong></p>
+        ${o.supplierOrderId ? `<p style="margin:4px 0" class="status-hint">${tt('supplierRef')}: ${esc(o.supplierOrderId)}</p>` : ''}
+        ${o.supplierTransactionId ? `<p style="margin:4px 0" class="status-hint">${tt('supplierTxn')}: ${esc(o.supplierTransactionId)}</p>` : ''}
+      </div>
+
       ${deliveryHtml}
+
       <p style="margin-top:24px"><a href="index.html#products">${tt('back')}</a></p>
     `;
-    document.querySelectorAll('.copy-delivery').forEach((btn)=>btn.onclick=async()=>{const value=btn.dataset.copy||''; try{await navigator.clipboard.writeText(value);}catch{const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();} const original=btn.textContent;btn.textContent=tt('copied');setTimeout(()=>btn.textContent=original,1200);});
-    if (['pending_payment','paid','processing','partial_supplier_submission','partial'].includes(o.status)) {
-      setTimeout(load, 5000);
+
+    document.querySelectorAll('.copy-delivery').forEach((btn) => {
+      btn.onclick = async () => {
+        const value = btn.dataset.copy || '';
+        try { await navigator.clipboard.writeText(value); }
+        catch {
+          const ta = document.createElement('textarea');
+          ta.value = value;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+        const orig = btn.textContent;
+        btn.textContent = tt('copied');
+        setTimeout(() => btn.textContent = orig, 1500);
+      };
+    });
+
+    // 如果订单还在处理中，自动轮询刷新直到完成
+    if (['pending_payment','paid','processing','partial_supplier_submission'].includes(o.status)) {
+      setTimeout(load, 4000);
     }
   } catch(e) {
     app.innerHTML = `<p>${tt('couldNotLoad')}</p>`;
   }
 }
+
 load();
 </script>
 </body>

@@ -7,6 +7,8 @@
 const I18N = {
   'nav.home': { en: 'Home', zh: '首页' },
   'nav.products': { en: 'Products', zh: '商品' },
+  'nav.orderStatus': { en: 'Track Order', zh: '订单查询' },
+  'nav.admin': { en: 'Admin', zh: '管理后台' },
 
   'eyebrow.hero': { en: 'UZISELLER · PREMIUM DIGITAL SERVICES', zh: 'UZISELLER · 优质数字服务' },
   'eyebrow.about': { en: '01 · WHAT WE DO', zh: '01 · 我们是做什么的' },
