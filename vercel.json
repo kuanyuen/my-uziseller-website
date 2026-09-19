@@ -1,14 +1,8 @@
 {
   "version": 2,
-  "name": "uziseller",
   "buildCommand": "echo 'No build step required'",
   "outputDirectory": ".",
   "framework": null,
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
