@@ -1,185 +1,611 @@
-/* UziSeller Digital Store — APPMMO-inspired marketplace, UziSeller branded. */
+/* UziSeller AI Subscriptions Store — ChatGPT & Claude Dedicated Marketplace */
 (async function(){
-  const root=document.getElementById('subscription-app'); if(!root) return;
-  const lang=()=>((typeof UzState!=='undefined'&&UzState.lang)||'en');
-  const currency=()=>((typeof UzState!=='undefined'&&UzState.currency)||'MYR');
-  const t2=(en,zh)=>lang()==='zh'?zh:en;
-  const rates={MYR:1,USD:Number(window.USD_TO_MYR_RATE||window.USD_TO_MYR||4.04),CNY:Number(window.CNY_TO_MYR_RATE||window.CNY_TO_MYR||.60),VND:Number(window.VND_TO_MYR_RATE||window.VND_TO_MYR||.000156)};
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const first=(o,keys,fb='')=>{for(const k of keys)if(o&&o[k]!==undefined&&o[k]!==null&&String(o[k]).trim()!=='')return o[k];return fb};
-  const num=(v,fb=0)=>{const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)?n:fb};
-  const stripHtml=v=>String(v??'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  const root = document.getElementById('subscription-app');
+  if (!root) return;
 
-  const GROUPS=[
-    {key:'AI', zh:'AI 工具', en:'AI Tools', icon:'✦', words:['ai','chat gpt','chatgpt','gemini','grok','claude','veo','kling','cursor']},
-    {key:'SUPPORT', zh:'实用工具', en:'Support Utilities', icon:'▦', words:['capcut','canva','google one','zoom','adobe','microsoft','office']},
-    {key:'ENT', zh:'娱乐订阅', en:'Entertainment', icon:'▶', words:['youtube premium','netflix','spotify','sportify']},
-    {key:'VPN', zh:'VPN / 代理', en:'VPN / Proxy', icon:'◈', words:['vpn','proxy','hma','express','pia','surfshark','hotspot']},
-    {key:'LEARN', zh:'学习工具', en:'Learning', icon:'▤', words:['quizlet','duolingo','learning']},
-    {key:'FB', zh:'Facebook / MMO', en:'Facebook / MMO', icon:'f', words:['facebook','fanpage','bm ','clone','profile','ads','page']},
-    {key:'SOCIAL', zh:'社交媒体', en:'Social', icon:'◎', words:['youtube','tiktok','instagram','twitter','telegram','discord','social']},
-    {key:'MAIL', zh:'邮箱 / 邮件', en:'Mail', icon:'✉', words:['hotmail','gmail','mail','email','domain']},
-    {key:'OTHER', zh:'其他', en:'Other', icon:'•', words:[]}
-  ];
-  const groupFor=p=>{const hay=`${p.category} ${p.name}`.toLowerCase(); for(const g of GROUPS){if(g.words.some(w=>hay.includes(w))) return g.key;} return 'OTHER';};
-  const groupLabel=k=>{const g=GROUPS.find(x=>x.key===k)||GROUPS.at(-1);return lang()==='zh'?g.zh:g.en};
-  const groupIcon=k=>(GROUPS.find(x=>x.key===k)||GROUPS.at(-1)).icon;
+  const lang = () => ((typeof UzState !== 'undefined' && UzState.lang) || 'en');
+  const currency = () => ((typeof UzState !== 'undefined' && UzState.currency) || 'MYR');
+  const t2 = (en, zh) => lang() === 'zh' ? zh : en;
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const first = (o, keys, fb = '') => { for (const k of keys) if (o && o[k] !== undefined && o[k] !== null && String(o[k]).trim() !== '') return o[k]; return fb; };
+  const num = (v, fb = 0) => { const n = Number(String(v ?? '').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : fb; };
+  const stripHtml = v => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
-  const commonMap={
-    'công cụ ai':['AI 工具','AI Tools'],'tiện ích hỗ trợ':['实用工具','Support Utilities'],'tiện ích giải trí':['娱乐订阅','Entertainment'],
-    'fake ip - vpn - proxy':['VPN / 代理','VPN / Proxy'],'tiện ích học tập':['学习工具','Learning'],'tiện ích fb':['Facebook / MMO','Facebook / MMO'],
-    'tiện ích social':['社交媒体','Social'],'tiện ích mail':['邮箱 / 邮件','Mail'],'khác':['其他','Other'],
-    'youtube premium':['YouTube Premium','YouTube Premium'],'netflix':['Netflix','Netflix'],'spotify':['Spotify','Spotify'],
-    'sportify':['Spotify','Spotify'],'tiktok':['TikTok','TikTok'],'instagram':['Instagram','Instagram'],
-    'facebook':['Facebook','Facebook'],'telegram':['Telegram','Telegram'],'discord':['Discord','Discord'],'gmail':['Gmail','Gmail'],
-    'hotmail':['Hotmail','Hotmail'],'gmail edu':['Gmail Edu','Gmail Edu'],'gmail domain':['Gmail Domain','Gmail Domain'],
-    'chat gpt':['ChatGPT','ChatGPT'],'gemini pro/ultra':['Gemini Pro / Ultra','Gemini Pro / Ultra'],'super grok':['Super Grok','Super Grok'],
-    'claude':['Claude','Claude'],'veo 3 ai':['Veo 3 AI','Veo 3 AI'],'kling ai':['Kling AI','Kling AI'],'cursor ai':['Cursor AI','Cursor AI'],
-    'capcut pro':['CapCut Pro','CapCut Pro'],'canva pro/edu':['Canva Pro / Edu','Canva Pro / Edu'],'google one':['Google One','Google One'],
-    'microsoft office':['Microsoft Office','Microsoft Office'],'youtube':['YouTube','YouTube'],'tiktok v1':['TikTok V1','TikTok V1'],'tiktok vn':['TikTok VN','TikTok VN'],
-    'twitter (x )':['Twitter (X)','Twitter (X)'],'hma vpn':['HMA VPN','HMA VPN'],'express vpn':['Express VPN','Express VPN'],
-    'pia vpn':['PIA VPN','PIA VPN'],'surfshark vpn':['Surfshark VPN','Surfshark VPN'],'hotspot shield vpn':['Hotspot Shield VPN','Hotspot Shield VPN'],
-    'quizlet':['Quizlet','Quizlet'],'duolingo':['Duolingo','Duolingo'],'fanpage':['主页','Fanpage'],'bm':['BM','BM'],
-    'clone việt':['越南账号','Vietnam Account'],'clone vip sale':['VIP账号','VIP Account'],'acc toàn cầu':['全球账号','Global Account'],
-    'acc việt nam':['越南账号','Vietnam Account'],'acc global':['全球账号','Global Account'],'profile':['个人主页','Profile'],
-    'xu trao đổi sub':['兑换订阅币','Exchange Sub Credits'],'xu tương tác chéo':['互动兑换币','Cross-engagement Credits']
+  // Keyword and translation dictionaries for clean brand representation
+  const commonMap = {
+    "công cụ ai": ["AI 工具", "AI Tools"],
+    "chat gpt": ["ChatGPT", "ChatGPT"],
+    "chatgpt": ["ChatGPT", "ChatGPT"],
+    "claude": ["Claude", "Claude"],
+    "claude ai": ["Claude AI", "Claude AI"],
+    "openai": ["OpenAI", "OpenAI"],
+    "tài khoản": ["账号", "Account"],
+    "chính hãng": ["官方正品", "Official"],
+    "tự động": ["全自动发货", "Auto Delivery"],
+    "bảo hành": ["包含质保", "With Warranty"],
+    "toàn cầu": ["全球通用", "Global"],
+    "quốc tế": ["国际版", "International"],
+    "tháng": ["个月", "Month(s)"],
+    "ngày": ["天", "Day(s)"],
+    "dạng mới": ["最新版本", "Latest Version"],
+    "thử nghiệm": ["体验版", "Trial"],
+    "độc quyền": ["独家供应", "Exclusive"],
+    "giá rẻ": ["特惠专享", "Special Offer"]
   };
-  function localize(v){
-    let s=String(v??'').replace(/\s+/g,' ').trim(); if(!s) return '';
-    const low=s.toLowerCase();
-    for(const [k,val] of Object.entries(commonMap)) if(low.includes(k)) {
-      s=s.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),lang()==='zh'?val[0]:val[1]);
+
+  const dictZh = [
+    ["tài khoản", "账号"], ["chính hãng", "官方正品"], ["tự động", "全自动"], ["bảo hành", "质保"],
+    ["toàn cầu", "全球"], ["quốc tế", "国际"], ["tháng", "个月"], ["ngày", "天"],
+    ["dạng mới", "新版"], ["thử nghiệm", "测试"], ["độc quyền", "独家"], ["giá rẻ", "特惠"]
+  ];
+
+  const enMap = [
+    ["tài khoản", "Account"], ["chính hãng", "Official"], ["tự động", "Automatic"], ["bảo hành", "Warranty"], ["toàn cầu", "Global"]
+  ];
+
+  function escRe(str) { return str.replace(/[.*+?^()|[\]{}\\]/g, "\\$&").replace(/\$/g, "\\$"); }
+
+  function localize(v) {
+    let s = String(v ?? "").replace(/\s+/g, " ").trim();
+    if (!s) return "";
+    const low = s.toLowerCase();
+    for (const [k, val] of Object.entries(commonMap)) {
+      if (low.includes(k)) {
+        s = s.replace(new RegExp(escRe(k), "ig"), lang() === "zh" ? val[0] : val[1]);
+      }
     }
-    const dict=[
-      ['tăng bình luận','增加评论'],['tăng like','增加点赞'],['tăng follow','增加粉丝'],['tăng view','增加观看次数'],['tăng sub','增加订阅'],
-      ['tăng subscriber','增加订阅者'],['bình luận','评论'],['lượt xem','观看次数'],['lượt thích','点赞'],['người theo dõi','粉丝'],
-      ['bài viết','帖子'],['đánh giá','评价'],['độc quyền','独家'],['giá rẻ','价格便宜'],['dạng mới','新版'],['thử nghiệm','测试'],['chính hãng','官方'],
-      ['tự động','自动'],['bảo hành','保修'],['toàn cầu','全球'],['quốc tế','国际'],['việt nam','越南'],['tài khoản','账号'],['liên kết','链接']
-    ];
-    if(lang()==='zh') for(const [a,b] of dict) s=s.replace(new RegExp(a,'ig'),b);
-    else {
-      const en={'tăng bình luận':'Increase Comments','tăng like':'Increase Likes','tăng follow':'Increase Followers','tăng view':'Increase Views','tăng sub':'Increase Subscribers','tăng subscriber':'Increase Subscribers','bình luận':'Comments','lượt xem':'Views','lượt thích':'Likes','người theo dõi':'Followers','bài viết':'Post','đánh giá':'Reviews','độc quyền':'Exclusive','giá rẻ':'Budget','dạng mới':'New Type','thử nghiệm':'Test','chính hãng':'Official','tự động':'Automatic','bảo hành':'Warranty','toàn cầu':'Global','quốc tế':'International','việt nam':'Vietnam','tài khoản':'Account','liên kết':'Link'};
-      for(const [a,b] of Object.entries(en)) s=s.replace(new RegExp(a,'ig'),b);
+    if (lang() === "zh") {
+      for (const [a, b] of dictZh) s = s.replace(new RegExp(escRe(a), "ig"), b);
+    } else {
+      for (const [a, b] of enMap) s = s.replace(new RegExp(escRe(a), "ig"), b);
     }
-    return s.replace(/\s{2,}/g,' ').trim();
+    return s.replace(/\s{2,}/g, " ").trim();
   }
 
-  let products=[],active='ALL',activeCategory='ALL',query='',sort='default',visibleLimit=24;
-  function priceFor(p,qty=1){
-    const cur=currency();
-    const per=p?.prices?.[cur] ?? p?.prices?.MYR ?? 0;
-    const total=per*qty;
-    return `${cur==='MYR'?'RM':cur==='USD'?'$':'¥'}${total.toLocaleString(cur==='CNY'?'zh-CN':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  }
-  function iconFor(p){const raw=first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],first(p.raw||{},['icon','icon_url','image','image_url','logo','thumbnail'],'')); return raw?`<img src="${esc(raw)}" alt="" loading="lazy" onerror="this.remove()">`:`<span>${esc((localize(p.name)||'P').trim().slice(0,1).toUpperCase())}</span>`;}
-  const normalize=p=>({id:String(first(p,['id','ID','product_id','productId'],'')),name:String(first(p,['name','title','product_name','productName'],'Product')),category:String(first(p,['category','category_name','categoryName','group','group_name'],'Other')),description:String(first(p,['description','desc','content','detail','details','product_description','productDescription','short_description','shortDescription','info','intro'],'')),icon:String(first(p,['icon','icon_url','iconUrl','image','image_url','imageUrl','logo','logo_url','thumbnail','thumb'],'')),price:num(first(p,['price','Price','selling_price','sale_price','cost','amount','unit_price'],0)),prices:first(p,['prices'],null),currency:String(first(p,['currency','currency_code','unit'],'VND')).toUpperCase(),min:Math.max(1,num(first(p,['min','minimum','min_amount','min_qty','min_quantity'],1),1)),max:Math.max(1,num(first(p,['max','maximum','max_amount','max_qty','max_quantity'],1),1)),stock:first(p,['stock','inventory','available','quantity_available','qty'],''),raw:p,group:groupFor(p)});
+  let products = [];
+  let activeBrand = 'ALL'; // 'ALL' | 'CHATGPT' | 'CLAUDE'
+  let query = '';
+  let sort = 'default';
 
-  function savedOrderIds(){try{return JSON.parse(localStorage.getItem('uz_order_ids')||'[]').filter(Boolean)}catch{return []}}
-  function renderShell(){
-    const zh=lang()==='zh';
-    root.innerHTML=`<div class="shop-market">
-      <div class="shop-topbar">
-        <div class="shop-brand"><span class="shop-brand-mark">U</span><div><b>UziSeller</b><small>${zh?'数字商品与服务商城':'Digital products & services store'}</small></div></div>
-        <div class="shop-top-search"><span>⌕</span><input id="shop-search" type="search" placeholder="${esc(zh?'搜索商品、AI、VPN、Premium、Facebook…':'Search products, AI, VPN, Premium, Facebook…')}" value="${esc(query)}"></div>
-        <div class="shop-top-actions"><a href="#products" data-shopnav="products">${zh?'商品':'Products'}</a><a href="order-status.html" data-shopnav="orders">${zh?'我的订单':'My Orders'}</a><a href="https://wa.me/601163630234?text=Hi%20Uziseller" target="_blank" rel="noopener" data-shopnav="support">${zh?'客服':'Support'}</a></div>
-      </div>
-      <div class="shop-utilitybar">
-        <button class="shop-tool active" data-tool="products">▣ <span>${zh?'全部商品':'All Products'}</span></button>
-        <button class="shop-tool" data-tool="orders">◷ <span>${zh?'订单查询':'Order History'}</span></button>
-        <button class="shop-tool" data-tool="topup">＋ <span>${zh?'付款方式':'Payment'}</span></button>
-        <button class="shop-tool" data-tool="affiliate">↗ <span>${zh?'代理合作':'Partner / Agent'}</span></button>
-        <button class="shop-tool" data-tool="faq">? <span>FAQ</span></button>
-      </div>
-      <div class="shop-main-grid">
-        <aside class="shop-sidebar"><div class="shop-sidebar-title">${zh?'商品分类':'PRODUCT CATEGORIES'}</div><div id="shop-cats"></div>
-          <div class="shop-sidebar-note"><b>${zh?'如何下单':'How to order'}</b><span>${zh?'选择分类 → 查看商品 → 查看详情 → 输入数量 → 付款':'Choose category → view details → select quantity → pay'}</span></div>
-        </aside>
-        <main class="shop-content">
-          <div class="shop-content-toolbar"><div><strong>${zh?'商品':'Products'}</strong><span id="shop-count"></span></div><div class="shop-sort"><button class="shop-sort-btn active" data-sort="default">${zh?'推荐':'Recommended'}</button><button class="shop-sort-btn" data-sort="priceAsc">${zh?'价格低→高':'Price ↑'}</button><button class="shop-sort-btn" data-sort="priceDesc">${zh?'价格高→低':'Price ↓'}</button></div></div>
-          <div class="shop-feature-strip"><div><b>${zh?'实时供应商商品目录':'Live supplier catalogue'}</b><span>${zh?'商品资料与库存按照 API 数据更新':'Products and details are synced from supplier API'}</span></div><span class="shop-live-dot">LIVE API</span></div>
-          <div id="shop-list"></div>
-          <button id="shop-more" class="shop-more">${zh?'加载更多':'Load more'}</button>
-        </main>
-        <aside class="shop-account"><div class="shop-account-card"><div class="shop-account-head"><span class="shop-account-avatar">U</span><div><b>${zh?'UziSeller 会员中心':'UziSeller Customer'}</b><small>${zh?'访客结算模式':'Guest checkout'}</small></div></div>
-          <div class="shop-account-stat"><span>${zh?'订单记录':'Saved orders'}</span><strong id="shop-order-count">0</strong></div>
-          <div class="shop-account-actions"><a href="order-status.html">${zh?'查看我的订单':'View my orders'} →</a><a href="https://wa.me/601163630234?text=Hi%20Uziseller" target="_blank" rel="noopener">${zh?'联系客服':'Contact support'} →</a></div>
+  function priceFor(p, qty = 1) {
+    const cur = currency();
+    const per = p?.prices?.[cur] ?? p?.prices?.MYR ?? 0;
+    const total = per * qty;
+    return `${cur === 'MYR' ? 'RM' : cur === 'USD' ? '$' : '¥'}${total.toLocaleString(cur === 'CNY' ? 'zh-CN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  function getBrand(p) {
+    const hay = `${p.category || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase();
+    if (hay.includes('claude')) return 'CLAUDE';
+    if (hay.includes('gpt') || hay.includes('chat') || hay.includes('openai')) return 'CHATGPT';
+    return null;
+  }
+
+  const normalize = p => {
+    const brand = getBrand(p);
+    return {
+      id: String(first(p, ['id', 'ID', 'product_id', 'productId'], '')),
+      name: String(first(p, ['name', 'title', 'product_name', 'productName'], 'AI Product')),
+      category: brand === 'CLAUDE' ? 'Claude' : 'ChatGPT',
+      description: String(first(p, ['description', 'desc', 'content', 'detail', 'details', 'product_description', 'productDescription', 'short_description', 'shortDescription', 'info', 'intro'], '')),
+      icon: String(first(p, ['icon', 'icon_url', 'iconUrl', 'image', 'image_url', 'imageUrl', 'logo', 'logo_url', 'thumbnail', 'thumb'], '')),
+      price: num(first(p, ['price', 'Price', 'selling_price', 'sale_price', 'cost', 'amount', 'unit_price'], 0)),
+      prices: first(p, ['prices'], null),
+      currency: String(first(p, ['currency', 'currency_code', 'unit'], 'VND')).toUpperCase(),
+      min: Math.max(1, num(first(p, ['min', 'minimum', 'min_amount', 'min_qty', 'min_quantity'], 1), 1)),
+      max: Math.max(1, num(first(p, ['max', 'maximum', 'max_amount', 'max_qty', 'max_quantity'], 1), 1)),
+      stock: first(p, ['stock', 'inventory', 'available', 'quantity_available', 'qty'], ''),
+      raw: p,
+      brand: brand
+    };
+  };
+
+  function savedOrderIds() {
+    try { return JSON.parse(localStorage.getItem('uz_order_ids') || '[]').filter(Boolean); } catch { return []; }
+  }
+
+  function renderStore() {
+    const zh = lang() === 'zh';
+    const chatGptProducts = products.filter(p => p.brand === 'CHATGPT');
+    const claudeProducts = products.filter(p => p.brand === 'CLAUDE');
+
+    const gptMinPrice = chatGptProducts.length ? Math.min(...chatGptProducts.map(p => p.prices?.[currency()] ?? p.prices?.MYR ?? 999)) : 0;
+    const claudeMinPrice = claudeProducts.length ? Math.min(...claudeProducts.map(p => p.prices?.[currency()] ?? p.prices?.MYR ?? 999)) : 0;
+    const curSymbol = currency() === 'MYR' ? 'RM' : (currency() === 'USD' ? '$' : '¥');
+
+    root.innerHTML = `
+      <div class="ai-shop-wrapper">
+        <!-- AI Store Top Header -->
+        <div class="ai-shop-header">
+          <div class="ai-shop-title-wrap">
+            <div class="ai-kicker">✦ ${zh ? '官方专享 AI 订阅专区' : 'OFFICIAL AI SUBSCRIPTIONS'}</div>
+            <h2>${zh ? 'ChatGPT 与 Claude 订阅中心' : 'ChatGPT & Claude Subscriptions'}</h2>
+            <p>${zh ? '官方正品保障 · 全自动秒级发货 · 独享账号与专属支持' : 'Official accounts, instant automated delivery, dedicated warranty & support.'}</p>
+          </div>
+          <div class="ai-shop-search-bar">
+            <span>⌕</span>
+            <input id="ai-search-input" type="search" placeholder="${esc(zh ? '搜索 ChatGPT 或 Claude 套餐…' : 'Search ChatGPT or Claude plans…')}" value="${esc(query)}">
+          </div>
         </div>
-        <div class="shop-info-card"><b>${zh?'付款说明':'Payment'}</b><p>${zh?'下单后通过安全付款页面完成付款。付款成功后系统按订单流程处理。':'Complete payment through the secure checkout page. Orders are processed after payment confirmation.'}</p><span>${zh?'价格包含供应商成本 + 30% 加价':'Customer price includes supplier cost + 30% markup'}</span></div>
-        </aside>
+
+        <!-- Brand Showcase Cards (AppMMO-inspired Category Explorer) -->
+        <div class="ai-brand-grid">
+          <!-- ChatGPT Brand Card -->
+          <div class="ai-brand-card brand-chatgpt ${activeBrand === 'CHATGPT' ? 'active-brand' : ''}" data-brand-target="CHATGPT">
+            <div class="ai-brand-top">
+              <div class="ai-brand-logo logo-gpt">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div class="ai-brand-meta">
+                <span class="ai-brand-badge">${chatGptProducts.length} ${zh ? '个可用套餐' : 'Plans Available'}</span>
+                <h3>OpenAI ChatGPT</h3>
+                <p>${zh ? 'ChatGPT Plus 独享账号 · GPT-4o · 深度推理' : 'ChatGPT Plus Private Accounts · GPT-4o · Canvas'}</p>
+              </div>
+            </div>
+            <div class="ai-brand-features">
+              <span>✓ ${zh ? '支持 GPT-4o 与 DALL-E' : 'GPT-4o & DALL-E 3'}</span>
+              <span>✓ ${zh ? '全天候极速稳定' : 'Fast & High Stability'}</span>
+              <span>✓ ${zh ? '即时发货与售后保障' : 'Instant Delivery & Warranty'}</span>
+            </div>
+            <div class="ai-brand-footer">
+              <div>
+                <small>${zh ? '起步售价' : 'Starting From'}</small>
+                <strong>${curSymbol}${gptMinPrice.toFixed(2)}</strong>
+              </div>
+              <button class="ai-brand-btn" type="button">
+                ${activeBrand === 'CHATGPT' ? (zh ? '已选中 ▾' : 'Selected ▾') : (zh ? '查看全部套餐 →' : 'View Plans →')}
+              </button>
+            </div>
+          </div>
+
+          <!-- Claude Brand Card -->
+          <div class="ai-brand-card brand-claude ${activeBrand === 'CLAUDE' ? 'active-brand' : ''}" data-brand-target="CLAUDE">
+            <div class="ai-brand-top">
+              <div class="ai-brand-logo logo-claude">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+              </div>
+              <div class="ai-brand-meta">
+                <span class="ai-brand-badge">${claudeProducts.length} ${zh ? '个可用套餐' : 'Plans Available'}</span>
+                <h3>Anthropic Claude</h3>
+                <p>${zh ? 'Claude 3.7 Sonnet / Opus 独享账号 · 200K 长上下文' : 'Claude 3.7 Sonnet / Opus Accounts · 200K Context'}</p>
+              </div>
+            </div>
+            <div class="ai-brand-features">
+              <span>✓ ${zh ? 'Claude 3.7 Sonnet / Opus' : 'Sonnet 3.7 & Opus Model'}</span>
+              <span>✓ ${zh ? '超长上下文长文档分析' : '200K Long Context Window'}</span>
+              <span>✓ ${zh ? '代码编程与长文写作首选' : 'Best for Coding & Writing'}</span>
+            </div>
+            <div class="ai-brand-footer">
+              <div>
+                <small>${zh ? '起步售价' : 'Starting From'}</small>
+                <strong>${curSymbol}${claudeMinPrice.toFixed(2)}</strong>
+              </div>
+              <button class="ai-brand-btn" type="button">
+                ${activeBrand === 'CLAUDE' ? (zh ? '已选中 ▾' : 'Selected ▾') : (zh ? '查看全部套餐 →' : 'View Plans →')}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Navigation Tabs -->
+        <div class="ai-filter-nav">
+          <div class="ai-tabs">
+            <button class="ai-tab-btn ${activeBrand === 'ALL' ? 'active' : ''}" data-brand="ALL">
+              <span>✦</span> ${zh ? '全部 AI 套餐' : 'All Plans'} (${products.length})
+            </button>
+            <button class="ai-tab-btn ${activeBrand === 'CHATGPT' ? 'active' : ''}" data-brand="CHATGPT">
+              <span class="dot gpt-dot"></span> ChatGPT (${chatGptProducts.length})
+            </button>
+            <button class="ai-tab-btn ${activeBrand === 'CLAUDE' ? 'active' : ''}" data-brand="CLAUDE">
+              <span class="dot claude-dot"></span> Claude (${claudeProducts.length})
+            </button>
+          </div>
+          <div class="ai-sort-select">
+            <button class="ai-sort-btn ${sort === 'default' ? 'active' : ''}" data-sort="default">${zh ? '推荐排序' : 'Recommended'}</button>
+            <button class="ai-sort-btn ${sort === 'priceAsc' ? 'active' : ''}" data-sort="priceAsc">${zh ? '价格从低到高' : 'Price ↑'}</button>
+            <button class="ai-sort-btn ${sort === 'priceDesc' ? 'active' : ''}" data-sort="priceDesc">${zh ? '价格从高到低' : 'Price ↓'}</button>
+          </div>
+        </div>
+
+        <!-- Product List Section -->
+        <div class="ai-products-section">
+          <div class="ai-section-heading">
+            <div>
+              <h3 id="ai-current-category-title">
+                ${activeBrand === 'CHATGPT' ? (zh ? '🟢 ChatGPT 订阅与账号套餐' : '🟢 ChatGPT Subscriptions') :
+                  (activeBrand === 'CLAUDE' ? (zh ? '🟠 Claude 订阅与账号套餐' : '🟠 Claude Subscriptions') :
+                  (zh ? '✦ 全部精选 AI 订阅套餐' : '✦ All AI Subscriptions'))}
+              </h3>
+              <span id="ai-product-count-text"></span>
+            </div>
+            ${activeBrand !== 'ALL' ? `<button class="ai-reset-brand" id="ai-reset-btn">${zh ? '← 显示全部品牌' : '← Show all brands'}</button>` : ''}
+          </div>
+
+          <div id="ai-product-grid" class="ai-product-grid"></div>
+        </div>
+
+        <!-- Trust & Purchase Guarantee Box -->
+        <div class="ai-guarantee-banner">
+          <div class="ai-guarantee-item">
+            <span class="ai-g-icon">⚡</span>
+            <div>
+              <strong>${zh ? '全自动即时发货' : 'Instant Automated Delivery'}</strong>
+              <p>${zh ? '支付完成后系统自动派发账号，无需繁琐等待。' : 'Accounts are dispatched immediately after checkout.'}</p>
+            </div>
+          </div>
+          <div class="ai-guarantee-item">
+            <span class="ai-g-icon">🛡️</span>
+            <div>
+              <strong>${zh ? '官方质保与专属售后' : 'Official Warranty & Support'}</strong>
+              <p>${zh ? '正规渠道开通，支持全周期质保与客服随时解答。' : 'Official channel provision with full-term warranty support.'}</p>
+            </div>
+          </div>
+          <div class="ai-guarantee-item">
+            <span class="ai-g-icon">🔒</span>
+            <div>
+              <strong>${zh ? '独享私密与安全性' : 'Private & Secure'}</strong>
+              <p>${zh ? '一人一号独立使用，数据与对话记录完全私密隔离。' : 'Private single-user accounts with total data confidentiality.'}</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>`;
-    document.getElementById('shop-search').oninput=e=>{query=e.target.value.trim().toLowerCase();visibleLimit=24;renderList()};
-    document.querySelectorAll('.shop-sort-btn').forEach(b=>b.onclick=()=>{sort=b.dataset.sort;document.querySelectorAll('.shop-sort-btn').forEach(x=>x.classList.toggle('active',x===b));renderList()});
-    document.querySelectorAll('.shop-tool').forEach(b=>b.onclick=()=>handleTool(b.dataset.tool));
-    document.getElementById('shop-more').onclick=()=>{visibleLimit+=24;renderList()};
-    document.getElementById('shop-order-count').textContent=String(savedOrderIds().length);
+    `;
+
+    // Bind Event Listeners
+    document.getElementById('ai-search-input').oninput = e => {
+      query = e.target.value.trim().toLowerCase();
+      renderProductList();
+    };
+
+    document.querySelectorAll('.ai-brand-card').forEach(card => {
+      card.onclick = () => {
+        const target = card.dataset.brandTarget;
+        activeBrand = (activeBrand === target) ? 'ALL' : target;
+        renderStore();
+        document.querySelector('.ai-filter-nav')?.scrollIntoView({ behavior: 'smooth' });
+      };
+    });
+
+    document.querySelectorAll('.ai-tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        activeBrand = btn.dataset.brand;
+        renderStore();
+      };
+    });
+
+    document.querySelectorAll('.ai-sort-btn').forEach(btn => {
+      btn.onclick = () => {
+        sort = btn.dataset.sort;
+        document.querySelectorAll('.ai-sort-btn').forEach(x => x.classList.toggle('active', x === btn));
+        renderProductList();
+      };
+    });
+
+    const resetBtn = document.getElementById('ai-reset-btn');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        activeBrand = 'ALL';
+        renderStore();
+      };
+    }
+
+    renderProductList();
   }
-  function handleTool(tool){
-    if(tool==='products'){document.querySelector('.shop-content')?.scrollIntoView({behavior:'smooth'});return;}
-    if(tool==='orders'){location.href='order-status.html';return;}
-    if(tool==='affiliate'){location.hash='agent';return;}
-    if(tool==='faq'){alert(t2('Please contact UziSeller support for product-specific questions.','如需了解商品详情、保修或购买方式，请联系 UziSeller 客服。'));return;}
-    if(tool==='topup'){alert(t2('Payment is completed after checkout through the secure payment page.','付款会在确认订单后通过安全付款页面完成。'));}
-  }
-  function buildCategories(){
-    const counts={}; products.forEach(p=>counts[p.group]=(counts[p.group]||0)+1);
-    const all=GROUPS.filter(g=>counts[g.key]).map(g=>[g.key,counts[g.key]]);
-    const groupFiltered=active==='ALL'?products:products.filter(p=>p.group===active);
-    const catCounts={}; groupFiltered.forEach(p=>{const key=String(p.category||'Other');catCounts[key]=(catCounts[key]||0)+1});
-    const cats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).slice(0,30);
-    const side=`<button class="shop-cat ${active==='ALL'?'active':''}" data-cat="ALL"><span>⌂</span><b>${esc(t2('All Products','全部商品'))}</b><em>${products.length}</em></button>`+all.map(([k,n])=>`<button class="shop-cat ${active===k?'active':''}" data-cat="${k}"><span>${esc(groupIcon(k))}</span><b>${esc(groupLabel(k))}</b><em>${n}</em></button>`).join('');
-    const catbar=`<div class="shop-supplier-catbar"><button class="shop-supplier-cat ${activeCategory==='ALL'?'active':''}" data-supplier-cat="ALL">${esc(t2('All types','全部分类'))}</button>${cats.map(([k,n])=>`<button class="shop-supplier-cat ${activeCategory===k?'active':''}" data-supplier-cat="${esc(k)}">${esc(localize(k))}<em>${n}</em></button>`).join('')}</div>`;
-    document.getElementById('shop-cats').innerHTML=side+catbar;
-    document.querySelectorAll('.shop-cat').forEach(b=>b.onclick=()=>{active=b.dataset.cat;activeCategory='ALL';visibleLimit=24;buildCategories();renderList()});
-    document.querySelectorAll('.shop-supplier-cat').forEach(b=>b.onclick=()=>{activeCategory=b.dataset.supplierCat;visibleLimit=24;buildCategories();renderList()});
-  }
-  function filtered(){
-    let list=products.filter(p=>{const ok=(active==='ALL'||p.group===active)&&(activeCategory==='ALL'||String(p.category||'')===activeCategory); const hay=`${p.name} ${p.category} ${p.description}`.toLowerCase(); return ok&&(!query||hay.includes(query)||localize(p.name).toLowerCase().includes(query)||localize(p.category).toLowerCase().includes(query));});
-    if(sort==='priceAsc') list.sort((a,b)=>Number(a.price)-Number(b.price));
-    if(sort==='priceDesc') list.sort((a,b)=>Number(b.price)-Number(a.price));
+
+  function getFilteredList() {
+    let list = products.filter(p => {
+      if (activeBrand !== 'ALL' && p.brand !== activeBrand) return false;
+      if (!query) return true;
+      const hay = `${p.name} ${p.category} ${p.description}`.toLowerCase();
+      return hay.includes(query) || localize(p.name).toLowerCase().includes(query);
+    });
+
+    if (sort === 'priceAsc') list.sort((a, b) => Number(a.price) - Number(b.price));
+    if (sort === 'priceDesc') list.sort((a, b) => Number(b.price) - Number(a.price));
     return list;
   }
-  function renderList(){
-    const list=filtered(), shown=list.slice(0,visibleLimit);
-    document.getElementById('shop-count').textContent=`${shown.length} / ${list.length} ${t2('available','可选')}`;
-    document.getElementById('shop-more').hidden=shown.length>=list.length||!list.length;
-    document.getElementById('shop-list').innerHTML=shown.map(p=>`<article class="shop-product-row" data-id="${esc(p.id)}"><div class="shop-product-main"><div class="shop-product-icon">${iconFor(p)}</div><div class="shop-product-copy"><small>#${esc(p.id)} · ${esc(groupLabel(p.group))}</small><h3>${esc(localize(p.name))}</h3><p>${esc(stripHtml(localize(p.description))||t2('Click “View details” to read full product information.','点击「查看详情」读取完整商品资料。'))}</p><div class="shop-meta"><span>${esc(localize(p.category))}</span><span>${esc(p.min)}–${esc(p.max)} ${esc(t2('units','件'))}</span>${p.stock!==''?`<span>${esc(t2('Stock','库存'))}: ${esc(p.stock)}</span>`:''}</div></div></div><div class="shop-buy"><div><small>${esc(t2('Selling price','销售价'))}</small><strong>${esc(priceFor(p))}</strong><span>${esc(t2('Supplier + 30%','供应商 +30%'))}</span></div><button data-id="${esc(p.id)}">${esc(t2('View details','查看详情'))} <b>→</b></button></div></article>`).join('')||`<div class="shop-empty"><strong>${esc(t2('No products found.','没有找到商品。'))}</strong><p>${esc(t2('Try another category or keyword.','请尝试其他分类或关键词。'))}</p></div>`;
-    document.querySelectorAll('.shop-product-row').forEach(row=>row.onclick=e=>{if(e.target.closest('button'))return;openDetail(products.find(x=>String(x.id)===String(row.dataset.id)))});
-    document.querySelectorAll('.shop-buy button').forEach(b=>b.onclick=e=>{e.stopPropagation();openDetail(products.find(x=>String(x.id)===String(b.dataset.id)))});
+
+  function renderProductList() {
+    const list = getFilteredList();
+    const zh = lang() === 'zh';
+    const grid = document.getElementById('ai-product-grid');
+    const countEl = document.getElementById('ai-product-count-text');
+    if (countEl) countEl.textContent = `${list.length} ${zh ? '个套餐可选' : 'plans available'}`;
+
+    if (!list.length) {
+      grid.innerHTML = `
+        <div class="ai-empty-state">
+          <div class="ai-empty-icon">⌕</div>
+          <h4>${zh ? '没有找到相关套餐' : 'No plans found'}</h4>
+          <p>${zh ? '请尝试更换搜索词或选择其他品牌分类。' : 'Try searching another keyword or select another category.'}</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = list.map(p => {
+      const isClaude = p.brand === 'CLAUDE';
+      const brandTag = isClaude ? 'Claude' : 'ChatGPT';
+      const brandTheme = isClaude ? 'claude-theme' : 'gpt-theme';
+      const cleanName = localize(p.name);
+      const cleanDesc = stripHtml(localize(p.description)) || (zh ? '点击查看详细配置与购买说明。' : 'Click to view configuration & details.');
+
+      return `
+        <div class="ai-product-card ${brandTheme}" data-product-id="${esc(p.id)}">
+          <div class="ai-card-badge-row">
+            <span class="ai-pill ${isClaude ? 'pill-claude' : 'pill-gpt'}">${brandTag}</span>
+            ${p.stock !== '' ? `<span class="ai-stock-pill">${zh ? '库存充足' : 'In Stock'}</span>` : ''}
+          </div>
+
+          <div class="ai-card-body">
+            <h4 class="ai-card-title">${esc(cleanName)}</h4>
+            <p class="ai-card-desc">${esc(cleanDesc)}</p>
+          </div>
+
+          <div class="ai-card-meta-list">
+            <div class="ai-meta-tag">⚡ ${zh ? '即时发货' : 'Instant Delivery'}</div>
+            <div class="ai-meta-tag">🛡️ ${zh ? '官方质保' : 'Warranty'}</div>
+            <div class="ai-meta-tag">👤 ${zh ? '独享私密' : 'Private'}</div>
+          </div>
+
+          <div class="ai-card-footer">
+            <div class="ai-card-price-wrap">
+              <small>${zh ? '单价' : 'Price'}</small>
+              <strong class="ai-card-price">${esc(priceFor(p))}</strong>
+            </div>
+            <button class="ai-buy-btn" data-btn-id="${esc(p.id)}" type="button">
+              ${zh ? '查看详情 & 下单' : 'Details & Buy'} →
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('.ai-product-card').forEach(card => {
+      card.onclick = e => {
+        const id = card.dataset.productId;
+        const target = products.find(x => String(x.id) === String(id));
+        if (target) openDetailModal(target);
+      };
+    });
   }
 
-  const labelMap={name:['Product name','商品名称'],title:['Title','标题'],description:['Description','商品简介'],desc:['Description','商品简介'],content:['Content','商品内容'],detail:['Details','商品详情'],details:['Details','商品详情'],instructions:['Instructions','使用说明'],instruction:['Instructions','使用说明'],usage:['Usage','使用方法'],notice:['Notice','注意事项'],notes:['Notes','备注'],delivery:['Delivery','交付方式'],duration:['Duration','有效期'],period:['Period','周期'],days:['Days','天数'],validity:['Validity','有效期'],warranty:['Warranty','保修'],refund:['Refund policy','退款政策'],after_sales:['After-sales','售后'],stock:['Stock','库存'],inventory:['Inventory','库存'],quantity:['Quantity','数量'],type:['Product type','产品类型'],price:['Price','价格'],currency:['Currency','货币'],min:['Minimum quantity','最少数量'],max:['Maximum quantity','最多数量'],category:['Category','分类'],url:['URL','链接'],link:['Link','链接']};
-  const prettyKey=k=>{const m=labelMap[String(k).toLowerCase()];return m? t2(m[0],m[1]) : String(k).replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
-  function findPayload(raw){const seen=new Set();const walk=n=>{if(!n||typeof n!=='object'||seen.has(n))return null;seen.add(n);if(Array.isArray(n)){for(const x of n){const f=walk(x);if(f)return f}return null} if(['id','ID','product_id','productId'].some(k=>n[k]!==undefined)&&['name','title','product_name','productName','description','desc','content','detail','details'].some(k=>n[k]!==undefined))return n; for(const k of ['data','product','result','item','product_info','productInfo'])if(n[k]!==undefined){const f=walk(n[k]);if(f)return f} for(const v of Object.values(n)){const f=walk(v);if(f)return f}return null};return walk(raw)||{}}
-  function rich(v){const s=String(v??'').trim(); if(!s)return ''; if(!/<[a-z][\s\S]*>/i.test(s))return esc(localize(s)).replace(/\n/g,'<br>'); const box=document.createElement('div');box.innerHTML=s;box.querySelectorAll('script,style,iframe,object,embed,form,link,meta').forEach(x=>x.remove());box.querySelectorAll('*').forEach(el=>[...el.attributes].forEach(a=>{const n=a.name.toLowerCase();if(n.startsWith('on')||n==='srcdoc'||(n==='href'&&/^javascript:/i.test(a.value)))el.removeAttribute(a.name)})); return box.innerHTML}
-  function flatten(o,p='',out=[]){if(!o||typeof o!=='object')return out;for(const [k,v] of Object.entries(o)){if(/^(api_key|token|password|secret)$/i.test(k)||v===null||v===undefined||v==='')continue;const key=p?`${p}.${k}`:k;if(typeof v==='object')flatten(v,key,out);else out.push([key,String(v)])}return out}
-  const skipFields=new Set(['name','title','product_name','productName','description','desc','content','detail','details','product_description','productDescription','full_description','fullDescription','info','intro','instruction','instructions','usage','notice','notes','note','icon','image','logo','thumbnail','price','currency','api_key']);
-  function detailRows(d){const rows=flatten(d).filter(([k])=>!skipFields.has(k.split('.')[0]));return rows.map(([k,v])=>`<div class="shop-detail-row"><span>${esc(prettyKey(k))}</span><b>${esc(localize(v))}</b></div>`).join('')||`<div class="shop-no-detail">${esc(t2('Available product information is shown above.','供应商返回的可用商品资料已显示在上方。'))}</div>`}
-
-  async function openDetail(p){
-    if(!p)return;
-    const ov=document.createElement('div');ov.className='shop-detail-overlay';ov.innerHTML=`<div class="shop-detail-modal"><button class="shop-close">×</button><div class="shop-loading">${esc(t2('Loading product details…','正在读取商品详情…'))}</div></div>`;document.body.appendChild(ov);
-    const close=()=>ov.remove();ov.querySelector('.shop-close').onclick=close;ov.onclick=e=>{if(e.target===ov)close()};
-    try{
-      const r=await fetch(`/api/subscriptions?action=product&product=${encodeURIComponent(p.id)}`,{headers:{Accept:'application/json'}});const j=await r.json();if(!r.ok||j.status==='error')throw new Error(j.msg||'Product details unavailable');
-      const d=findPayload(j.data), name=String(first(d,['name','title','product_name','productName'],p.name)), desc=first(d,['description','desc','content','detail','details','product_description','productDescription','full_description','fullDescription','info','intro','instruction','instructions','usage','notice','notes','note'],p.description);
-      const data={...p,...d}, min=Math.max(1,num(first(d,['min','minimum','min_qty','min_amount','min_quantity'],p.min),p.min)), max=Math.max(min,num(first(d,['max','maximum','max_qty','max_amount','max_quantity'],p.max),p.max));
-      ov.querySelector('.shop-detail-modal').innerHTML=`<button class="shop-close">×</button><div class="shop-detail-hero"><div class="shop-detail-icon">${iconFor(data)}</div><div><small>#${esc(p.id)} · ${esc(groupLabel(p.group))}</small><h2>${esc(localize(name))}</h2><span>${esc(localize(p.category))}</span></div></div>
-        <div class="shop-detail-section"><div class="shop-detail-kicker">01 · ${esc(t2('PRODUCT DESCRIPTION','商品说明'))}</div><div class="shop-rich">${rich(desc||t2('No description was returned by the supplier.','供应商没有返回该商品的文字简介。'))}</div></div>
-        <div class="shop-detail-section"><div class="shop-detail-kicker">02 · ${esc(t2('PRODUCT INFORMATION','商品详细资料'))}</div><div class="shop-detail-grid">${detailRows(d)}</div></div>
-        <div class="shop-buy-panel"><div><small>${esc(t2('Selling price','销售价'))}</small><strong id="shop-total">${esc(priceFor({...p,...d,min,max},min))}</strong><span>${esc(t2('Supplier cost + 30% markup','供应商成本 + 30% 加价'))}</span></div><label>${esc(t2('Quantity','数量'))}<input id="shop-qty" type="number" min="${min}" max="${max}" value="${min}"></label><button id="shop-checkout">${esc(t2('Buy now','立即购买'))} →</button></div>
-        <div class="shop-customer"><label>${esc(t2('Your name','您的姓名'))}<input id="shop-name" placeholder="${esc(t2('Full name','姓名'))}"></label><label>${esc(t2('Email','邮箱'))}<input id="shop-email" type="email" placeholder="you@example.com"></label></div><div id="shop-msg"></div>`;
-      ov.querySelector('.shop-close').onclick=close;
-      const q=ov.querySelector('#shop-qty'), total=ov.querySelector('#shop-total');q.oninput=()=>{const n=Math.max(min,Math.min(max,num(q.value,min)));q.value=n;total.textContent=priceFor({...p,...d,min,max},n)};
-      ov.querySelector('#shop-checkout').onclick=async()=>{const btn=ov.querySelector('#shop-checkout'),msg=ov.querySelector('#shop-msg'),name=ov.querySelector('#shop-name').value.trim(),email=ov.querySelector('#shop-email').value.trim();if(!name||!email){msg.innerHTML=`<div class="shop-error">${esc(t2('Please fill in your name and email.','请填写姓名和邮箱。'))}</div>`;return}btn.disabled=true;btn.textContent=t2('Creating payment…','正在创建付款…');try{const rr=await fetch('/api/subscription-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id,quantity:Number(q.value),name,email})});const jj=await rr.json();if(jj.status==='ok'&&jj.paymentUrl){try{const ids=savedOrderIds();ids.unshift(jj.orderId);localStorage.setItem('uz_order_ids',JSON.stringify([...new Set(ids)].slice(0,50)))}catch{} location.href=jj.paymentUrl;return;}throw new Error(jj.msg||t2('Checkout failed','创建付款失败'));}catch(e){msg.innerHTML=`<div class="shop-error">${esc(e.message||t2('Checkout failed','创建付款失败'))}</div>`;btn.disabled=false;btn.textContent=t2('Buy now','立即购买')}};
-    }catch(e){ov.querySelector('.shop-detail-modal').innerHTML=`<button class="shop-close">×</button><div class="shop-empty"><strong>${esc(t2('Unable to load product details','无法读取商品详情'))}</strong><p>${esc(e.message)}</p><button class="shop-retry">${esc(t2('Retry','重新读取'))}</button></div>`;ov.querySelector('.shop-close').onclick=close;ov.querySelector('.shop-retry').onclick=()=>{ov.remove();openDetail(p)}}
+  function findPayload(raw) {
+    const seen = new Set();
+    const walk = n => {
+      if (!n || typeof n !== 'object' || seen.has(n)) return null;
+      seen.add(n);
+      if (Array.isArray(n)) { for (const x of n) { const f = walk(x); if (f) return f; } return null; }
+      if (['id', 'ID', 'product_id', 'productId'].some(k => n[k] !== undefined) && ['name', 'title', 'product_name', 'productName', 'description', 'desc', 'content', 'detail', 'details'].some(k => n[k] !== undefined)) return n;
+      for (const k of ['data', 'product', 'result', 'item', 'product_info', 'productInfo']) if (n[k] !== undefined) { const f = walk(n[k]); if (f) return f; }
+      for (const v of Object.values(n)) { const f = walk(v); if (f) return f; }
+      return null;
+    };
+    return walk(raw) || {};
   }
 
-  renderShell();
-  try{
-    const r=await fetch('/api/subscriptions?action=products',{headers:{Accept:'application/json'}}),j=await r.json();if(!r.ok||j.status==='error')throw new Error(j.msg||'Catalogue unavailable');products=(j.products||[]).map(normalize).filter(p=>p.id&&p.name);
-    buildCategories();renderList();
-    document.addEventListener('uz:currencychange',renderList);
-    document.addEventListener('uz:langchange',()=>{active='ALL';activeCategory='ALL';renderShell();buildCategories();renderList()});
-  }catch(e){document.getElementById('shop-list').innerHTML=`<div class="shop-empty"><strong>${esc(t2('Catalogue temporarily unavailable','商品目录暂时无法加载'))}</strong><p>${esc(e.message)}</p></div>`;console.error(e)}
+  function rich(v) {
+    const s = String(v ?? '').trim();
+    if (!s) return '';
+    if (!/<[a-z][\s\S]*>/i.test(s)) return esc(localize(s)).replace(/\n/g, '<br>');
+    const box = document.createElement('div');
+    box.innerHTML = s;
+    box.querySelectorAll('script,style,iframe,object,embed,form,link,meta').forEach(x => x.remove());
+    box.querySelectorAll('*').forEach(el => [...el.attributes].forEach(a => {
+      const n = a.name.toLowerCase();
+      if (n.startsWith('on') || n === 'srcdoc' || (n === 'href' && /^javascript:/i.test(a.value))) el.removeAttribute(a.name);
+    }));
+    return box.innerHTML;
+  }
+
+  // Beautiful Modal matching Uziseller Glass Theme
+  async function openDetailModal(p) {
+    if (!p) return;
+    const zh = lang() === 'zh';
+    const isClaude = p.brand === 'CLAUDE';
+
+    const ov = document.createElement('div');
+    ov.className = 'ai-modal-overlay';
+    ov.innerHTML = `
+      <div class="ai-modal-box">
+        <button class="ai-modal-close" aria-label="Close">×</button>
+        <div class="ai-modal-loading">${zh ? '正在读取套餐详情…' : 'Loading details…'}</div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+
+    const closeModal = () => ov.remove();
+    ov.querySelector('.ai-modal-close').onclick = closeModal;
+    ov.onclick = e => { if (e.target === ov) closeModal(); };
+
+    try {
+      const r = await fetch(`/api/subscriptions?action=product&product=${encodeURIComponent(p.id)}`, { headers: { Accept: 'application/json' } });
+      const j = await r.json();
+      if (!r.ok || j.status === 'error') throw new Error(j.msg || 'Product details unavailable');
+
+      const d = findPayload(j.data);
+      const name = String(first(d, ['name', 'title', 'product_name', 'productName'], p.name));
+      const desc = first(d, ['description', 'desc', 'content', 'detail', 'details', 'product_description', 'productDescription', 'full_description', 'fullDescription', 'info', 'intro', 'instruction', 'instructions', 'usage', 'notice', 'notes', 'note'], p.description);
+      const data = { ...p, ...d };
+      const min = Math.max(1, num(first(d, ['min', 'minimum', 'min_qty', 'min_amount', 'min_quantity'], p.min), p.min));
+      const max = Math.max(min, num(first(d, ['max', 'maximum', 'max_qty', 'max_amount', 'max_quantity'], p.max), p.max));
+
+      ov.querySelector('.ai-modal-box').innerHTML = `
+        <button class="ai-modal-close" aria-label="Close">×</button>
+
+        <div class="ai-modal-header ${isClaude ? 'modal-claude' : 'modal-gpt'}">
+          <div class="ai-modal-badge">${isClaude ? 'Anthropic Claude' : 'OpenAI ChatGPT'}</div>
+          <h2>${esc(localize(name))}</h2>
+          <div class="ai-modal-submeta">
+            <span>⚡ ${zh ? '自动发货' : 'Instant'}</span>
+            <span>🛡️ ${zh ? '官方质保' : 'Warranty'}</span>
+            <span>👤 ${zh ? '独享使用' : 'Private'}</span>
+          </div>
+        </div>
+
+        <div class="ai-modal-body">
+          <div class="ai-modal-section">
+            <div class="ai-sec-title">01 · ${zh ? '套餐与使用说明' : 'PRODUCT DESCRIPTION'}</div>
+            <div class="ai-modal-rich-desc">
+              ${rich(desc || (zh ? '官方正品账号，付款后自动发货。请妥善保存登录凭据并遵守官方使用规范。' : 'Official accounts with instant delivery.'))}
+            </div>
+          </div>
+
+          <div class="ai-modal-section">
+            <div class="ai-sec-title">02 · ${zh ? '购买信息填写' : 'ORDER DETAILS'}</div>
+            <div class="ai-input-group">
+              <label>
+                <span>${zh ? '您的姓名' : 'Your Name'}</span>
+                <input id="ai-modal-name" type="text" autocomplete="name" placeholder="${zh ? '请输入您的姓名' : 'Full name'}">
+              </label>
+              <label>
+                <span>${zh ? '接收邮箱 (用于接收账号与订单)' : 'Email (for delivery receipt)'}</span>
+                <input id="ai-modal-email" type="email" autocomplete="email" placeholder="you@example.com">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-modal-checkout-bar">
+          <div class="ai-qty-stepper">
+            <span>${zh ? '购买数量' : 'Quantity'}</span>
+            <div class="stepper-wrap">
+              <button id="ai-qty-minus" type="button">-</button>
+              <input id="ai-modal-qty" type="number" min="${min}" max="${max}" value="${min}">
+              <button id="ai-qty-plus" type="button">+</button>
+            </div>
+          </div>
+
+          <div class="ai-checkout-total">
+            <small>${zh ? '订单总额' : 'Total Price'}</small>
+            <strong id="ai-modal-total">${esc(priceFor(data, min))}</strong>
+          </div>
+
+          <button id="ai-modal-pay-btn" class="ai-pay-action-btn" type="button">
+            ${zh ? '立即结算付款' : 'Pay Now'} →
+          </button>
+        </div>
+
+        <div id="ai-modal-msg" class="ai-modal-msg"></div>
+      `;
+
+      // Prefill user details if logged in
+      if (typeof UzAccount !== 'undefined' && UzAccount.isLoggedIn()) {
+        (async () => {
+          let email = typeof UzAccount.getEmail === 'function' ? UzAccount.getEmail() : '';
+          let name = typeof UzAccount.getName === 'function' ? UzAccount.getName() : '';
+          if (!email && typeof UzAccount.getEmailFromServer === 'function') {
+            try { const info = await UzAccount.getEmailFromServer(); email = info.email || ''; name = info.name || name; } catch {}
+          }
+          const emailInput = ov.querySelector('#ai-modal-email');
+          const nameInput = ov.querySelector('#ai-modal-name');
+          if (emailInput && email) emailInput.value = email;
+          if (nameInput && name) nameInput.value = name;
+        })();
+      }
+
+      ov.querySelector('.ai-modal-close').onclick = closeModal;
+
+      const qtyInput = ov.querySelector('#ai-modal-qty');
+      const totalEl = ov.querySelector('#ai-modal-total');
+      const minusBtn = ov.querySelector('#ai-qty-minus');
+      const plusBtn = ov.querySelector('#ai-qty-plus');
+
+      const updateQty = (val) => {
+        let n = Math.max(min, Math.min(max, num(val, min)));
+        qtyInput.value = n;
+        totalEl.textContent = priceFor(data, n);
+      };
+
+      minusBtn.onclick = () => updateQty(Number(qtyInput.value) - 1);
+      plusBtn.onclick = () => updateQty(Number(qtyInput.value) + 1);
+      qtyInput.oninput = () => updateQty(qtyInput.value);
+
+      const payBtn = ov.querySelector('#ai-modal-pay-btn');
+      const msgEl = ov.querySelector('#ai-modal-msg');
+
+      payBtn.onclick = async () => {
+        const nameVal = ov.querySelector('#ai-modal-name').value.trim();
+        const emailVal = ov.querySelector('#ai-modal-email').value.trim();
+        if (!nameVal || !emailVal) {
+          msgEl.innerHTML = `<div class="ai-err-msg">${zh ? '请填写姓名和接收邮箱。' : 'Please enter your name and email.'}</div>`;
+          return;
+        }
+
+        payBtn.disabled = true;
+        payBtn.textContent = zh ? '正在创建安全支付…' : 'Creating payment…';
+        msgEl.innerHTML = '';
+
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (typeof UzAccount !== 'undefined' && UzAccount.isLoggedIn()) {
+            headers['Authorization'] = 'Bearer ' + UzAccount.getToken();
+          }
+
+          const rr = await fetch('/api/subscription-checkout', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              productId: p.id,
+              quantity: Number(qtyInput.value),
+              name: nameVal,
+              email: emailVal
+            })
+          });
+
+          const jj = await rr.json();
+          if (jj.status === 'ok' && jj.paymentUrl) {
+            try {
+              const ids = savedOrderIds();
+              ids.unshift(jj.orderId);
+              localStorage.setItem('uz_order_ids', JSON.stringify([...new Set(ids)].slice(0, 50)));
+            } catch {}
+            location.href = jj.paymentUrl;
+            return;
+          }
+          throw new Error(jj.msg || (zh ? '创建支付订单失败' : 'Checkout failed'));
+        } catch (err) {
+          msgEl.innerHTML = `<div class="ai-err-msg">${esc(err.message || (zh ? '创建付款失败，请稍后重试。' : 'Checkout failed. Please retry.'))}</div>`;
+          payBtn.disabled = false;
+          payBtn.textContent = zh ? '立即结算付款 →' : 'Pay Now →';
+        }
+      };
+    } catch (e) {
+      ov.querySelector('.ai-modal-box').innerHTML = `
+        <button class="ai-modal-close">×</button>
+        <div class="ai-empty-state">
+          <h4>${zh ? '无法读取套餐详情' : 'Unable to load details'}</h4>
+          <p>${esc(e.message)}</p>
+          <button class="ai-brand-btn" id="ai-retry-btn">${zh ? '重试' : 'Retry'}</button>
+        </div>
+      `;
+      ov.querySelector('.ai-modal-close').onclick = closeModal;
+      ov.querySelector('#ai-retry-btn').onclick = () => { ov.remove(); openDetailModal(p); };
+    }
+  }
+
+  // Initialize
+  renderStore();
+
+  try {
+    const r = await fetch('/api/subscriptions?action=products', { headers: { Accept: 'application/json' } });
+    const j = await r.json();
+    if (!r.ok || j.status === 'error') throw new Error(j.msg || 'Catalogue unavailable');
+
+    // Filter strictly for ChatGPT and Claude
+    products = (j.products || []).map(normalize).filter(p => p.id && p.name && p.brand !== null);
+
+    renderStore();
+
+    document.addEventListener('uz:currencychange', () => { renderStore(); });
+    document.addEventListener('uz:langchange', () => { renderStore(); });
+  } catch (e) {
+    root.innerHTML = `
+      <div class="ai-empty-state">
+        <h4>${t2('Catalogue temporarily unavailable', '商品目录暂时无法加载')}</h4>
+        <p>${esc(e.message)}</p>
+      </div>
+    `;
+    console.error(e);
+  }
 })();

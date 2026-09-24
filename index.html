@@ -3,10 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Uziseller — Digital Growth & Premium Services.">
+<meta name="description" content="Uziseller — Premium AI Accounts, Subscriptions & Digital Services.">
+<meta property="og:title" content="Uziseller — Digital Growth & Premium Services">
+<meta property="og:description" content="Claude, ChatGPT, Google AI & Social Media Growth Tools. Fast delivery, trusted quality.">
+<meta property="og:image" content="assets/logo.svg">
+<meta property="og:type" content="website">
 <title>Uziseller — Digital Growth & Premium Services</title>
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="ai-subscriptions.css">
 </head>
 <body>
 <div class="noise"></div>
@@ -21,9 +26,10 @@
   </div>
   <nav>
     <a href="#top" data-i18n="nav.home">Home</a><a href="#products" data-i18n="nav.products">Products</a>
-    <a href="order-status.html" data-i18n="nav.orderStatus">Track Order</a>
-    <a href="admin/index.html" target="_blank" data-i18n="nav.admin">Admin</a>
     <a class="nav-cta" href="https://wa.me/601163630234?text=Hi%20Uziseller%2C%20I'm%20interested%20in%20your%20services." target="_blank" rel="noopener">WhatsApp</a>
+    <button class="uz-nav-login" data-uz-account-open data-uz-account-loggedout><span data-i18n="nav.login">Sign in</span></button>
+    <button class="uz-nav-login" data-uz-account-open data-uz-account-loggedin style="display:none"><span data-uz-account-name></span> &#9662;</button>
+    <button class="uz-nav-login" data-uz-account-logout data-uz-account-loggedin style="display:none" title="Log out">&#8998;</button>
   </nav>
 </header>
 
@@ -74,11 +80,11 @@
 
   <div class="category-grid">
     <article class="category-card">
-      <div class="category-icon">📦</div>
-      <h3 data-i18n="about.cat1title">Resources & AI Store</h3>
-      <p data-i18n="about.cat1lead">A comprehensive library of high-quality digital resources for work and content creation.</p>
+      <div class="category-icon">✦</div>
+      <h3 data-i18n="about.cat1title">Claude & ChatGPT Store</h3>
+      <p data-i18n="about.cat1lead">High-quality, reliable AI accounts and subscriptions for high-efficiency work and creation.</p>
       <ul class="category-list">
-        <li data-i18n="about.cat1b1">Premium accounts (ChatGPT, Canva and more)</li>
+        <li data-i18n="about.cat1b1">Premium AI accounts (Claude, ChatGPT Plus & more)</li>
       </ul>
       <a class="btn ghost wide" href="#products" onclick="UzTabs.goTo('subscriptions')" data-i18n="about.cat1cta">Browse Subscriptions →</a>
     </article>
@@ -94,13 +100,37 @@
       </ul>
       <a class="btn ghost wide" href="#products" onclick="UzTabs.goTo('smm')" data-i18n="about.cat2cta">Browse SMM Services →</a>
     </article>
+
+    <article class="category-card">
+      <div class="category-icon">👤</div>
+      <h3 data-i18n="about.cat3title">User Dashboard / Client Portal</h3>
+      <p data-i18n="about.cat3lead">A dedicated self-service interface allowing customers to log in, place orders, check balances, and track order progress in real time.</p>
+      <ul class="category-list">
+        <li data-i18n="about.cat3b1">Independent customer login & account dashboard</li>
+        <li data-i18n="about.cat3b2">Real-time balance inquiry & top-up overview</li>
+        <li data-i18n="about.cat3b3">Instant order status & history tracking</li>
+      </ul>
+      <button class="btn ghost wide" type="button" data-uz-account-open data-i18n="about.cat3cta">Open Dashboard →</button>
+    </article>
+
+    <article class="category-card">
+      <div class="category-icon">⚡</div>
+      <h3 data-i18n="about.cat4title">SaaS Self-Service Ordering System</h3>
+      <p data-i18n-html="about.cat4lead">Zero customer-service dependency — complete automated transactions via <strong>Top-up ➔ Choose Service ➔ Enter Link ➔ Auto Dispatch</strong>.</p>
+      <ul class="category-list">
+        <li data-i18n="about.cat4b1">Fully automated 24/7 instant dispatch</li>
+        <li data-i18n-html="about.cat4b2"><strong>Top-up ➔ Select ➔ Link ➔ Auto Dispatch</strong></li>
+        <li data-i18n="about.cat4b3">Direct upstream API integration with zero delay</li>
+      </ul>
+      <a class="btn ghost wide" href="#products" onclick="UzTabs.goTo('smm')" data-i18n="about.cat4cta">Start Self-Service Order →</a>
+    </article>
   </div>
 </section>
 
 <section class="section why-section">
   <div class="section-head center">
     <span class="eyebrow" data-i18n="eyebrow.why">02 · WHY CHOOSE US</span>
-    <h2 data-i18n="why.title">Why choose us?</h2>
+    <h2 data-i18n-html="why.title">Why choose us?</h2>
     <p data-i18n="why.lead">We aim to offer some of the best service in the industry.</p>
   </div>
   <div class="bento-grid">
@@ -153,7 +183,7 @@
 
   <div class="products-tabs" id="products-tabs">
     <button class="tab-btn active" data-tab="gemini" data-i18n="products.tab1">Google AI Pro</button>
-    <button class="tab-btn" data-tab="subscriptions" data-i18n="products.tab2">App Subscriptions</button>
+    <button class="tab-btn" data-tab="subscriptions" data-i18n="products.tab2">AI Subscriptions</button>
     <button class="tab-btn" data-tab="smm" data-i18n="products.tab3">SMM Panel</button>
   </div>
 
@@ -182,32 +212,9 @@
     <div class="notice"><strong data-i18n="steps.importantLabel">Important:</strong> <span data-i18n="steps.notice">The activation link for this offer is stated to be valid for 12 hours. Please use it promptly. Availability and feature eligibility may depend on the applicable offer and account/region.</span></div>
   </div>
 
-  <!-- Tab 2: App Subscriptions -->
+  <!-- Tab 2: AI Subscriptions (ChatGPT & Claude) -->
   <div class="tab-panel" id="tab-subscriptions">
-    <div id="subscription-app" class="subscription-shop">
-      <div class="subscription-shop-head">
-        <div>
-          <div class="subscription-kicker" data-i18n="subs.shopKicker">APP SUBSCRIPTIONS</div>
-          <h3 data-i18n="subs.shopTitle">Choose your app, compare plans, and order</h3>
-          <p data-i18n="subs.shopLead">Live products from our supplier. Clear pricing, product details and fast checkout.</p>
-        </div>
-        <div class="subscription-search-wrap">
-          <span>⌕</span><input id="subscription-search" type="search" data-i18n-placeholder="subs.search" placeholder="Search products...">
-        </div>
-      </div>
-      <div id="subscription-status" class="subscription-status">Loading subscription products…</div>
-      <div class="subscription-catalog-head">
-        <div class="subscription-categories-block">
-          <div class="subscription-side-title" data-i18n="subs.categories">Categories</div>
-          <div id="subscription-categories" class="subscription-category-list"></div>
-        </div>
-        <div class="subscription-catalog-count"><strong data-i18n="subs.products">Products</strong><span id="subscription-result-count"></span></div>
-      </div>
-      <main class="subscription-main">
-        <div id="subscription-products" class="subscription-product-grid"></div>
-      </main>
-    </div>
-    <p class="tab-note" data-i18n="subs.note">Products are loaded live from the supplier API. Customer-facing prices include the 30% markup.</p>
+    <div id="subscription-app"></div>
   </div>
 
   <!-- Tab 3: SMM Panel — APPMMO-like customer storefront -->
@@ -341,7 +348,7 @@
   <span class="eyebrow" data-i18n="eyebrow.contact">05 · CONTACT</span><h2 data-i18n="contact.title">Let's grow together.</h2><p data-i18n="contact.lead">Questions, orders or partnership enquiries — reach us directly.</p>
   <div class="contact-actions">
     <a class="contact-item" href="https://wa.me/601163630234" target="_blank" rel="noopener"><small data-i18n="contact.waLabel">WHATSAPP</small><strong>011 6363 0234</strong></a>
-    <a class="contact-item" href="weixin://dl/chat?UziShopeeseller"><small data-i18n="contact.wcLabel">WECHAT</small><strong>UziShopeeseller</strong></a>
+    <a class="contact-item" id="wechat-contact-btn" href="javascript:void(0)"><small data-i18n="contact.wcLabel">WECHAT</small><strong id="wechat-id-text">UziShopeeseller</strong></a>
   </div>
 </section>
 </main>
@@ -356,5 +363,33 @@
 <script src="order-modal.js"></script>
 <script src="script.js"></script>
 <script src="subscriptions.js"></script>
+<script src="account.js"></script>
+<script>
+// Handle WeChat copy interaction smoothly across PC & Mobile
+document.getElementById('wechat-contact-btn')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const wcId = 'UziShopeeseller';
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(wcId);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = wcId;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    const isZh = (typeof UzState !== 'undefined' && UzState.lang === 'zh');
+    if (typeof UzAccount !== 'undefined' && UzAccount.showToast) {
+      UzAccount.showToast(isZh ? '微信号已复制到剪贴板：' + wcId : 'WeChat ID copied: ' + wcId);
+    } else {
+      alert((isZh ? '微信号已复制：' : 'WeChat ID copied: ') + wcId);
+    }
+  } catch (err) {
+    prompt((typeof UzState !== 'undefined' && UzState.lang === 'zh') ? '请复制微信号：' : 'Please copy WeChat ID:', wcId);
+  }
+});
+</script>
 </body>
 </html>
