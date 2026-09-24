@@ -1,5 +1,5 @@
 /* =========================================================
-   UZISELLER AI SUBSCRIPTIONS STORE
+   UZISELLER AI SUBSCRIPTIONS STORE — FULLY OPTIMIZED
    AppMMO-Inspired Clear Category Layout + Dark Tech Theme
    ========================================================= */
 
@@ -8,6 +8,45 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+/* Loading State */
+.uz-loading {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.uz-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(124, 77, 255, 0.2);
+  border-top-color: #7c4dff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.uz-loading p {
+  color: #aaa5c2;
+  font-size: 15px;
+}
+
+.uz-api-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 12px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.uz-api-warning small {
+  color: #ffc107;
+  font-size: 13px;
 }
 
 /* Store Header */
@@ -87,10 +126,59 @@
   color: #666;
 }
 
+/* Trust Section (moved to top) */
+.uz-trust-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
+
+.uz-trust-top {
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.05) 0%, rgba(85, 201, 255, 0.05) 100%);
+  border-color: rgba(124, 77, 255, 0.15);
+}
+
+.uz-trust-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.uz-trust-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(85, 201, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.uz-trust-item strong {
+  display: block;
+  font-size: 15px;
+  color: #fff;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.uz-trust-item p {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Brand Category Cards (AppMMO-style) */
 .uz-brand-categories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 24px;
 }
 
@@ -274,16 +362,22 @@
 
 .uz-products-area.hidden {
   display: none;
-  opacity: 0;
-  max-height: 0;
-  padding: 0;
-  overflow: hidden;
 }
 
 .uz-products-area.visible {
   display: block;
-  opacity: 1;
-  max-height: none;
+  animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .uz-products-header {
@@ -293,6 +387,8 @@
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .uz-products-header h3 {
@@ -300,6 +396,43 @@
   font-weight: 800;
   color: #fff;
   margin: 0;
+}
+
+.uz-products-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.uz-sort-buttons {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.uz-sort-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #aaa5c2;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uz-sort-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.uz-sort-btn.active {
+  background: rgba(124, 77, 255, 0.2);
+  color: #fff;
 }
 
 .uz-close-btn {
@@ -311,10 +444,12 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .uz-close-btn:hover {
   background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
 }
 
 /* Product Grid */
@@ -331,12 +466,66 @@
   padding: 20px;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.uz-product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.uz-product-card.chatgpt-product::before {
+  background: #10a37f;
+}
+
+.uz-product-card.claude-product::before {
+  background: #cc794a;
 }
 
 .uz-product-card:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.uz-product-card:hover::before {
+  opacity: 1;
+}
+
+.uz-prod-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  min-height: 24px;
+}
+
+.uz-popular-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.2), rgba(255, 193, 7, 0.2));
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffc107;
+}
+
+.uz-stock-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4caf50;
 }
 
 .uz-prod-header {
@@ -361,9 +550,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  color: #55c9ff;
+  font-size: 24px;
   flex-shrink: 0;
+}
+
+.uz-prod-icon-placeholder.chatgpt-icon {
+  background: rgba(16, 163, 127, 0.15);
+}
+
+.uz-prod-icon-placeholder.claude-icon {
+  background: rgba(204, 121, 74, 0.15);
 }
 
 .uz-prod-info {
@@ -423,6 +619,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .uz-buy-btn:hover {
@@ -431,55 +628,40 @@
   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4);
 }
 
+.uz-buy-btn.chatgpt-btn {
+  background: linear-gradient(135deg, #10a37f, #0d8a6a);
+}
+
+.uz-buy-btn.chatgpt-btn:hover {
+  background: linear-gradient(135deg, #1aa587, #10a37f);
+  box-shadow: 0 4px 16px rgba(16, 163, 127, 0.4);
+}
+
+.uz-buy-btn.claude-btn {
+  background: linear-gradient(135deg, #cc794a, #b8663d);
+}
+
+.uz-buy-btn.claude-btn:hover {
+  background: linear-gradient(135deg, #d98a5e, #cc794a);
+  box-shadow: 0 4px 16px rgba(204, 121, 74, 0.4);
+}
+
+/* Empty State */
 .uz-empty {
   text-align: center;
   padding: 60px 20px;
   color: #666;
+}
+
+.uz-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.uz-empty p {
   font-size: 15px;
-}
-
-/* Trust Section */
-.uz-trust-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 32px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-}
-
-.uz-trust-item {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.uz-trust-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(85, 201, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.uz-trust-item strong {
-  display: block;
-  font-size: 15px;
-  color: #fff;
-  margin-bottom: 4px;
-  font-weight: 700;
-}
-
-.uz-trust-item p {
-  font-size: 13px;
-  color: #888;
-  margin: 0;
-  line-height: 1.5;
+  margin: 0 0 16px;
 }
 
 /* Responsive */
@@ -509,8 +691,36 @@
     padding: 20px;
   }
 
+  .uz-products-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .uz-products-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .uz-sort-buttons {
+    justify-content: center;
+  }
+
   .uz-trust-section {
     grid-template-columns: 1fr;
     padding: 20px;
+  }
+
+  .uz-cat-header {
+    flex-wrap: wrap;
+  }
+
+  .uz-prod-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .uz-buy-btn {
+    width: 100%;
   }
 }
