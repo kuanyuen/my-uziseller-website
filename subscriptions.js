@@ -112,9 +112,9 @@
         <!-- Store Header -->
         <div class="uz-store-header">
           <div class="uz-store-title">
-            <div class="uz-kicker">✦ ${zh ? '官方 AI 订阅商城' : 'OFFICIAL AI SUBSCRIPTIONS STORE'}</div>
-            <h2>${zh ? 'ChatGPT 与 Claude 订阅中心' : 'ChatGPT & Claude Subscription Hub'}</h2>
-            <p>${zh ? '官方正品保障 · 全自动秒级发货 · 独享私密账号与专属售后支持' : 'Official accounts · Instant delivery · Private access · Dedicated warranty support'}</p>
+            <div class="uz-kicker">✦ ${zh ? '官方授权 AI 订阅商城' : 'AUTHORIZED AI SUBSCRIPTIONS MARKETPLACE'}</div>
+            <h2>${zh ? '顶级 AI 工具，触手可及' : 'Premium AI Tools, Instantly Yours'}</h2>
+            <p>${zh ? '为专业人士与创作者提供 ChatGPT 与 Claude 官方账号 · 秒级发货 · 全程质保 · 私密独享' : 'ChatGPT & Claude official accounts for professionals & creators · Instant delivery · Full warranty · Private & secure'}</p>
           </div>
           <div class="uz-search-box">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M13 13l4 4"/></svg>
@@ -127,22 +127,22 @@
           <div class="uz-trust-item">
             <span class="uz-trust-icon">⚡</span>
             <div>
-              <strong>${zh ? '全自动即时发货' : 'Instant Auto Delivery'}</strong>
-              <p>${zh ? '支付完成后系统自动秒级派发账号' : 'Automated dispatch within seconds'}</p>
+              <strong>${zh ? '⚡ 闪电发货' : '⚡ Lightning Fast'}</strong>
+              <p>${zh ? '支付后 3 秒自动发货，无需等待人工处理' : 'Auto-delivery in 3 seconds after payment, no manual processing'}</p>
             </div>
           </div>
           <div class="uz-trust-item">
             <span class="uz-trust-icon">🛡️</span>
             <div>
-              <strong>${zh ? '官方正品质保' : 'Official Warranty'}</strong>
-              <p>${zh ? '正规渠道开通，支持全周期售后' : 'Authorized provision with full support'}</p>
+              <strong>${zh ? '🛡️ 官方渠道' : '🛡️ Official Source'}</strong>
+              <p>${zh ? '100% 官方正品账号，终身质保与快速售后' : '100% official accounts with lifetime warranty & priority support'}</p>
             </div>
           </div>
           <div class="uz-trust-item">
             <span class="uz-trust-icon">🔒</span>
             <div>
-              <strong>${zh ? '独享账号私密' : 'Private Accounts'}</strong>
-              <p>${zh ? '一人一号独立使用，数据完全隔离' : 'Single-user access with data isolation'}</p>
+              <strong>${zh ? '🔒 隐私保障' : '🔒 Privacy Guaranteed'}</strong>
+              <p>${zh ? '专属独立账号，对话记录完全私密，绝不共享' : 'Exclusive single-user accounts, fully private conversations, never shared'}</p>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@
               </div>
               <div class="uz-cat-info">
                 <h3>OpenAI ChatGPT</h3>
-                <p>${zh ? 'ChatGPT Plus 独享账号 · GPT-4o · Canvas · DALL-E 3' : 'ChatGPT Plus Accounts · GPT-4o · Canvas · DALL-E 3'}</p>
+                <p>${zh ? '全球最强 AI 对话助手 · 支持 GPT-4o 深度推理、Canvas 协作画布、DALL-E 3 图像生成' : 'World\'s leading AI assistant · GPT-4o advanced reasoning, Canvas collaboration & DALL-E 3 image generation'}</p>
                 <div class="uz-cat-meta">
                   <span class="uz-badge">${chatGptProducts.length} ${zh ? '个套餐' : 'Plans'}</span>
                   <span class="uz-price-tag">${zh ? '起步价' : 'From'} ${curSymbol}${gptMinPrice.toFixed(2)}</span>
@@ -169,9 +169,9 @@
               </button>
             </div>
             <div class="uz-cat-features">
-              <span>✓ ${zh ? '支持 GPT-4o 深度推理与图像生成' : 'GPT-4o reasoning & DALL-E image gen'}</span>
-              <span>✓ ${zh ? '独享账号私密对话与数据安全' : 'Private accounts & secure conversations'}</span>
-              <span>✓ ${zh ? '即时发货与全周期质保售后' : 'Instant delivery & full-term warranty'}</span>
+              <span>✓ ${zh ? '无限 GPT-4o 对话与深度分析能力' : 'Unlimited GPT-4o conversations & deep analysis'}</span>
+              <span>✓ ${zh ? 'Canvas 协作模式：实时编辑文档与代码' : 'Canvas mode: Real-time document & code editing'}</span>
+              <span>✓ ${zh ? 'DALL-E 3 AI 绘图：文字秒变精美图像' : 'DALL-E 3 AI art: Text to stunning images instantly'}</span>
             </div>
           </div>
           ` : ''}
@@ -185,7 +185,7 @@
               </div>
               <div class="uz-cat-info">
                 <h3>Anthropic Claude</h3>
-                <p>${zh ? 'Claude 3.7 Sonnet / Opus 独享账号 · 200K 长上下文 · 代码编程首选' : 'Claude 3.7 Sonnet / Opus · 200K Context · Best for Coding'}</p>
+                <p>${zh ? '程序员与创作者首选 AI · Claude 3.7 Sonnet / Opus 超强推理 · 200K 超长上下文处理整本书' : 'Developer & creator\'s top choice · Claude 3.7 Sonnet / Opus advanced reasoning · 200K context for entire books'}</p>
                 <div class="uz-cat-meta">
                   <span class="uz-badge">${claudeProducts.length} ${zh ? '个套餐' : 'Plans'}</span>
                   <span class="uz-price-tag">${zh ? '起步价' : 'From'} ${curSymbol}${claudeMinPrice.toFixed(2)}</span>
@@ -196,9 +196,9 @@
               </button>
             </div>
             <div class="uz-cat-features">
-              <span>✓ ${zh ? 'Claude 3.7 Sonnet / Opus 超长上下文' : 'Claude 3.7 Sonnet / Opus 200K context'}</span>
-              <span>✓ ${zh ? '代码编程与长文档分析首选' : 'Best for coding & long document analysis'}</span>
-              <span>✓ ${zh ? '官方正品账号与独立隔离环境' : 'Official accounts & isolated environment'}</span>
+              <span>✓ ${zh ? '200K 超长上下文：一次处理整本书或完整代码库' : '200K context window: Process entire books or codebases'}</span>
+              <span>✓ ${zh ? '代码编程专家：准确理解需求，输出高质量代码' : 'Coding expert: Precise requirements, production-quality code'}</span>
+              <span>✓ ${zh ? '长文写作利器：学术论文、商业报告、创意小说' : 'Long-form writing: Academic papers, reports, creative fiction'}</span>
             </div>
           </div>
           ` : ''}
