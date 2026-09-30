@@ -3,6 +3,7 @@
 // browser redirect, which is best-effort UX only.
 import { verifyXSignature } from "../lib/billplz.js";
 import { getOrderByBillId, saveOrder } from "../lib/store.js";
+import { creditRecharge, failRecharge, getRecharge, getRechargeByBillId } from "../lib/wallet.js";
 import { placeOrder } from "../lib/smm.js";
 import { buyProduct } from "../lib/shop-apmmo.js";
 
@@ -43,6 +44,24 @@ export default async function handler(req, res) {
 
   const billId = payload.id;
   const paid = payload.paid === "true" || payload.paid === true;
+
+  const rechargeReference = String(payload.reference_1 || "");
+  const recharge = (await getRechargeByBillId(billId)) ||
+    (rechargeReference ? await getRecharge(rechargeReference) : null);
+  if (recharge) {
+    if (recharge.billId && String(recharge.billId) !== String(billId)) {
+      res.status(400).json({ status: "error", msg: "Bill does not match wallet top-up" });
+      return;
+    }
+    if (payload.amount !== undefined && Number(payload.amount) !== Number(recharge.amountCents)) {
+      res.status(400).json({ status: "error", msg: "Bill amount does not match wallet top-up" });
+      return;
+    }
+    if (paid) await creditRecharge(recharge.id, billId);
+    else await failRecharge(recharge.id);
+    res.status(200).json({ status: "ok" });
+    return;
+  }
 
   const order = await getOrderByBillId(billId);
   if (!order) {

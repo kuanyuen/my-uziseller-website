@@ -75,13 +75,11 @@ const UzAccount = (() => {
             <label>${t("邮箱", "Email")}<input class="uz-input" type="email" id="uz-login-email" autocomplete="email" placeholder="you@example.com"></label>
             <label>${t("密码", "Password")}<input class="uz-input" type="password" id="uz-login-password" autocomplete="current-password" placeholder="••••••••"></label>
             <button class="uz-btn" id="uz-login-submit">${t("登录", "Sign in")}</button>
-            <p class="uz-account-linkrow"><a href="#" data-uz-forgot class="uz-account-link">${t("忘记密码？", "Forgot password?")}</a></p>
+            <p class="uz-account-note">${t("注册后即可查看充值和订单记录。", "Create an account to view your top-ups and orders.")}</p>
           </div>
           <div class="uz-pane uz-pane-register" style="display:none">
             <label>${t("姓名（可选）", "Name (optional)")}<input class="uz-input" type="text" id="uz-reg-name" autocomplete="name" placeholder="Your name"></label>
             <label>${t("邮箱", "Email")}<input class="uz-input" type="email" id="uz-reg-email" autocomplete="email" placeholder="you@example.com"></label>
-            <label>${t("验证码", "Verification code")}<input class="uz-input" type="text" id="uz-reg-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></label>
-            <button class="uz-btn uz-btn-ghost" id="uz-reg-sendcode">${t("发送验证码", "Send code")}</button>
             <label>${t("密码（至少6位）", "Password (min 6 chars)")}<input class="uz-input" type="password" id="uz-reg-password" autocomplete="new-password" placeholder="••••••••"></label>
             <button class="uz-btn" id="uz-reg-submit">${t("注册", "Create account")}</button>
           </div>
@@ -98,6 +96,41 @@ const UzAccount = (() => {
         </div>
       </div>`;
     document.body.appendChild(overlay);
+    const dashboard = document.createElement("div");
+    dashboard.className = "uz-account-dashboard";
+    dashboard.innerHTML = `
+      <div class="uz-dashboard-card">
+        <button class="uz-dashboard-close" aria-label="Close">&times;</button>
+        <div class="uz-dashboard-heading">
+          <div class="uz-dashboard-avatar"><span data-dashboard-initial>U</span></div>
+          <div><span class="uz-dashboard-kicker">${t("客户中心", "CUSTOMER CENTRE")}</span><h2 data-dashboard-name>${t("我的账户", "My account")}</h2><p data-dashboard-email></p></div>
+        </div>
+        <div class="uz-wallet-summary">
+          <div><span>${t("账户余额", "Available balance")}</span><strong data-wallet-balance>RM0.00</strong></div>
+          <button class="uz-topup-button" data-wallet-topup>${t("充值", "Top up")}</button>
+        </div>
+        <div class="uz-topup-options" hidden>
+          <span>${t("选择充值金额", "Choose top-up amount")}</span>
+          <div class="uz-topup-grid">${[10, 30, 50, 100].map(amount => `<button data-topup-amount="${amount}">RM${amount}</button>`).join("")}</div>
+          <div class="uz-topup-custom"><input type="number" min="1" max="10000" step="0.01" placeholder="RM custom amount"><button data-topup-custom>${t("继续付款", "Continue")}</button></div>
+          <small>${t("付款将通过 Billplz 安全处理，成功后余额自动到账。", "Payment is securely processed by Billplz and credited automatically after confirmation.")}</small>
+        </div>
+        <div class="uz-dashboard-columns">
+          <section><div class="uz-dashboard-section-title"><h3>${t("充值记录", "Top-up history")}</h3><span data-wallet-total>RM0.00</span></div><div data-wallet-history class="uz-dashboard-list"></div></section>
+          <section><div class="uz-dashboard-section-title"><h3>${t("我的订单", "My orders")}</h3><a href="order-status.html">${t("查看全部", "View all")} →</a></div><div data-account-orders class="uz-dashboard-list"></div></section>
+        </div>
+        <button class="uz-dashboard-logout" data-dashboard-logout>${t("退出登录", "Sign out")}</button>
+      </div>`;
+    document.body.appendChild(dashboard);
+    dashboard.addEventListener("click", e => { if (e.target === dashboard || e.target.closest(".uz-dashboard-close")) dashboard.classList.remove("open"); });
+    dashboard.querySelector("[data-dashboard-logout]").onclick = () => { dashboard.classList.remove("open"); logout(); };
+    dashboard.querySelector("[data-wallet-topup]").onclick = () => {
+      const options = dashboard.querySelector(".uz-topup-options");
+      options.hidden = !options.hidden;
+    };
+    dashboard.querySelectorAll("[data-topup-amount]").forEach(button => button.onclick = () => startTopup(Number(button.dataset.topupAmount)));
+    dashboard.querySelector("[data-topup-custom]").onclick = () => startTopup(Number(dashboard.querySelector(".uz-topup-custom input").value));
+    dashboard._load = () => loadDashboard(dashboard);
     overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
     overlay.querySelector(".uz-account-close").addEventListener("click", close);
     overlay.querySelectorAll(".uz-tab").forEach(btn => btn.onclick = () => switchTab(btn.dataset.tab));
@@ -105,10 +138,8 @@ const UzAccount = (() => {
     // Bind click events
     overlay.querySelector("#uz-login-submit").onclick = login;
     overlay.querySelector("#uz-reg-submit").onclick = register;
-    overlay.querySelector("#uz-reg-sendcode").onclick = () => sendCode("register");
     overlay.querySelector("#uz-reset-sendcode").onclick = () => sendCode("reset");
     overlay.querySelector("#uz-reset-submit").onclick = reset;
-    overlay.querySelector("[data-uz-forgot]").onclick = (e) => { e.preventDefault(); switchTab("reset"); };
     overlay.querySelector("[data-uz-back-login]").onclick = (e) => { e.preventDefault(); switchTab("login"); };
 
     // Support pressing Enter key in input fields to submit automatically
@@ -125,6 +156,54 @@ const UzAccount = (() => {
     document.addEventListener("click", e => {
       if (e.target.closest("[data-uz-account-logout]")) logout();
     });
+  }
+
+  async function startTopup(amountMYR) {
+    if (!Number.isFinite(amountMYR) || amountMYR < 1 || amountMYR > 10000) {
+      showToast(t("充值金额必须是 RM1 至 RM10,000。", "Top-up amount must be between RM1 and RM10,000."));
+      return;
+    }
+    try {
+      const response = await fetch("/api/wallet", { method: "POST", headers: authHeaders(), body: JSON.stringify({ amountMYR }) });
+      const result = await response.json();
+      if (!response.ok || result.status !== "ok") throw new Error(result.msg || "Unable to create payment");
+      window.location.href = result.paymentUrl;
+    } catch (error) {
+      showToast(error.message || t("无法创建充值付款。", "Unable to create top-up payment."));
+    }
+  }
+
+  async function loadDashboard(dashboard) {
+    if (!isLoggedIn()) return;
+    const [walletResponse, ordersResponse] = await Promise.all([
+      fetch("/api/account?action=me", { headers: authHeaders() }),
+      fetch("/api/account?action=orders", { headers: authHeaders() })
+    ]);
+    const wallet = await walletResponse.json();
+    const orders = await ordersResponse.json();
+    if (!walletResponse.ok || wallet.status !== "ok") {
+      clearSession(); refreshNav(); return;
+    }
+    const balance = Number(wallet.wallet?.balanceMYR || 0);
+    const transactions = wallet.wallet?.transactions || [];
+    const paidTotal = transactions.filter(item => item.status === "paid").reduce((sum, item) => sum + Number(item.amountMYR || 0), 0);
+    dashboard.querySelector("[data-wallet-balance]").textContent = `RM${balance.toFixed(2)}`;
+    dashboard.querySelector("[data-wallet-total]").textContent = `${t("累计", "Total")} RM${paidTotal.toFixed(2)}`;
+    dashboard.querySelector("[data-dashboard-name]").textContent = wallet.user?.name || wallet.user?.email || "";
+    dashboard.querySelector("[data-dashboard-email]").textContent = wallet.user?.email || "";
+    dashboard.querySelector("[data-dashboard-initial]").textContent = (wallet.user?.name || wallet.user?.email || "U").charAt(0).toUpperCase();
+    dashboard.querySelector("[data-wallet-history]").innerHTML = transactions.length ? transactions.slice(0, 6).map(item =>
+      `<div class="uz-dashboard-row"><span><b>+ RM${Number(item.amountMYR || 0).toFixed(2)}</b><small>${formatDate(item.createdAt)}</small></span><em class="is-${esc(item.status)}">${esc(item.status)}</em></div>`
+    ).join("") : `<div class="uz-dashboard-empty">${t("还没有充值记录。", "No top-up history yet.")}</div>`;
+    const orderList = orders.orders || [];
+    dashboard.querySelector("[data-account-orders]").innerHTML = orderList.length ? orderList.slice(0, 6).map(order =>
+      `<a class="uz-dashboard-row uz-order-row" href="order-status.html?order=${encodeURIComponent(order.id)}"><span><b>${esc(order.name || order.service || "Order")}</b><small>RM${Number(order.priceMYR || 0).toFixed(2)} · ${formatDate(order.createdAt)}</small></span><em>${esc(order.status || "pending")}</em></a>`
+    ).join("") : `<div class="uz-dashboard-empty">${t("还没有订单记录。", "No orders yet.")}</div>`;
+  }
+
+  function formatDate(value) {
+    if (!value) return "";
+    try { return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", year: "numeric" }).format(new Date(value)); } catch { return ""; }
   }
 
   function switchTab(tab) {
@@ -225,10 +304,9 @@ const UzAccount = (() => {
     const msg = overlay.querySelector("#uz-account-msg");
     const name = overlay.querySelector("#uz-reg-name").value.trim();
     const email = overlay.querySelector("#uz-reg-email").value.trim();
-    const code = overlay.querySelector("#uz-reg-code").value.trim();
     const password = overlay.querySelector("#uz-reg-password").value;
-    if (!email || !code || password.length < 6) {
-      msg.innerHTML = `<div class="uz-account-error">${t("请填写邮箱、验证码和至少6位密码。", "Enter your email, verification code and a password of at least 6 characters.")}</div>`;
+    if (!email || password.length < 6) {
+      msg.innerHTML = `<div class="uz-account-error">${t("请填写邮箱和至少6位密码。", "Enter your email and a password of at least 6 characters.")}</div>`;
       return;
     }
     const btn = overlay.querySelector("#uz-reg-submit"); btn.disabled = true; btn.textContent = t("注册中…", "Creating…");
@@ -244,7 +322,17 @@ const UzAccount = (() => {
     }
   }
 
-  function open(tab) { if (!overlay) build(); if (tab) switchTab(tab); overlay.classList.add("open"); }
+  function open(tab) {
+    if (!overlay) build();
+    if (isLoggedIn() && !tab) {
+      const dashboard = document.querySelector(".uz-account-dashboard");
+      dashboard?.classList.add("open");
+      dashboard?._load?.();
+      return;
+    }
+    if (tab) switchTab(tab);
+    overlay.classList.add("open");
+  }
   function close() { overlay?.classList.remove("open"); }
 
   function logout() {
