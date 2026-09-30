@@ -368,14 +368,21 @@
 
     try {
       // Try the correct API endpoint
-      const res = await fetch('/api/subscriptions.js?action=products');
+      const res = await fetch('/api/subscriptions?action=products');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       if (data.status === 'success' && data.products && data.products.length > 0) {
-        products = data.products.map(normalize).filter(p => p.brand);
+        products = data.products.map(normalize).filter(p => p.brand && isAiSubscription(p));
       } else {
         throw new Error('No products returned');
+      }
+
+      function isAiSubscription(product) {
+        const raw = product.raw || {};
+        const text = `${product.name} ${product.description} ${raw.category || ''} ${raw.category_name || ''} ${raw.group || ''}`.toLowerCase();
+        if (/facebook|instagram|tiktok|youtube|telegram|twitter|account aged|mmo/.test(text)) return false;
+        return /chatgpt|openai|gpt[-\s]?4|gpt[-\s]?5|claude|anthropic|gemini|google ai|midjourney|canva|perplexity/.test(text);
       }
 
       // If no AI products found, use demo data
