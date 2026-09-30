@@ -255,7 +255,9 @@ const UzAccount = (() => {
     document.querySelectorAll("[data-uz-account-loggedin]").forEach(el => { el.style.display = isLoggedIn() ? "" : "none"; });
     overlay?.querySelectorAll?.(".uz-my-orders").forEach(el => { el.style.display = isLoggedIn() ? "" : "none"; });
     document.querySelectorAll("[data-uz-account-loggedout]").forEach(el => { el.style.display = isLoggedIn() ? "none" : ""; });
-    document.querySelectorAll("[data-uz-account-name]").forEach(el => { el.textContent = getName() || ""; });
+    const name = getName() || getEmail().split("@")[0] || "U";
+    document.querySelectorAll("[data-uz-account-name]").forEach(el => { el.textContent = name; });
+    document.querySelectorAll("[data-uz-account-initial]").forEach(el => { el.textContent = name.trim().charAt(0).toUpperCase() || "U"; });
   }
 
   function init() {
