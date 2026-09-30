@@ -7,6 +7,7 @@
 const I18N = {
   'nav.home': { en: 'Home', zh: '首页' },
   'nav.products': { en: 'Products', zh: '商品' },
+  'nav.orders': { en: 'My Orders', zh: '我的订单' },
   'nav.login': { en: 'Sign in', zh: '登录' },
   'nav.account': { en: 'My account', zh: '我的账户' },
   'nav.logout': { en: 'Log out', zh: '退出登录' },
@@ -45,6 +46,7 @@ const I18N = {
   'hero.save': { en: 'SAVE', zh: '限时优惠' },
   'hero.noHidden': { en: 'One-time payment · No hidden fees', zh: '一次性付款 · 无隐藏费用' },
   'hero.orderWa': { en: 'View & Order', zh: '查看并下单' },
+  'products.ordersCta': { en: 'View My Orders →', zh: '查看我的订单 →' },
 
   'about.title': { en: 'A digital ecosystem<br><span>built to save you time.</span>', zh: '数字化生态系统<br><span>为您节省时间。</span>' },
   'about.lead': { en: 'We use a complete digital-services ecosystem to optimize your time and grow your revenue — offering resources, AI accounts, and enhanced social-media engagement.', zh: '利用全面的数字化服务生态系统，优化您的时间并提升收益。我们提供资源、人工智能账户，以及增强社交媒体互动的服务。' },

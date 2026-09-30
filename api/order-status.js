@@ -4,6 +4,35 @@ import { getOrder, saveOrder } from "../lib/store.js";
 import { getSupplierOrderStatus } from "../lib/smm.js";
 import { getOrder as getShopOrder } from "../lib/shop-apmmo.js";
 
+function extractDeliveryData(response) {
+  const candidates = [
+    response?.data,
+    response?.data?.items,
+    response?.data?.delivery,
+    response?.data?.credentials,
+    response?.result,
+    response?.delivery,
+    response?.credentials
+  ];
+  const values = candidates.find(Array.isArray) || [];
+  return values.map((item) => {
+    if (typeof item === "string") {
+      const text = item.trim();
+      const fields = text.split("|").map((value) => value.trim()).filter(Boolean);
+      return { raw: text, fields: fields.length ? fields : [text] };
+    }
+    if (item && typeof item === "object") {
+      const fields = Object.entries(item)
+        .filter(([key]) => !/id|status|created|updated|time/i.test(key))
+        .map(([, value]) => String(value ?? "").trim())
+        .filter(Boolean);
+      return { raw: item, fields };
+    }
+    const text = String(item ?? "").trim();
+    return { raw: text, fields: text ? [text] : [] };
+  }).filter((item) => item.fields.length);
+}
+
 export default async function handler(req, res) {
   const id = req.query.id;
   if (!id) { res.status(400).json({ status: "error", msg: "Missing id" }); return; }
@@ -19,6 +48,13 @@ export default async function handler(req, res) {
   if (order.type === "subscription" && order.supplierTransactionId && ["completed","processing","paid"].includes(order.status)) {
     try {
       const supplier = await getShopOrder(order.supplierTransactionId);
+      if (!order.deliveryData?.length) {
+        const deliveryData = extractDeliveryData(supplier);
+        if (deliveryData.length) {
+          order.deliveryData = deliveryData;
+          order.deliveryAvailable = true;
+        }
+      }
       order.supplierOrderStatus = supplier?.status || supplier?.data?.status || null;
       order.supplierOrderResponse = supplier;
       // We only downgrade/upgrade when the supplier clearly signals a terminal state.

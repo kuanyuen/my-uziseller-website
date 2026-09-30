@@ -6,6 +6,31 @@ import { getOrderByBillId, saveOrder } from "../lib/store.js";
 import { placeOrder } from "../lib/smm.js";
 import { buyProduct } from "../lib/shop-apmmo.js";
 
+function extractDeliveryData(response) {
+  const candidates = [
+    response?.data,
+    response?.data?.items,
+    response?.data?.delivery,
+    response?.data?.credentials,
+    response?.result,
+    response?.delivery,
+    response?.credentials
+  ];
+  const values = candidates.find(Array.isArray) || [];
+  return values.map((item) => {
+    if (typeof item !== "string") {
+      const fields = Object.entries(item || {})
+        .filter(([key]) => !/id|status|created|updated|time/i.test(key))
+        .map(([, value]) => String(value ?? "").trim())
+        .filter(Boolean);
+      return { raw: item, fields };
+    }
+    const text = item.trim();
+    const fields = text.split("|").map((value) => value.trim()).filter(Boolean);
+    return { raw: text, fields: fields.length ? fields : [text] };
+  }).filter((item) => item.fields.length);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") { res.status(405).end(); return; }
 
@@ -56,19 +81,9 @@ export default async function handler(req, res) {
       const supplierOk = supplierResult?.status === "success" || supplierResult?.success === true || supplierResult?.ok === true;
       if (supplierOk) {
         const tx = supplierResult.trans_id || supplierResult.transaction_id || supplierResult.order_id || supplierResult.order || supplierResult.id || supplierResult.data?.trans_id || supplierResult.data?.transaction_id || supplierResult.data?.order_id || supplierResult.data?.order || null;
-        const rawDelivery = Array.isArray(supplierResult.data)
-          ? supplierResult.data
-          : (Array.isArray(supplierResult.result) ? supplierResult.result : (Array.isArray(supplierResult.data?.items) ? supplierResult.data.items : []));
         order.status = "completed";
         order.supplierTransactionId = tx ? String(tx) : null;
-        order.deliveryData = rawDelivery.map((item) => {
-          if (typeof item !== "string") return { raw: item };
-          const text = item.trim();
-          const parts = text.split("|");
-          return parts.length >= 2
-            ? { raw: text, fields: parts.map((v) => String(v).trim()) }
-            : { raw: text, fields: [text] };
-        });
+        order.deliveryData = extractDeliveryData(supplierResult);
         order.deliveryAvailable = order.deliveryData.length > 0;
         order.supplierResponse = supplierResult;
       } else {
