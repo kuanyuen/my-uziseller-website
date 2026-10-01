@@ -64,6 +64,17 @@ const UzAccount = (() => {
     overlay.innerHTML = `
       <div class="uz-account-modal">
         <button class="uz-account-close" aria-label="Close">&times;</button>
+        <div class="uz-account-form-side">
+        <a class="uz-auth-brand" href="#top" aria-label="UziSeller home"><img src="assets/logo.svg" alt=""><span>Uzi<span>Seller</span></span></a>
+        <div class="uz-auth-intro">
+          <h1 data-auth-title>${t("登录您的账户", "Welcome back")}</h1>
+          <p data-auth-subtitle>${t("登录后即可查看余额、充值记录与订单进度。", "Sign in to manage your balance, top-ups and orders.")}</p>
+        </div>
+        <div class="uz-auth-steps" aria-hidden="true">
+          <span class="active"><i>1</i><b>${t("账户", "Account")}</b></span><em></em>
+          <span><i>2</i><b>${t("安全", "Security")}</b></span><em></em>
+          <span><i>3</i><b>${t("完成", "Ready")}</b></span>
+        </div>
         <div class="uz-account-head">
           <div class="uz-account-tabs">
             <button class="uz-tab uz-tab-login active" data-tab="login">${t("登录", "Sign in")}</button>
@@ -95,6 +106,16 @@ const UzAccount = (() => {
           </div>
           <div class="uz-account-msg" id="uz-account-msg"></div>
         </div>
+        </div>
+        <aside class="uz-account-side">
+          <div class="uz-account-side-orb"></div>
+          <span class="uz-account-side-kicker">UZISELLER · CUSTOMER ZONE</span>
+          <h2>${t("让每一次订单都更有掌控感", "Everything for your growth, in one place.")}</h2>
+          <p>${t("安全管理账户、充值余额和订单记录，随时掌握服务进度。", "Manage your account, balance and orders with a clear, secure customer space.")}</p>
+          <div class="uz-account-benefit"><span>✦</span><div><b>${t("账户与订单同步", "Orders in sync")}</b><small>${t("登录后快速查看历史订单和状态。", "See order history and live status after signing in.")}</small></div></div>
+          <div class="uz-account-benefit"><span>◈</span><div><b>${t("安全付款体验", "Secure payments")}</b><small>${t("充值和付款流程由安全支付系统处理。", "Top-ups and payments are handled securely.")}</small></div></div>
+          <div class="uz-account-signal"><i></i>${t("系统在线 · 支持快速响应", "System online · Fast support")}</div>
+        </aside>
       </div>`;
     document.body.appendChild(overlay);
     const dashboard = document.createElement("div");
@@ -214,6 +235,15 @@ const UzAccount = (() => {
     overlay.querySelector(".uz-pane-login").style.display = tab === "login" ? "" : "none";
     overlay.querySelector(".uz-pane-register").style.display = tab === "register" ? "" : "none";
     overlay.querySelector(".uz-pane-reset").style.display = tab === "reset" ? "" : "none";
+    const titles = {
+      login: [t("登录您的账户", "Welcome back"), t("登录后即可查看余额、充值记录与订单进度。", "Sign in to manage your balance, top-ups and orders.")],
+      register: [t("创建您的账户", "Create your account"), t("几分钟即可完成注册，开始管理您的服务。", "Create your account and start managing your services.")],
+      reset: [t("重置您的密码", "Reset your password"), t("验证邮箱后即可设置新密码。", "Verify your email to choose a new password.")]
+    };
+    const [title, subtitle] = titles[tab] || titles.login;
+    overlay.querySelector("[data-auth-title]").textContent = title;
+    overlay.querySelector("[data-auth-subtitle]").textContent = subtitle;
+    overlay.querySelector(".uz-auth-steps").classList.toggle("is-registering", tab === "register");
     const msg = overlay.querySelector("#uz-account-msg"); msg.innerHTML = "";
   }
 
