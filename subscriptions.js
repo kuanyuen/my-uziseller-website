@@ -10,55 +10,9 @@
   const num = (v, fb = 0) => { const n = Number(String(v ?? '').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : fb; };
 
   let products = [];
-  let expandedBrand = 'CHATGPT'; // Default: show ChatGPT products on load
+  let expandedBrand = 'AI';
   let query = '';
   let sortBy = 'recommended'; // 'recommended' | 'priceAsc' | 'priceDesc' | 'popular'
-
-  // Fallback demo products (if API fails)
-  const DEMO_PRODUCTS = [
-    {
-      id: 'demo-gpt-plus-1m',
-      name: 'ChatGPT Plus - 1 Month',
-      category: 'ChatGPT',
-      description: 'ChatGPT Plus private account with GPT-4o, Canvas, and DALL-E 3 access. Instant delivery.',
-      icon: '',
-      prices: { MYR: 45, USD: 11, CNY: 75 },
-      brand: 'CHATGPT',
-      stock: 'In Stock',
-      popular: true
-    },
-    {
-      id: 'demo-gpt-plus-3m',
-      name: 'ChatGPT Plus - 3 Months',
-      category: 'ChatGPT',
-      description: 'ChatGPT Plus subscription for 3 months. Best value for regular users.',
-      icon: '',
-      prices: { MYR: 120, USD: 30, CNY: 200 },
-      brand: 'CHATGPT',
-      stock: 'In Stock'
-    },
-    {
-      id: 'demo-claude-pro-1m',
-      name: 'Claude Pro - 1 Month',
-      category: 'Claude',
-      description: 'Claude 3.7 Sonnet & Opus access with 200K context window. Perfect for coding and long documents.',
-      icon: '',
-      prices: { MYR: 85, USD: 21, CNY: 142 },
-      brand: 'CLAUDE',
-      stock: 'In Stock',
-      popular: true
-    },
-    {
-      id: 'demo-claude-pro-3m',
-      name: 'Claude Pro - 3 Months',
-      category: 'Claude',
-      description: 'Claude Pro subscription for 3 months. Ideal for developers and content creators.',
-      icon: '',
-      prices: { MYR: 240, USD: 60, CNY: 400 },
-      brand: 'CLAUDE',
-      stock: 'In Stock'
-    }
-  ];
 
   function priceFor(p) {
     const cur = currency();
@@ -69,52 +23,43 @@
 
   function getBrand(p) {
     const hay = `${p.category || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase();
-    if (hay.includes('claude')) return 'CLAUDE';
-    if (hay.includes('gpt') || hay.includes('chatgpt') || hay.includes('openai')) return 'CHATGPT';
-    return null;
+    if (/facebook|instagram|tiktok|youtube|telegram|twitter|smm|social media/.test(hay)) return null;
+    return /\bai\b|artificial intelligence|language model|large language model|\bllm\b|generative|chatgpt|openai|\bgpt\b|claude|anthropic|gemini|google ai|midjourney|perplexity|copilot|deepseek|\bqwen\b|\bllama\b|mistral|grok|\bkimi\b|\bglm\b|minimax|suno|runway|ideogram|leonardo ai|cursor ai|windsurf/.test(hay) ? 'AI' : null;
   }
 
   const normalize = p => {
     const brand = getBrand(p);
     return {
-      id: String(first(p, ['id', 'ID', 'product_id'], '')),
+      id: String(first(p, ['id', 'ID', 'product_id', 'productId', 'productID'], '')),
       name: String(first(p, ['name', 'title', 'product_name'], 'AI Product')),
-      category: brand === 'CLAUDE' ? 'Claude' : 'ChatGPT',
+      category: String(first(p, ['category', 'category_name', 'categoryName', 'group', 'group_name'], 'Artificial Intelligence')),
       description: String(first(p, ['description', 'desc', 'content'], '')),
-      icon: String(first(p, ['icon', 'icon_url', 'image', 'logo'], '')),
-      price: num(first(p, ['price', 'Price'], 0)),
+      icon: String(first(p, ['icon', 'icon_url', 'iconUrl', 'image', 'image_url', 'logo', 'thumbnail'], '')),
+      price: num(first(p, ['price', 'Price', 'selling_price', 'sellingPrice', 'sale_price', 'salePrice', 'cost', 'amount', 'unit_price', 'unitPrice', 'product_price', 'productPrice', 'regular_price', 'current_price'], 0)),
       prices: first(p, ['prices'], null),
-      currency: String(first(p, ['currency'], 'VND')).toUpperCase(),
-      min: Math.max(1, num(first(p, ['min', 'minimum'], 1), 1)),
-      max: Math.max(1, num(first(p, ['max', 'maximum'], 1), 1)),
+      currency: String(first(p, ['currency', 'currency_code'], 'VND')).toUpperCase(),
+      min: Math.max(1, num(first(p, ['min', 'minimum', 'min_qty', 'min_quantity'], 1), 1)),
+      max: Math.max(1, num(first(p, ['max', 'maximum', 'max_qty', 'max_quantity'], 1), 1)),
       stock: first(p, ['stock', 'inventory'], ''),
       popular: first(p, ['popular', 'featured', 'hot'], false),
-      raw: p,
       brand: brand
     };
   };
 
   function renderStore() {
     const zh = lang() === 'zh';
-    const chatGptProducts = products.filter(p => p.brand === 'CHATGPT');
-    const claudeProducts = products.filter(p => p.brand === 'CLAUDE');
+    const aiProducts = products;
     const curSymbol = currency() === 'MYR' ? 'RM' : (currency() === 'USD' ? '$' : '¥');
-
-    const gptMinPrice = chatGptProducts.length ? Math.min(...chatGptProducts.map(p => p.prices?.[currency()] ?? 999)) : 0;
-    const claudeMinPrice = claudeProducts.length ? Math.min(...claudeProducts.map(p => p.prices?.[currency()] ?? 999)) : 0;
-
-    // Hide cards with no products
-    const showChatGpt = chatGptProducts.length > 0;
-    const showClaude = claudeProducts.length > 0;
+    const minPrice = Math.min(...aiProducts.map(p => p.prices?.[currency()] ?? Infinity));
 
     root.innerHTML = `
       <div class="uz-ai-store">
         <!-- Store Header -->
         <div class="uz-store-header">
           <div class="uz-store-title">
-            <div class="uz-kicker">✦ ${zh ? '官方授权 AI 订阅商城' : 'AUTHORIZED AI SUBSCRIPTIONS MARKETPLACE'}</div>
-            <h2>${zh ? '顶级 AI 工具，触手可及' : 'Premium AI Tools, Instantly Yours'}</h2>
-            <p>${zh ? '为专业人士与创作者提供 ChatGPT 与 Claude 官方账号 · 秒级发货 · 全程质保 · 私密独享' : 'ChatGPT & Claude official accounts for professionals & creators · Instant delivery · Full warranty · Private & secure'}</p>
+            <div class="uz-kicker">✦ ${zh ? '人工智能商品与订阅' : 'ARTIFICIAL INTELLIGENCE MARKETPLACE'}</div>
+            <h2>${zh ? '探索人工智能商品与订阅' : 'Explore AI Products and Subscriptions'}</h2>
+            <p>${zh ? '汇集多种人工智能工具与订阅服务 · 实时商品 · 安全结账' : 'Explore AI tools and subscriptions from multiple providers · Live products · Secure checkout'}</p>
           </div>
           <div class="uz-search-box">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M13 13l4 4"/></svg>
@@ -127,81 +72,51 @@
           <div class="uz-trust-item">
             <span class="uz-trust-icon">⚡</span>
             <div>
-              <strong>${zh ? '⚡ 闪电发货' : '⚡ Lightning Fast'}</strong>
-              <p>${zh ? '支付后 3 秒自动发货，无需等待人工处理' : 'Auto-delivery in 3 seconds after payment, no manual processing'}</p>
+              <strong>${zh ? '⚡ 付款后自动提交' : '⚡ Automatic Submission'}</strong>
+              <p>${zh ? '付款确认后，系统会自动向供应商提交订单' : 'Orders are submitted to the supplier after payment is confirmed'}</p>
             </div>
           </div>
           <div class="uz-trust-item">
             <span class="uz-trust-icon">🛡️</span>
             <div>
-              <strong>${zh ? '🛡️ 官方渠道' : '🛡️ Official Source'}</strong>
-              <p>${zh ? '100% 官方正品账号，终身质保与快速售后' : '100% official accounts with lifetime warranty & priority support'}</p>
+              <strong>${zh ? '🛡️ 安全付款' : '🛡️ Secure Payment'}</strong>
+              <p>${zh ? '通过 Billplz 安全付款页面完成结账' : 'Checkout is handled through the Billplz payment page'}</p>
             </div>
           </div>
           <div class="uz-trust-item">
             <span class="uz-trust-icon">🔒</span>
             <div>
-              <strong>${zh ? '🔒 隐私保障' : '🔒 Privacy Guaranteed'}</strong>
-              <p>${zh ? '专属独立账号，对话记录完全私密，绝不共享' : 'Exclusive single-user accounts, fully private conversations, never shared'}</p>
+              <strong>${zh ? '🔒 订单可查询' : '🔒 Order Tracking'}</strong>
+              <p>${zh ? '可在订单页面查看付款与交付状态' : 'View payment and delivery status on the order page'}</p>
             </div>
           </div>
         </div>
 
-        <!-- Main Brand Category Cards (AppMMO-style) -->
+        <!-- Artificial intelligence category -->
         <div class="uz-brand-categories">
-          ${showChatGpt ? `
-          <!-- ChatGPT Category Card -->
-          <div class="uz-category-card chatgpt-card ${expandedBrand === 'CHATGPT' ? 'expanded' : ''}" data-brand="CHATGPT">
+          <div class="uz-category-card ai-card ${expandedBrand === 'AI' ? 'expanded' : ''}" data-brand="AI">
             <div class="uz-cat-header">
-              <div class="uz-cat-icon chatgpt-icon">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.2"/><circle cx="12" cy="12" r="3"/></svg>
+              <div class="uz-cat-icon ai-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="5"/></svg>
               </div>
               <div class="uz-cat-info">
-                <h3>OpenAI ChatGPT</h3>
-                <p>${zh ? '全球最强 AI 对话助手 · 支持 GPT-4o 深度推理、Canvas 协作画布、DALL-E 3 图像生成' : 'World\'s leading AI assistant · GPT-4o advanced reasoning, Canvas collaboration & DALL-E 3 image generation'}</p>
+                <h3>${zh ? '人工智能' : 'Artificial Intelligence'}</h3>
+                <p>${zh ? '浏览供应商提供的 AI 工具、模型、账号与订阅套餐。' : 'Browse AI tools, models, accounts and subscription plans from the supplier.'}</p>
                 <div class="uz-cat-meta">
-                  <span class="uz-badge">${chatGptProducts.length} ${zh ? '个套餐' : 'Plans'}</span>
-                  <span class="uz-price-tag">${zh ? '起步价' : 'From'} ${curSymbol}${gptMinPrice.toFixed(2)}</span>
+                  <span class="uz-badge">${aiProducts.length} ${zh ? '个商品' : 'Products'}</span>
+                  ${Number.isFinite(minPrice) ? `<span class="uz-price-tag">${zh ? '起步价' : 'From'} ${curSymbol}${minPrice.toFixed(2)}</span>` : ''}
                 </div>
               </div>
               <button class="uz-expand-btn" type="button">
-                ${expandedBrand === 'CHATGPT' ? '▲' : '▼'}
+                ${expandedBrand === 'AI' ? '▲' : '▼'}
               </button>
             </div>
             <div class="uz-cat-features">
-              <span>✓ ${zh ? '无限 GPT-4o 对话与深度分析能力' : 'Unlimited GPT-4o conversations & deep analysis'}</span>
-              <span>✓ ${zh ? 'Canvas 协作模式：实时编辑文档与代码' : 'Canvas mode: Real-time document & code editing'}</span>
-              <span>✓ ${zh ? 'DALL-E 3 AI 绘图：文字秒变精美图像' : 'DALL-E 3 AI art: Text to stunning images instantly'}</span>
+              <span>✓ ${zh ? '供应商实时商品目录' : 'Live supplier product catalogue'}</span>
+              <span>✓ ${zh ? '下单时重新核对价格与库存规则' : 'Price and quantity limits checked at checkout'}</span>
+              <span>✓ ${zh ? '付款确认后自动提交订阅订单' : 'Orders submitted after payment confirmation'}</span>
             </div>
           </div>
-          ` : ''}
-
-          ${showClaude ? `
-          <!-- Claude Category Card -->
-          <div class="uz-category-card claude-card ${expandedBrand === 'CLAUDE' ? 'expanded' : ''}" data-brand="CLAUDE">
-            <div class="uz-cat-header">
-              <div class="uz-cat-icon claude-icon">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4l16 16M20 4L4 20M12 2v20M2 12h20"/></svg>
-              </div>
-              <div class="uz-cat-info">
-                <h3>Anthropic Claude</h3>
-                <p>${zh ? '程序员与创作者首选 AI · Claude 3.7 Sonnet / Opus 超强推理 · 200K 超长上下文处理整本书' : 'Developer & creator\'s top choice · Claude 3.7 Sonnet / Opus advanced reasoning · 200K context for entire books'}</p>
-                <div class="uz-cat-meta">
-                  <span class="uz-badge">${claudeProducts.length} ${zh ? '个套餐' : 'Plans'}</span>
-                  <span class="uz-price-tag">${zh ? '起步价' : 'From'} ${curSymbol}${claudeMinPrice.toFixed(2)}</span>
-                </div>
-              </div>
-              <button class="uz-expand-btn" type="button">
-                ${expandedBrand === 'CLAUDE' ? '▲' : '▼'}
-              </button>
-            </div>
-            <div class="uz-cat-features">
-              <span>✓ ${zh ? '200K 超长上下文：一次处理整本书或完整代码库' : '200K context window: Process entire books or codebases'}</span>
-              <span>✓ ${zh ? '代码编程专家：准确理解需求，输出高质量代码' : 'Coding expert: Precise requirements, production-quality code'}</span>
-              <span>✓ ${zh ? '长文写作利器：学术论文、商业报告、创意小说' : 'Long-form writing: Academic papers, reports, creative fiction'}</span>
-            </div>
-          </div>
-          ` : ''}
         </div>
 
         <!-- Expanded Products Section -->
@@ -235,7 +150,7 @@
         query = e.target.value.trim().toLowerCase();
         // Auto-expand when searching
         if (query && !expandedBrand) {
-          expandedBrand = showChatGpt ? 'CHATGPT' : 'CLAUDE';
+          expandedBrand = 'AI';
         }
         if (expandedBrand) renderProducts();
         else renderStore();
@@ -285,7 +200,7 @@
     const titleEl = document.getElementById('uz-brand-title');
     if (!grid || !titleEl) return;
 
-    let filtered = products.filter(p => p.brand === expandedBrand);
+    let filtered = products.filter(p => p.brand === 'AI');
 
     // Apply search filter
     if (query) {
@@ -311,9 +226,7 @@
     }
 
     // Update title with sort buttons staying visible
-    titleEl.innerHTML = expandedBrand === 'CHATGPT'
-      ? `🟢 ChatGPT ${zh ? '全部套餐' : 'All Plans'} (${filtered.length})`
-      : `🟠 Claude ${zh ? '全部套餐' : 'All Plans'} (${filtered.length})`;
+    titleEl.textContent = `${zh ? '人工智能商品' : 'AI Products'} (${filtered.length})`;
 
     if (!filtered.length) {
       grid.innerHTML = `<div class="uz-empty">
@@ -325,7 +238,7 @@
     }
 
     grid.innerHTML = filtered.map(p => {
-      const brandColor = p.brand === 'CHATGPT' ? 'chatgpt' : 'claude';
+      const brandColor = 'ai';
       const stockBadge = p.stock ? `<span class="uz-stock-badge">${esc(p.stock)}</span>` : '';
       const popularBadge = p.popular ? `<span class="uz-popular-badge">${zh ? '🔥 热门' : '🔥 Popular'}</span>` : '';
 
@@ -338,7 +251,7 @@
         <div class="uz-prod-header">
           ${p.icon ? `<img src="${esc(p.icon)}" alt="" class="uz-prod-icon" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
           <div class="uz-prod-icon-placeholder ${brandColor}-icon" ${p.icon ? 'style="display:none"' : ''}>
-            ${p.brand === 'CHATGPT' ? '🤖' : '🧠'}
+            ✨
           </div>
           <div class="uz-prod-info">
             <h4>${esc(p.name)}</h4>
@@ -350,7 +263,7 @@
             <span class="uz-price-label">${zh ? '售价' : 'Price'}</span>
             <strong>${priceFor(p)}</strong>
           </div>
-          <button class="uz-buy-btn ${brandColor}-btn" type="button" onclick="UzSub.openOrder('${esc(p.id)}')">
+          <button class="uz-buy-btn ${brandColor}-btn" type="button" data-buy-product-id="${esc(p.id)}">
             ${zh ? '立即购买' : 'Buy Now'}
           </button>
         </div>
@@ -358,6 +271,112 @@
     `;
     }).join('');
   }
+
+  function showUnavailable(message) {
+    const zh = lang() === 'zh';
+    root.innerHTML = `<div class="uz-api-warning" role="alert">
+      <strong>${zh ? '暂时无法加载 AI 套餐' : 'AI plans are temporarily unavailable'}</strong>
+      <p>${esc(message || (zh ? '请稍后重试，或联系客服。' : 'Please try again later or contact support.'))}</p>
+      <button type="button" class="uz-buy-btn" id="uz-sub-retry">${zh ? '重试' : 'Retry'}</button>
+    </div>`;
+    root.querySelector('#uz-sub-retry')?.addEventListener('click', init);
+  }
+
+  function closeCheckout(overlay) {
+    overlay?.remove();
+    document.removeEventListener('keydown', onCheckoutEscape);
+  }
+
+  let activeCheckout = null;
+  function onCheckoutEscape(event) {
+    if (event.key === 'Escape' && activeCheckout) {
+      const overlay = activeCheckout;
+      activeCheckout = null;
+      closeCheckout(overlay);
+    }
+  }
+
+  function openCheckout(product) {
+    const zh = lang() === 'zh';
+    const account = window.UzAccount;
+    const accountName = account && typeof account.getName === 'function' ? account.getName() : '';
+    const accountEmail = account && typeof account.getEmail === 'function' ? account.getEmail() : '';
+    const overlay = document.createElement('div');
+    overlay.className = 'order-modal-overlay uz-sub-checkout-overlay open';
+    overlay.innerHTML = `
+      <section class="smm-review-modal uz-sub-checkout" role="dialog" aria-modal="true" aria-labelledby="uz-sub-checkout-title">
+        <button class="uz-sub-checkout-close" type="button" aria-label="${zh ? '关闭' : 'Close'}">×</button>
+        <span class="smm-review-kicker">${zh ? '安全结账' : 'SECURE CHECKOUT'}</span>
+        <h3 id="uz-sub-checkout-title">${esc(product.name)}</h3>
+        <p class="smm-review-meta">${zh ? '付款确认后将自动向供应商提交订单。' : 'Your order is sent to the supplier after payment is confirmed.'}</p>
+        <form id="uz-sub-checkout-form">
+          <div class="smm-review-customer">
+            <label><span>${zh ? '姓名' : 'Name'}</span><input name="name" autocomplete="name" required maxlength="120" value="${esc(accountName)}"></label>
+            <label><span>${zh ? '电子邮箱' : 'Email'}</span><input name="email" type="email" autocomplete="email" required maxlength="254" value="${esc(accountEmail)}"></label>
+          </div>
+          <div class="uz-sub-checkout-options">
+            <label><span>${zh ? '数量' : 'Quantity'}</span><input name="quantity" type="number" inputmode="numeric" min="${product.min}" max="${product.max}" value="${product.min}" required></label>
+            <label><span>${zh ? '优惠码（选填）' : 'Coupon (optional)'}</span><input name="coupon" maxlength="100" autocomplete="off"></label>
+          </div>
+          <div class="uz-sub-checkout-error" role="alert" hidden></div>
+          <div class="smm-review-footer">
+            <div><small>${zh ? '页面显示参考价，最终价格以结账验证为准。' : 'Displayed price is indicative; checkout verifies the final price.'}</small><strong>${esc(priceFor(product))}</strong></div>
+            <button class="btn" type="submit">${zh ? '前往付款' : 'Continue to payment'}</button>
+          </div>
+        </form>
+      </section>`;
+    document.body.appendChild(overlay);
+    activeCheckout = overlay;
+
+    const form = overlay.querySelector('#uz-sub-checkout-form');
+    const submit = form.querySelector('[type="submit"]');
+    const error = form.querySelector('.uz-sub-checkout-error');
+    const close = () => {
+      closeCheckout(overlay);
+      if (activeCheckout === overlay) activeCheckout = null;
+    };
+    overlay.addEventListener('click', event => {
+      if (event.target === overlay) close();
+    });
+    overlay.querySelector('.uz-sub-checkout-close').addEventListener('click', close);
+    document.addEventListener('keydown', onCheckoutEscape);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.hidden = true;
+      submit.disabled = true;
+      submit.textContent = zh ? '正在创建账单…' : 'Creating payment…';
+      try {
+        const values = Object.fromEntries(new FormData(form).entries());
+        const response = await fetch('/api/subscription-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: product.id,
+            quantity: Number(values.quantity),
+            name: String(values.name || '').trim(),
+            email: String(values.email || '').trim(),
+            coupon: String(values.coupon || '').trim()
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'ok' || !result.paymentUrl) {
+          throw new Error(result.msg || (zh ? '无法创建付款账单，请重试。' : 'Could not create payment. Please try again.'));
+        }
+        window.location.assign(result.paymentUrl);
+      } catch (err) {
+        error.textContent = err.message || (zh ? '结账失败，请稍后重试。' : 'Checkout failed. Please try again.');
+        error.hidden = false;
+        submit.disabled = false;
+        submit.textContent = zh ? '重试付款' : 'Retry payment';
+      }
+    });
+    form.querySelector('[name="name"]').focus();
+  }
+
+  root.addEventListener('click', event => {
+    const button = event.target.closest('[data-buy-product-id]');
+    if (button) window.UzSub?.openOrder(button.dataset.buyProductId);
+  });
 
   // Fetch products from API
   async function init() {
@@ -379,30 +398,21 @@
       }
 
       function isAiSubscription(product) {
-        const raw = product.raw || {};
-        const text = `${product.name} ${product.description} ${raw.category || ''} ${raw.category_name || ''} ${raw.group || ''}`.toLowerCase();
-        if (/facebook|instagram|tiktok|youtube|telegram|twitter|account aged|mmo/.test(text)) return false;
-        return /chatgpt|openai|gpt[-\s]?4|gpt[-\s]?5|claude|anthropic|gemini|google ai|midjourney|canva|perplexity/.test(text);
+        const text = `${product.name} ${product.description} ${product.category || ''}`.toLowerCase();
+        if (/facebook|instagram|tiktok|youtube|telegram|twitter|account aged|smm|social media/.test(text)) return false;
+        return product.brand === 'AI';
       }
 
-      // If no AI products found, use demo data
+      products = products.filter(p => p.price > 0 && p.prices && Number.isFinite(p.prices.MYR) && p.prices.MYR > 0);
       if (products.length === 0) {
-        console.warn('No AI products found in API response, using demo data');
-        products = DEMO_PRODUCTS;
+        showUnavailable(lang() === 'zh' ? '供应商暂未返回可售且价格有效的 AI 商品。' : 'The supplier did not return AI products with valid prices.');
+        return;
       }
 
       renderStore();
     } catch (err) {
       console.error('Failed to load products from API:', err);
-      // Fallback to demo products
-      products = DEMO_PRODUCTS;
-      renderStore();
-
-      // Show subtle warning
-      const warning = document.createElement('div');
-      warning.className = 'uz-api-warning';
-      warning.innerHTML = `<small>⚠️ ${lang() === 'zh' ? '演示模式（API 未连接）' : 'Demo mode (API not connected)'}</small>`;
-      root.insertBefore(warning, root.firstChild);
+      showUnavailable(lang() === 'zh' ? '供应商 API 暂时无法连接，请稍后重试。' : 'The supplier API could not be reached. Please try again later.');
     }
   }
 
@@ -414,18 +424,7 @@
         alert(lang() === 'zh' ? '产品未找到' : 'Product not found');
         return;
       }
-
-      // Check if order modal is available
-      if (typeof window.UzOrder !== 'undefined' && window.UzOrder.open) {
-        window.UzOrder.open(product.raw || product);
-      } else if (typeof window.openSubscriptionCheckout === 'function') {
-        window.openSubscriptionCheckout(product.raw || product);
-      } else {
-        // Fallback: redirect to WhatsApp
-        const zh = lang() === 'zh';
-        const msg = encodeURIComponent(`Hi, I want to order: ${product.name} (${priceFor(product)})`);
-        window.open(`https://wa.me/601163630234?text=${msg}`, '_blank');
-      }
+      openCheckout(product);
     },
 
     refresh: () => {

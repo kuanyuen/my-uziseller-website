@@ -36,6 +36,24 @@ const num = (v, fallback=0) => {
   const n=Number(String(v ?? "").replace(/[^0-9.\-]/g,""));
   return Number.isFinite(n) ? n : fallback;
 };
+function parsePrice(value, currency) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  let text=String(value ?? "").trim().replace(/[^\d,.\-]/g,"");
+  if (!text) return 0;
+  const lastSeparator=Math.max(text.lastIndexOf(","),text.lastIndexOf("."));
+  const fractionLength=lastSeparator<0 ? 0 : text.length-lastSeparator-1;
+  const separatorCount=(text.match(/[,.]/g)||[]).length;
+  const decimalSeparator=currency!=="VND" && lastSeparator>=0 && fractionLength>0 && fractionLength<=2 && separatorCount===1;
+  if (currency!=="VND" && lastSeparator>=0 && fractionLength>0 && fractionLength<=2 && separatorCount>1) {
+    text=text.slice(0,lastSeparator).replace(/[,.]/g,"")+"."+text.slice(lastSeparator+1);
+  } else if (decimalSeparator) {
+    text=text.replace(lastSeparator===text.lastIndexOf(",") ? "," : ".", ".");
+  } else {
+    text=text.replace(/[,.]/g,"");
+  }
+  const parsed=Number(text);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 const isAdmin = (req) => !!process.env.ADMIN_PASSWORD && req.headers["x-admin-password"] === process.env.ADMIN_PASSWORD;
 
 // APPMMO has used a few response shapes over time. Walk the response instead of
@@ -47,8 +65,8 @@ function collectProducts(node, inheritedCategory="", out=[]) {
   }
   if (!isObj(node)) return out;
 
-  const looksLikeProduct = ["id","ID","product_id","productId"].some(k => node[k] !== undefined) &&
-    ["name","title","product_name","productName"].some(k => node[k] !== undefined);
+  const looksLikeProduct = ["id","ID","product_id","productId","productID"].some(k => node[k] !== undefined) &&
+    ["name","title","product_name","productName","product"].some(k => node[k] !== undefined);
   if (looksLikeProduct) {
     out.push({ ...node, category: first(node,["category","category_name","categoryName","group","group_name"],inheritedCategory || "Other") });
     return out;
@@ -59,16 +77,16 @@ function collectProducts(node, inheritedCategory="", out=[]) {
     if (["api_key","token","password","secret"].includes(key.toLowerCase())) continue;
     let nextCategory = inheritedCategory;
     if (/category|group/i.test(key) && typeof value === "string") nextCategory = value;
-    else if (isObj(value) && /categories?|groups?/i.test(key)) nextCategory = categoryHere;
+    else if ((isObj(value) || Array.isArray(value)) && /categories?|groups?|products?/i.test(key)) nextCategory = categoryHere;
     collectProducts(value, nextCategory, out);
   }
   return out;
 }
 
 function normalizeProduct(p, index) {
-  const id = String(first(p,["id","ID","product_id","productId"], index+1));
-  const rawPrice = num(first(p,["price","Price","selling_price","sale_price","cost","amount","unit_price"],0));
-  const currency = String(first(p,["currency","unit","currency_code"],"VND")).toUpperCase();
+  const id = String(first(p,["id","ID","product_id","productId","productID"], index+1));
+  const currency = String(first(p,["currency","currency_code","currencyCode","price_currency"],"VND")).toUpperCase();
+  const rawPrice = parsePrice(first(p,["price","Price","selling_price","sellingPrice","sale_price","salePrice","cost","amount","unit_price","unitPrice","product_price","productPrice","regular_price","current_price"],0),currency);
   const vndToMyr = Number(process.env.SHOP_VND_TO_MYR_RATE || process.env.VND_TO_MYR_RATE || process.env.VND_TO_MYR || 0.000156);
   const usdToMyr = Number(process.env.SHOP_USD_TO_MYR_RATE || process.env.USD_TO_MYR_RATE || process.env.USD_TO_MYR || 4.04);
   const cnyToMyr = Number(process.env.SHOP_CNY_TO_MYR_RATE || process.env.CNY_TO_MYR_RATE || process.env.CNY_TO_MYR || 0.60);
@@ -78,8 +96,8 @@ function normalizeProduct(p, index) {
   const markedMyr = Math.round(basePriceMYR * (1 + markupPercent / 100) * 100) / 100;
   return {
     id,
-    name: String(first(p,["name","title","product_name","productName"],`Product ${id}`)),
-    category: String(first(p,["category","category_name","categoryName","group","group_name"],"Other")),
+    name: String(first(p,["name","title","product_name","productName","product"],`Product ${id}`)),
+    category: String(first(p,["category","category_name","categoryName","group","group_name","category_title"],"Other")),
     description: String(first(p,["description","desc","content","detail","details","product_description","productDescription","short_description","shortDescription","info","intro"],"")),
     icon: String(first(p,["icon","icon_url","iconUrl","image","image_url","imageUrl","logo","logo_url","thumbnail","thumb"],"")),
     price: rawPrice,
@@ -92,8 +110,7 @@ function normalizeProduct(p, index) {
       CNY: Math.round((markedMyr / cnyToMyr) * 100) / 100
     },
     min: Math.max(1,num(first(p,["min","minimum","min_amount","min_qty","min_quantity"],1),1)),
-    max: Math.max(1,num(first(p,["max","maximum","max_amount","max_qty","max_quantity"],1),1)),
-    raw:p
+    max: Math.max(1,num(first(p,["max","maximum","max_amount","max_qty","max_quantity"],1),1))
   };
 }
 
@@ -125,7 +142,7 @@ export default async function handler(req,res) {
       const products=source.map(normalizeProduct).filter(p=>p.id&&p.name).filter(p=>{
         if(seen.has(p.id)) return false; seen.add(p.id); return true;
       });
-      return json(res,200,{status:"success",products,raw:r.data},60);
+      return json(res,200,{status:"success",products},60);
     }
 
     if (action === "profile") {

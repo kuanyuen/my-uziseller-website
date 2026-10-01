@@ -1,35 +1,15 @@
-# Uziseller V1 + APMMO API
+# UziSeller + SHOP.APPMMO API
 
-这是在原 Uziseller V1 静态网站基础上加入的 Vercel Serverless API 测试层。
+网站通过 Vercel Serverless Functions 安全连接 SHOP.APPMMO，并支持订阅商品付款和自动交付。
 
-## 部署前必须设置的 Vercel Environment Variables
+## 必须设置的 Vercel 环境变量
 
-在 Vercel 项目 Settings → Environment Variables 添加：
+在 Vercel 项目 Settings → Environment Variables 中设置：
 
-- `APMMO_API_KEY` = 你重新生成的新 APMMO API Key
-- `ADMIN_PASSWORD` = 你自己设置的后台测试密码
+- `SHOP_APMMO_API_KEY` = SHOP.APPMMO API Key
+- `SHOP_APMMO_BASE` = `https://shop.appmmo.com/api`（可选，默认使用此地址）
 
-不要把 API Key 写进 HTML、JavaScript 或 GitHub。
-
-## 测试页面
-
-部署后打开：
-
-`/admin/`
-
-输入 `ADMIN_PASSWORD` 后，可以测试：
-- profile
-- products
-- product
-- order
-- buy（会真实下单）
-
-## 注意
-
-当前版本主要是“安全的 API 测试层”，还没有数据库、客户账户、付款和正式订单系统。
-正式上线自动交付前，应再增加数据库和订单状态处理。
-当前版本主要是“安全的 API 测试层”，还没有数据库、客户账户、付款和正式订单系统。
-正式上线自动交付前，应再增加数据库和订单状态处理。
+不要把 API Key 写进 HTML、前端 JavaScript、公开文档或 GitHub。更新变量后，需重新部署 Vercel。
 
 ## App Subscription API (SHOP.APPMMO.COM)
 
@@ -53,5 +33,7 @@ The storefront uses the supplier endpoints visible in the supplier API documenta
 - `POST /api/buy_product` — supplier purchase submission after successful payment
 
 The browser never receives `SHOP_APMMO_API_KEY`.
+
+The customer-facing AI marketplace accepts AI products from the supplier catalogue rather than limiting the list to ChatGPT and Claude. AI product purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`. If the supplier catalogue is unavailable or a product has no valid price, the storefront does not display it as purchasable.
 ### Digital-product auto delivery
 After a successful `buy_product` response, UziSeller stores `trans_id` plus each entry in `data[]`. String entries such as `A|B` are preserved as fields without assuming that the fields are specifically an account, password, key, or code. Customers can view and copy the returned delivery values from `order-status.html` after payment.
