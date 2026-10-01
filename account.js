@@ -9,6 +9,37 @@ const UzAccount = (() => {
   function t(zh, en) {
     return (typeof UzState !== "undefined" && UzState.lang === "zh") ? zh : en;
   }
+  const authCopy = {
+    "auth.login": ["登录", "Sign in"],
+    "auth.register": ["创建账户", "Create account"],
+    "auth.email": ["电子邮件", "Email"],
+    "auth.password": ["密码", "Password"],
+    "auth.name": ["姓名（可选）", "Name (optional)"],
+    "auth.passwordHint": ["密码至少 6 位", "Password (min 6 chars)"],
+    "auth.resetHint": ["输入注册邮箱，我们会发送验证码。", "Enter your registered email and we will send a code."],
+    "auth.sendCode": ["发送验证码", "Send code"],
+    "auth.verificationCode": ["验证码", "Verification code"],
+    "auth.newPassword": ["新密码（至少 6 位）", "New password (min 6 chars)"],
+    "auth.resetPassword": ["重置密码", "Reset password"],
+    "auth.backLogin": ["← 返回登录", "← Back to sign in"],
+    "auth.loginNote": ["注册后即可查看充值和订单记录。", "Create an account to view your top-ups and orders."],
+    "auth.customerZone": ["UZISELLER · 客户中心", "UZISELLER · CUSTOMER ZONE"],
+    "auth.sideTitle": ["让每一次订单都更有掌控感", "Everything for your growth, in one place."],
+    "auth.sideDescription": ["安全管理账户、充值余额和订单记录，随时掌握服务进度。", "Manage your account, balance and orders with a clear, secure customer space."],
+    "auth.orders": ["订单与账户同步", "Orders in sync"],
+    "auth.ordersNote": ["登录后快速查看历史订单和状态。", "See order history and live status after signing in."],
+    "auth.securePayments": ["安全付款体验", "Secure payments"],
+    "auth.securePaymentsNote": ["充值和付款流程由安全支付系统处理。", "Top-ups and payments are handled securely."],
+    "auth.online": ["系统在线 · 支持快速响应", "System online · Fast support"],
+    "auth.stepAccount": ["账户", "Account"],
+    "auth.stepSecurity": ["安全", "Security"],
+    "auth.stepReady": ["完成", "Ready"]
+  };
+  function copy(key) {
+    const value = authCopy[key];
+    if (!value) return key;
+    return value[typeof UzState !== "undefined" && UzState.lang === "zh" ? 0 : 1];
+  }
   function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
 
   function getToken() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; } }
@@ -71,50 +102,50 @@ const UzAccount = (() => {
           <p data-auth-subtitle>${t("登录后即可查看余额、充值记录与订单进度。", "Sign in to manage your balance, top-ups and orders.")}</p>
         </div>
         <div class="uz-auth-steps" aria-hidden="true">
-          <span class="active"><i>1</i><b>${t("账户", "Account")}</b></span><em></em>
-          <span><i>2</i><b>${t("安全", "Security")}</b></span><em></em>
-          <span><i>3</i><b>${t("完成", "Ready")}</b></span>
+          <span class="active"><i>1</i><b data-auth-copy="auth.stepAccount">${copy("auth.stepAccount")}</b></span><em></em>
+          <span><i>2</i><b data-auth-copy="auth.stepSecurity">${copy("auth.stepSecurity")}</b></span><em></em>
+          <span><i>3</i><b data-auth-copy="auth.stepReady">${copy("auth.stepReady")}</b></span>
         </div>
         <div class="uz-account-head">
           <div class="uz-account-tabs">
-            <button class="uz-tab uz-tab-login active" data-tab="login">${t("登录", "Sign in")}</button>
-            <button class="uz-tab uz-tab-register" data-tab="register">${t("注册", "Create account")}</button>
+            <button class="uz-tab uz-tab-login active" data-tab="login" data-auth-copy="auth.login">${copy("auth.login")}</button>
+            <button class="uz-tab uz-tab-register" data-tab="register" data-auth-copy="auth.register">${copy("auth.register")}</button>
           </div>
         </div>
         <div class="uz-account-body">
           <div class="uz-pane uz-pane-login">
             <a href="order-status.html" class="uz-account-link uz-my-orders" style="display:none">${t("我的订单", "My orders")} →</a>
-            <label>${t("邮箱", "Email")}<input class="uz-input" type="email" id="uz-login-email" autocomplete="email" placeholder="you@example.com"></label>
-            <label>${t("密码", "Password")}<input class="uz-input" type="password" id="uz-login-password" autocomplete="current-password" placeholder="••••••••"></label>
-            <button class="uz-btn" id="uz-login-submit">${t("登录", "Sign in")}</button>
-            <p class="uz-account-note">${t("注册后即可查看充值和订单记录。", "Create an account to view your top-ups and orders.")}</p>
+            <label><span data-auth-copy="auth.email">${copy("auth.email")}</span><input class="uz-input" type="email" id="uz-login-email" autocomplete="email" placeholder="you@example.com"></label>
+            <label><span data-auth-copy="auth.password">${copy("auth.password")}</span><input class="uz-input" type="password" id="uz-login-password" autocomplete="current-password" placeholder="••••••••"></label>
+            <button class="uz-btn" id="uz-login-submit" data-auth-copy="auth.login">${copy("auth.login")}</button>
+            <p class="uz-account-note" data-auth-copy="auth.loginNote">${copy("auth.loginNote")}</p>
           </div>
           <div class="uz-pane uz-pane-register" style="display:none">
-            <label>${t("姓名（可选）", "Name (optional)")}<input class="uz-input" type="text" id="uz-reg-name" autocomplete="name" placeholder="Your name"></label>
-            <label>${t("邮箱", "Email")}<input class="uz-input" type="email" id="uz-reg-email" autocomplete="email" placeholder="you@example.com"></label>
-            <label>${t("密码（至少6位）", "Password (min 6 chars)")}<input class="uz-input" type="password" id="uz-reg-password" autocomplete="new-password" placeholder="••••••••"></label>
-            <button class="uz-btn" id="uz-reg-submit">${t("注册", "Create account")}</button>
+            <label><span data-auth-copy="auth.name">${copy("auth.name")}</span><input class="uz-input" type="text" id="uz-reg-name" autocomplete="name" placeholder="Your name"></label>
+            <label><span data-auth-copy="auth.email">${copy("auth.email")}</span><input class="uz-input" type="email" id="uz-reg-email" autocomplete="email" placeholder="you@example.com"></label>
+            <label><span data-auth-copy="auth.passwordHint">${copy("auth.passwordHint")}</span><input class="uz-input" type="password" id="uz-reg-password" autocomplete="new-password" placeholder="••••••••"></label>
+            <button class="uz-btn" id="uz-reg-submit" data-auth-copy="auth.register">${copy("auth.register")}</button>
           </div>
           <div class="uz-pane uz-pane-reset" style="display:none">
-            <p class="uz-account-hint">${t("输入注册邮箱，我们会发送验证码。", "Enter your registered email and we will send a code.")}</p>
-            <label>${t("邮箱", "Email")}<input class="uz-input" type="email" id="uz-reset-email" autocomplete="email" placeholder="you@example.com"></label>
-            <button class="uz-btn uz-btn-ghost" id="uz-reset-sendcode">${t("发送验证码", "Send code")}</button>
-            <label>${t("验证码", "Verification code")}<input class="uz-input" type="text" id="uz-reset-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></label>
-            <label>${t("新密码（至少6位）", "New password (min 6 chars)")}<input class="uz-input" type="password" id="uz-reset-password" autocomplete="new-password" placeholder="••••••••"></label>
-            <button class="uz-btn" id="uz-reset-submit">${t("重置密码", "Reset password")}</button>
-            <p class="uz-account-linkrow"><a href="#" data-uz-back-login class="uz-account-link">${t("← 返回登录", "← Back to sign in")}</a></p>
+            <p class="uz-account-hint" data-auth-copy="auth.resetHint">${copy("auth.resetHint")}</p>
+            <label><span data-auth-copy="auth.email">${copy("auth.email")}</span><input class="uz-input" type="email" id="uz-reset-email" autocomplete="email" placeholder="you@example.com"></label>
+            <button class="uz-btn uz-btn-ghost" id="uz-reset-sendcode" data-auth-copy="auth.sendCode">${copy("auth.sendCode")}</button>
+            <label><span data-auth-copy="auth.verificationCode">${copy("auth.verificationCode")}</span><input class="uz-input" type="text" id="uz-reset-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></label>
+            <label><span data-auth-copy="auth.newPassword">${copy("auth.newPassword")}</span><input class="uz-input" type="password" id="uz-reset-password" autocomplete="new-password" placeholder="••••••••"></label>
+            <button class="uz-btn" id="uz-reset-submit" data-auth-copy="auth.resetPassword">${copy("auth.resetPassword")}</button>
+            <p class="uz-account-linkrow"><a href="#" data-uz-back-login class="uz-account-link" data-auth-copy="auth.backLogin">${copy("auth.backLogin")}</a></p>
           </div>
           <div class="uz-account-msg" id="uz-account-msg"></div>
         </div>
         </div>
         <aside class="uz-account-side">
           <div class="uz-account-side-orb"></div>
-          <span class="uz-account-side-kicker">UZISELLER · CUSTOMER ZONE</span>
-          <h2>${t("让每一次订单都更有掌控感", "Everything for your growth, in one place.")}</h2>
-          <p>${t("安全管理账户、充值余额和订单记录，随时掌握服务进度。", "Manage your account, balance and orders with a clear, secure customer space.")}</p>
-          <div class="uz-account-benefit"><span>✦</span><div><b>${t("账户与订单同步", "Orders in sync")}</b><small>${t("登录后快速查看历史订单和状态。", "See order history and live status after signing in.")}</small></div></div>
-          <div class="uz-account-benefit"><span>◈</span><div><b>${t("安全付款体验", "Secure payments")}</b><small>${t("充值和付款流程由安全支付系统处理。", "Top-ups and payments are handled securely.")}</small></div></div>
-          <div class="uz-account-signal"><i></i>${t("系统在线 · 支持快速响应", "System online · Fast support")}</div>
+          <span class="uz-account-side-kicker" data-auth-copy="auth.customerZone">${copy("auth.customerZone")}</span>
+          <h2 data-auth-copy="auth.sideTitle">${copy("auth.sideTitle")}</h2>
+          <p data-auth-copy="auth.sideDescription">${copy("auth.sideDescription")}</p>
+          <div class="uz-account-benefit"><span>✦</span><div><b data-auth-copy="auth.orders">${copy("auth.orders")}</b><small data-auth-copy="auth.ordersNote">${copy("auth.ordersNote")}</small></div></div>
+          <div class="uz-account-benefit"><span>◈</span><div><b data-auth-copy="auth.securePayments">${copy("auth.securePayments")}</b><small data-auth-copy="auth.securePaymentsNote">${copy("auth.securePaymentsNote")}</small></div></div>
+          <div class="uz-account-signal"><i></i><span data-auth-copy="auth.online">${copy("auth.online")}</span></div>
         </aside>
       </div>`;
     document.body.appendChild(overlay);
@@ -156,6 +187,7 @@ const UzAccount = (() => {
     overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
     overlay.querySelector(".uz-account-close").addEventListener("click", close);
     overlay.querySelectorAll(".uz-tab").forEach(btn => btn.onclick = () => switchTab(btn.dataset.tab));
+    document.addEventListener("uz:langchange", refreshAuthLanguage);
 
     // Bind click events
     overlay.querySelector("#uz-login-submit").onclick = login;
@@ -245,6 +277,17 @@ const UzAccount = (() => {
     overlay.querySelector("[data-auth-subtitle]").textContent = subtitle;
     overlay.querySelector(".uz-auth-steps").classList.toggle("is-registering", tab === "register");
     const msg = overlay.querySelector("#uz-account-msg"); msg.innerHTML = "";
+  }
+
+  function refreshAuthLanguage() {
+    if (!overlay) return;
+    overlay.querySelectorAll("[data-auth-copy]").forEach(el => {
+      el.textContent = copy(el.dataset.authCopy);
+    });
+    const activePane = ["login", "register", "reset"].find(tab =>
+      overlay.querySelector(`.uz-pane-${tab}`).style.display !== "none"
+    ) || "login";
+    switchTab(activePane);
   }
 
   async function api(path, action, body) {
