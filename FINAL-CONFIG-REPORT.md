@@ -140,7 +140,7 @@ https://uziseller-uzi-seller.vercel.app/api/billplz-webhook
 ### 问题 2: Logo 显示
 如果 logo 不显示：
 - 清除浏览器缓存（Ctrl+F5）
-- Logo 文件路径: `assets/logo.svg`
+- Logo 文件路径: `assets/logo-mark.png`
 - 文件已存在并正常部署
 
 ### 问题 3: DNS 缓存

@@ -1,3 +1,5 @@
+import { getPriceIncreaseFactor } from "../lib/pricing.js";
+
 const BASE = process.env.SHOP_APMMO_BASE || "https://shop.appmmo.com/api";
 
 function json(res, status, body, cacheSeconds=0) {
@@ -101,9 +103,10 @@ function normalizeProduct(p, index) {
   const usdToMyr = Number(process.env.SHOP_USD_TO_MYR_RATE || process.env.USD_TO_MYR_RATE || process.env.USD_TO_MYR || 4.04);
   const cnyToMyr = Number(process.env.SHOP_CNY_TO_MYR_RATE || process.env.CNY_TO_MYR_RATE || process.env.CNY_TO_MYR || 0.60);
   const markupPercent = Number(process.env.SUBSCRIPTION_MARKUP_PERCENT || 30);
+  const priceIncreaseFactor = getPriceIncreaseFactor();
   const rates = { MYR: 1, VND: vndToMyr, USD: usdToMyr, CNY: cnyToMyr };
   const basePriceMYR = rawPrice * (rates[currency] || rates.VND);
-  const markedMyr = Math.round(basePriceMYR * (1 + markupPercent / 100) * 100) / 100;
+  const markedMyr = Math.round(basePriceMYR * (1 + markupPercent / 100) * priceIncreaseFactor * 100) / 100;
   return {
     id,
     name: String(first(p,["name","title","product_name","productName","product"],`Product ${id}`)),

@@ -18,6 +18,7 @@ Add these Vercel Environment Variables:
 - `SHOP_APMMO_API_KEY` = the API key for shop.appmmo.com (keep server-side only)
 - `SHOP_APMMO_BASE` = `https://shop.appmmo.com/api` (optional)
 - `SUBSCRIPTION_MARKUP_PERCENT` = `30` (optional; default 30)
+- `PRICE_INCREASE_PERCENT` = `50` (optional; default 50; applied on top of all existing storefront prices)
 - `USD_TO_MYR` = your current USD/MYR display conversion (optional; default 4.25)
 - `CNY_TO_MYR` = your current CNY/MYR display conversion (optional; default 0.59)
 
@@ -34,7 +35,7 @@ The storefront uses the supplier endpoints visible in the supplier API documenta
 
 The browser never receives `SHOP_APMMO_API_KEY`.
 
-The customer-facing product marketplace displays all sellable supplier categories and products, with distinct category icons, category filters, search, price sorting, and progressive loading. Products with invalid prices are not shown as purchasable. Purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`.
+The customer-facing product marketplace displays all sellable supplier categories and products, with distinct category icons, category filters, search, price sorting, progressive loading, and automatic Chinese translation for visible supplier text. Translation uses MyMemory's public translation endpoint; original text remains available if that service is unavailable or its free quota is exhausted. Products with invalid prices are not shown as purchasable. Purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`.
 
 The catalogue proxy distinguishes sellable products from category headings by requiring an ID, name, and positive price, then recursively walks nested category/product groups (including zero-priced category placeholders). Product detail responses are normalized before being sent to the browser.
 ### Digital-product auto delivery

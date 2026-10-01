@@ -14,6 +14,38 @@
   let selectedCategory = '';
   let sortBy = 'recommended';
   let displayLimit = 48;
+  const translationCache = loadTranslationCache();
+  const translating = new Set();
+  let translationObserver;
+
+  function loadTranslationCache() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('uz_catalog_zh_translations') || '{}');
+      return new Map(Object.entries(saved).filter(([source, translated]) =>
+        source && typeof translated === 'string' && translated
+      ));
+    } catch (error) {
+      console.warn('Unable to read cached product translations:', error);
+      return new Map();
+    }
+  }
+
+  function saveTranslation(source, translated) {
+    translationCache.set(source, translated);
+    while (translationCache.size > 1000) {
+      translationCache.delete(translationCache.keys().next().value);
+    }
+    try {
+      localStorage.setItem('uz_catalog_zh_translations', JSON.stringify(Object.fromEntries(translationCache)));
+    } catch (error) {
+      console.warn('Unable to cache product translation:', error);
+    }
+  }
+
+  function needsChineseTranslation(text) {
+    const containsJapaneseOrKorean = /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(text);
+    return /\p{L}/u.test(text) && (!/\p{Script=Han}/u.test(text) || containsJapaneseOrKorean);
+  }
 
   function priceFor(p) {
     const cur = currency();
@@ -128,7 +160,7 @@
           </button>
           ${categories.map(category => `
             <button class="uz-category-chip ${selectedCategory === category ? 'active' : ''}" type="button" data-category="${esc(category)}" aria-pressed="${selectedCategory === category}">
-              <span class="uz-category-icon" aria-hidden="true">${categoryIcons.get(category)}</span><span class="uz-category-name">${esc(category)}</span><small>${categoryCounts.get(category)}</small>
+              <span class="uz-category-icon" aria-hidden="true">${categoryIcons.get(category)}</span><span class="uz-category-name">${esc(translationCache.get(category) || category)}</span><small>${categoryCounts.get(category)}</small>
             </button>
           `).join('')}
         </div>
@@ -150,11 +182,35 @@
               </div>
             </div>
           </div>
+          <p class="uz-translation-notice" id="uz-translation-status" role="status" hidden></p>
           <div id="uz-product-grid" class="uz-product-grid"></div>
           <div class="uz-load-more-wrap" id="uz-load-more-wrap"></div>
         </div>
       </div>
     `;
+
+    translationObserver?.disconnect();
+    translationObserver = new IntersectionObserver(entries => {
+      const jobs = [];
+      entries.filter(entry => entry.isIntersecting).forEach(entry => {
+        translationObserver.unobserve(entry.target);
+        if (entry.target.matches('.uz-category-chip[data-category]')) {
+          const category = entry.target.dataset.category;
+          const target = entry.target.querySelector('.uz-category-name');
+          if (category && target) jobs.push({ source: category, target });
+          return;
+        }
+        const product = products.find(item => item.id === entry.target.dataset.productId);
+        if (product) {
+          jobs.push(
+            { source: product.name, target: entry.target.querySelector('[data-translate="name"]') },
+            { source: product.description.substring(0, 90), target: entry.target.querySelector('[data-translate="description"]') }
+          );
+        }
+      });
+      translateTexts(jobs);
+    }, { rootMargin: '180px 0px' });
+    root.querySelectorAll('.uz-category-chip[data-category]').forEach(button => translationObserver.observe(button));
 
     const searchInput = document.getElementById('uz-search');
     if (searchInput) {
@@ -174,11 +230,14 @@
     const titleEl = document.getElementById('uz-brand-title');
     if (!grid || !titleEl) return;
 
+    translationObserver?.disconnect();
+    root.querySelectorAll('.uz-category-chip[data-category]').forEach(button => translationObserver?.observe(button));
+
     let filtered = products.filter(p => !selectedCategory || p.category === selectedCategory);
 
     if (query) {
       filtered = filtered.filter(p => {
-        const hay = `${p.name} ${p.description} ${p.category}`.toLowerCase();
+        const hay = `${p.name} ${p.description} ${p.category} ${translationCache.get(p.name) || ''} ${translationCache.get(p.description.substring(0, 90)) || ''} ${translationCache.get(p.category) || ''}`.toLowerCase();
         return hay.includes(query);
       });
     }
@@ -191,7 +250,10 @@
     }
 
     const selectedLabel = selectedCategory || (zh ? '所有产品' : 'All products');
-    titleEl.textContent = `${selectedLabel} (${filtered.length})`;
+    titleEl.innerHTML = `<span>${esc(translationCache.get(selectedLabel) || selectedLabel)}</span> <small>(${filtered.length})</small>`;
+    if (zh && selectedCategory && needsChineseTranslation(selectedCategory) && !translationCache.has(selectedCategory)) {
+      translateTexts([{ source: selectedCategory, target: titleEl.querySelector('span') }]);
+    }
 
     if (!filtered.length) {
       grid.innerHTML = `<div class="uz-empty">
@@ -221,8 +283,8 @@
             ${esc(p.category.slice(0, 1).toUpperCase())}
           </div>
           <div class="uz-prod-info">
-            <h4>${esc(p.name)}</h4>
-            <p>${esc(p.description.substring(0, 90))}${p.description.length > 90 ? '…' : ''}</p>
+            <h4 data-translate="name">${esc(translationCache.get(p.name) || p.name)}</h4>
+            <p data-translate="description">${esc(translationCache.get(p.description.substring(0, 90)) || p.description.substring(0, 90))}${p.description.length > 90 ? '…' : ''}</p>
           </div>
         </div>
         <div class="uz-prod-footer">
@@ -237,11 +299,64 @@
       </div>
     `;
     }).join('');
+    grid.querySelectorAll('.uz-product-card').forEach(card => translationObserver?.observe(card));
 
     const loadMore = document.getElementById('uz-load-more-wrap');
     loadMore.innerHTML = filtered.length > displayLimit
       ? `<button type="button" class="uz-load-more" data-load-more>${zh ? `显示更多商品（${visible.length}/${filtered.length}）` : `Show more products (${visible.length}/${filtered.length})`}</button>`
       : `<p class="uz-results-count">${zh ? `已显示全部 ${filtered.length} 件商品` : `Showing all ${filtered.length} products`}</p>`;
+  }
+
+  async function translateTexts(jobs) {
+    if (lang() !== 'zh') return;
+    const sources = [...new Set(jobs
+      .filter(job => job.target && needsChineseTranslation(job.source) && !translationCache.has(job.source) && !translating.has(job.source))
+      .map(job => job.source))];
+
+    for (const source of sources) translating.add(source);
+    for (let offset = 0; offset < sources.length; offset += 12) {
+      const batch = sources.slice(offset, offset + 12);
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texts: batch })
+        });
+        if (!response.ok) throw new Error(`Translation service returned HTTP ${response.status}`);
+        const data = await response.json();
+        if (!['success', 'partial'].includes(data.status) || !Array.isArray(data.translations)) {
+          throw new Error(data.msg || 'Translation service returned an invalid response');
+        }
+        if (data.status === 'partial') {
+          showTranslationNotice('部分商品暂时无法翻译，当前显示供应商原文。');
+          console.warn(data.warning || 'Some product text could not be translated.');
+        }
+
+        for (const item of data.translations) {
+          if (item.translation && item.translation !== item.text) saveTranslation(item.text, item.translation);
+          jobs.filter(job => job.source === item.text).forEach(job => {
+            if (job.target.isConnected && job.target.textContent.startsWith(item.text)) {
+              job.target.textContent = `${item.translation}${job.target.dataset.translate === 'description' && job.source.length >= 90 ? '…' : ''}`;
+            }
+          });
+        }
+      } catch (error) {
+        console.warn('Unable to translate supplier product text:', error);
+        showTranslationNotice('翻译服务暂时不可用，部分商品信息将显示供应商原文。');
+        break;
+      } finally {
+        batch.forEach(source => translating.delete(source));
+      }
+    }
+    sources.forEach(source => translating.delete(source));
+  }
+
+  function showTranslationNotice(message) {
+    const notice = document.getElementById('uz-translation-status');
+    if (notice) {
+      notice.hidden = false;
+      notice.textContent = message;
+    }
   }
 
   root.addEventListener('click', event => {
@@ -307,7 +422,7 @@
       <section class="smm-review-modal uz-sub-checkout" role="dialog" aria-modal="true" aria-labelledby="uz-sub-checkout-title">
         <button class="uz-sub-checkout-close" type="button" aria-label="${zh ? '关闭' : 'Close'}">×</button>
         <span class="smm-review-kicker">${zh ? '安全结账' : 'SECURE CHECKOUT'}</span>
-        <h3 id="uz-sub-checkout-title">${esc(product.name)}</h3>
+        <h3 id="uz-sub-checkout-title">${esc(translationCache.get(product.name) || product.name)}</h3>
         <p class="smm-review-meta">${zh ? '付款确认后将自动向供应商提交订单。' : 'Your order is sent to the supplier after payment is confirmed.'}</p>
         <form id="uz-sub-checkout-form">
           <div class="smm-review-customer">

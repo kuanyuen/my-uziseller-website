@@ -702,6 +702,12 @@
   font-size: 12px;
 }
 
+.uz-translation-notice:not([hidden]) {
+  margin: -8px 0 14px;
+  color: #d9c38a;
+  font-size: 12px;
+}
+
 .uz-product-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);

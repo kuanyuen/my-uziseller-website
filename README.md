@@ -88,6 +88,7 @@ https://your-domain.vercel.app/api/billplz-webhook
 
 - `SMM_MARKUP_PERCENT` - SMM 服务加价百分比 (默认: 30)
 - `SUBSCRIPTION_MARKUP_PERCENT` - 订阅产品加价百分比 (默认: 30)
+- `PRICE_INCREASE_PERCENT` - 在当前售价基础上统一上调百分比 (默认: 50)
 - `VND_TO_MYR_RATE` - 越南盾到马币汇率 (默认: 0.000156)
 - `USD_TO_MYR_RATE` - 美元到马币汇率 (默认: 4.04)
 - `CNY_TO_MYR_RATE` - 人民币到马币汇率 (默认: 0.60)

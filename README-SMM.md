@@ -8,6 +8,7 @@ Set these on the Vercel project (Production, and Preview if you want to test the
 - `SMM_API_KEY` = your real SMM API key
 - `VND_TO_MYR_RATE` = optional, defaults to `0.000156`. The supplier's `rate` field is in **Vietnamese Dong** — this converts it to MYR for display.
 - `SMM_MARKUP_PERCENT` = optional, defaults to `30`. The same markup is applied to every public SMM service price.
+- `PRICE_INCREASE_PERCENT` = optional, defaults to `50`. Applied on top of the existing markup to public SMM, supplier-catalogue, and featured-product prices. Server-side checkout uses the matching increased prices.
 - `USD_TO_MYR_RATE` = optional, defaults to `4.04` (1 USD ≈ 4.04 MYR).
 - `CNY_TO_MYR_RATE` = optional, defaults to `0.60` (1 CNY ≈ 0.60 MYR).
 

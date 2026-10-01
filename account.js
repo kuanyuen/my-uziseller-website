@@ -96,7 +96,7 @@ const UzAccount = (() => {
       <div class="uz-account-modal">
         <button class="uz-account-close" aria-label="Close">&times;</button>
         <div class="uz-account-form-side">
-        <a class="uz-auth-brand" href="#top" aria-label="UziSeller home"><img src="assets/logo.svg" alt=""><span>Uzi<span>Seller</span></span></a>
+        <a class="uz-auth-brand" href="#top" aria-label="UziSeller home"><img src="assets/logo-mark.png" alt=""><span>Uzi<span>Seller</span></span></a>
         <div class="uz-auth-intro">
           <h1 data-auth-title>${t("登录您的账户", "Welcome back")}</h1>
           <p data-auth-subtitle>${t("登录后即可查看余额、充值记录与订单进度。", "Sign in to manage your balance, top-ups and orders.")}</p>

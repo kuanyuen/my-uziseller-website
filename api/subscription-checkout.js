@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { createBill } from "../lib/billplz.js";
 import { saveOrder, trackOrderId } from "../lib/store.js";
+import { getPriceIncreaseFactor } from "../lib/pricing.js";
 
 const BASE = process.env.SHOP_APMMO_BASE || "https://shop.appmmo.com/api";
 function json(res,status,body){res.status(status).setHeader("Content-Type","application/json; charset=utf-8");return res.end(JSON.stringify(body));}
@@ -58,7 +59,7 @@ export default async function handler(req,res){
     const supplierUnit=priceOf(p,supplierCurrency); if(!(supplierUnit>0)) return json(res,400,{status:"error",msg:"Supplier product has no valid price"});
     const totalSupplier= supplierUnit*qty;
     const markup=Number(process.env.SUBSCRIPTION_MARKUP_PERCENT||30)/100;
-    const totalMyr=Math.round(toMyr(totalSupplier,supplierCurrency)*(1+markup)*100)/100;
+    const totalMyr=Math.round(toMyr(totalSupplier,supplierCurrency)*(1+markup)*getPriceIncreaseFactor()*100)/100;
     const amountCents=Math.round(totalMyr*100); if(amountCents<100) return json(res,400,{status:"error",msg:"Order amount too small"});
     const orderId=randomUUID(); const siteUrl=process.env.SITE_URL||`https://${req.headers.host}`;
     const bill=await createBill({amountCents,name,email,description:`${String(p.name||`Product ${productId}`)} x${qty}`,callbackUrl:`${siteUrl}/api/billplz-webhook`,redirectUrl:`${siteUrl}/order-status.html?order=${orderId}`,referenceId:orderId});
