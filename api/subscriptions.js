@@ -1,4 +1,5 @@
 import { getPriceIncreaseFactor } from "../lib/pricing.js";
+import { handleTranslation } from "../lib/translate.js";
 
 const BASE = process.env.SHOP_APMMO_BASE || "https://shop.appmmo.com/api";
 
@@ -144,6 +145,7 @@ function findProductPayload(node) {
 export default async function handler(req,res) {
   try {
     const action=String(req.query.action||"products");
+    if (action === "translate") return handleTranslation(req,res);
     if (req.method !== "GET") return json(res,405,{status:"error",msg:"Method not allowed"});
 
     if (action === "products") {

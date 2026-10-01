@@ -317,7 +317,7 @@
     for (let offset = 0; offset < sources.length; offset += 12) {
       const batch = sources.slice(offset, offset + 12);
       try {
-        const response = await fetch('/api/translate', {
+        const response = await fetch('/api/subscriptions?action=translate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texts: batch })
