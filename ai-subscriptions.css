@@ -1,5 +1,5 @@
 /* =========================================================
-   UZISELLER AI SUBSCRIPTIONS STORE — FULLY OPTIMIZED
+   UZISELLER PRODUCT MARKETPLACE
    AppMMO-Inspired Clear Category Layout + Dark Tech Theme
    ========================================================= */
 
@@ -7,7 +7,7 @@
   margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 18px;
 }
 
 /* Loading State */
@@ -323,6 +323,76 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
+.uz-catalog-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 14px;
+  background: rgba(8, 8, 17, .72);
+}
+
+.uz-category-chip {
+  display: flex;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #292a32, #202128);
+  color: #e8e6f1;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease;
+}
+
+.uz-category-chip .uz-category-icon {
+  flex: 0 0 auto;
+  color: #75cfff;
+  font-size: 14px;
+}
+
+.uz-category-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uz-category-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(115, 157, 255, .45);
+  background: #30313c;
+}
+
+.uz-category-chip.active {
+  border-color: transparent;
+  background: linear-gradient(110deg, #6249e8, #39aee7);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(71, 111, 230, .25);
+}
+
+.uz-category-chip.active > span {
+  color: #fff;
+}
+
+.uz-category-chip small {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: rgba(255, 255, 255, .67);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.uz-category-chip.active small {
+  color: rgba(255, 255, 255, .86);
+}
+
 /* ChatGPT Brand Styling */
 .chatgpt-card {
   border-color: rgba(16, 163, 127, 0.3);
@@ -507,6 +577,13 @@
   animation: slideDown 0.4s ease;
 }
 
+.uz-products-area.visible {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .018);
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -595,6 +672,34 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
+}
+
+.uz-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 22px 0 4px;
+}
+
+.uz-load-more {
+  min-height: 42px;
+  padding: 0 22px;
+  border: 1px solid rgba(124, 124, 255, .35);
+  border-radius: 9px;
+  background: rgba(124, 77, 255, .12);
+  color: #e7ddff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.uz-load-more:hover {
+  background: rgba(124, 77, 255, .24);
+}
+
+.uz-results-count {
+  margin: 0;
+  color: #918ba7;
+  font-size: 12px;
 }
 
 .uz-product-card {
@@ -821,6 +926,22 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .uz-catalog-categories {
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .uz-category-chip {
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .uz-products-area.visible {
+    padding: 14px;
+  }
+
   .uz-sub-checkout .smm-review-customer,
   .uz-sub-checkout-options {
     grid-template-columns: 1fr;

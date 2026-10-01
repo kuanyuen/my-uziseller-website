@@ -21,7 +21,7 @@ Add these Vercel Environment Variables:
 - `USD_TO_MYR` = your current USD/MYR display conversion (optional; default 4.25)
 - `CNY_TO_MYR` = your current CNY/MYR display conversion (optional; default 0.59)
 
-The subscription flow is: products.php → UziSeller product list → Billplz payment → Billplz webhook → buy_product → save returned `trans_id` and `data` to the order.
+The digital-product purchase flow is: products.php → UziSeller product catalogue → Billplz payment → Billplz webhook → buy_product → save returned `trans_id` and `data` to the order.
 
 ### SHOP.APPMMO API coverage
 
@@ -34,7 +34,7 @@ The storefront uses the supplier endpoints visible in the supplier API documenta
 
 The browser never receives `SHOP_APMMO_API_KEY`.
 
-The customer-facing AI marketplace accepts AI products from the supplier catalogue rather than limiting the list to ChatGPT and Claude. AI product purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`. If the supplier catalogue is unavailable or a product has no valid price, the storefront does not display it as purchasable.
+The customer-facing product marketplace displays all sellable supplier categories and products, with category filters, search, price sorting, and progressive loading. Products with invalid prices are not shown as purchasable. Purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`.
 
 The catalogue proxy distinguishes sellable products from category headings by requiring an ID, name, and positive price, then recursively walks nested category/product groups (including zero-priced category placeholders). Product detail responses are normalized before being sent to the browser.
 ### Digital-product auto delivery
