@@ -35,5 +35,7 @@ The storefront uses the supplier endpoints visible in the supplier API documenta
 The browser never receives `SHOP_APMMO_API_KEY`.
 
 The customer-facing AI marketplace accepts AI products from the supplier catalogue rather than limiting the list to ChatGPT and Claude. AI product purchases use a dedicated checkout: the browser posts the product ID and customer details to `/api/subscription-checkout`; the server validates the current supplier product and price, creates a Billplz bill, and the payment webhook submits the supplier purchase. The supplier purchase form uses `action=buyProduct`, `ID`, `Amount`, and `Coupon`. If the supplier catalogue is unavailable or a product has no valid price, the storefront does not display it as purchasable.
+
+The catalogue proxy distinguishes sellable products from category headings by requiring an ID, name, and price field, then recursively walks nested category/product groups. Product detail responses are normalized before being sent to the browser.
 ### Digital-product auto delivery
 After a successful `buy_product` response, UziSeller stores `trans_id` plus each entry in `data[]`. String entries such as `A|B` are preserved as fields without assuming that the fields are specifically an account, password, key, or code. Customers can view and copy the returned delivery values from `order-status.html` after payment.

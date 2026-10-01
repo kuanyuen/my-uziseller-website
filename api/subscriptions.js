@@ -28,6 +28,9 @@ async function upstream(path, params = {}, options = {}) {
 }
 
 const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+const PRODUCT_IDS = ["id","ID","product_id","productId","productID"];
+const PRODUCT_NAMES = ["name","title","product_name","productName","product"];
+const PRODUCT_PRICES = ["price","Price","selling_price","sellingPrice","sale_price","salePrice","cost","amount","unit_price","unitPrice","product_price","productPrice","regular_price","current_price"];
 const first = (o, keys, fallback="") => {
   for (const k of keys) if (o?.[k] !== undefined && o?.[k] !== null && String(o[k]).trim() !== "") return o[k];
   return fallback;
@@ -55,9 +58,15 @@ function parsePrice(value, currency) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 const isAdmin = (req) => !!process.env.ADMIN_PASSWORD && req.headers["x-admin-password"] === process.env.ADMIN_PASSWORD;
+const looksLikeProduct = node =>
+  isObj(node) &&
+  PRODUCT_IDS.some(key => node[key] !== undefined) &&
+  PRODUCT_NAMES.some(key => node[key] !== undefined) &&
+  PRODUCT_PRICES.some(key => node[key] !== undefined && node[key] !== null && String(node[key]).trim() !== "");
 
 // APPMMO has used a few response shapes over time. Walk the response instead of
-// assuming that products are always data[] or products[].
+// assuming that products are always data[] or products[]. Categories can have
+// IDs and names too, so require a price field before treating a node as a product.
 function collectProducts(node, inheritedCategory="", out=[]) {
   if (Array.isArray(node)) {
     for (const item of node) collectProducts(item, inheritedCategory, out);
@@ -65,9 +74,7 @@ function collectProducts(node, inheritedCategory="", out=[]) {
   }
   if (!isObj(node)) return out;
 
-  const looksLikeProduct = ["id","ID","product_id","productId","productID"].some(k => node[k] !== undefined) &&
-    ["name","title","product_name","productName","product"].some(k => node[k] !== undefined);
-  if (looksLikeProduct) {
+  if (looksLikeProduct(node)) {
     out.push({ ...node, category: first(node,["category","category_name","categoryName","group","group_name"],inheritedCategory || "Other") });
     return out;
   }
@@ -77,7 +84,7 @@ function collectProducts(node, inheritedCategory="", out=[]) {
     if (["api_key","token","password","secret"].includes(key.toLowerCase())) continue;
     let nextCategory = inheritedCategory;
     if (/category|group/i.test(key) && typeof value === "string") nextCategory = value;
-    else if ((isObj(value) || Array.isArray(value)) && /categories?|groups?|products?/i.test(key)) nextCategory = categoryHere;
+    else if (isObj(value) || Array.isArray(value)) nextCategory = categoryHere;
     collectProducts(value, nextCategory, out);
   }
   return out;
@@ -120,8 +127,7 @@ function findProductPayload(node) {
     return null;
   }
   if (!isObj(node)) return null;
-  if (["id","ID","product_id","productId"].some(k=>node[k]!==undefined) &&
-      ["name","title","product_name","productName","description","desc","content","detail","details"].some(k=>node[k]!==undefined)) return node;
+  if (looksLikeProduct(node)) return node;
   for (const key of ["data","product","result","item","product_info","productInfo"]) {
     if (node[key]!==undefined) { const found=findProductPayload(node[key]); if(found) return found; }
   }
@@ -172,9 +178,9 @@ export default async function handler(req,res) {
       if (!req.query.product) return json(res,400,{status:"error",msg:"Missing product"});
       const r=await upstream("/product.php",{product:req.query.product});
       if (r.status>=400 || r.data?.status === "error") return json(res,r.status,r.data);
-      // Return the complete upstream payload. The browser will extract all fields,
-      // including fields that were not known when this storefront was written.
-      return json(res,r.status,{status:"success",data:r.data},30);
+      const product=findProductPayload(r.data);
+      if(!product) return json(res,502,{status:"error",msg:"Supplier returned an unrecognized product response"});
+      return json(res,r.status,{status:"success",product:normalizeProduct(product,0)},30);
     }
 
     return json(res,400,{status:"error",msg:"Unknown action"});
