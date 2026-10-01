@@ -39,6 +39,62 @@
     };
   };
 
+  const categoryIconRules = [
+    [/\bchat\s*gpt\b|openai/, '✳️'],
+    [/claude|anthropic/, '🟠'],
+    [/gemini|google ai/, '♊'],
+    [/kling/, '🎬'],
+    [/grok|twitter|x\s*\(/, '𝕏'],
+    [/\bveo\b|runway|midjourney/, '🎥'],
+    [/tiktok/, '🎵'],
+    [/gmail|google mail/, '✉️'],
+    [/instagram/, '📸'],
+    [/youtube/, '▶️'],
+    [/facebook|fanpage|page\b/, '📘'],
+    [/telegram/, '✈️'],
+    [/discord/, '🎮'],
+    [/threads/, '🧵'],
+    [/spotify/, '🎧'],
+    [/vpn|proxy/, '🛡️'],
+    [/canva/, '🎨'],
+    [/capcut/, '✂️'],
+    [/steam/, '🕹️'],
+    [/netflix/, '🍿'],
+    [/adobe/, '🅰️'],
+    [/microsoft|office/, '🪟'],
+    [/duolingo/, '🦉'],
+    [/hotmail|email|mail\b/, '📧'],
+    [/cloud|storage|drive/, '☁️'],
+    [/profile|account|tài khoản|acc\b/, '👤'],
+  ];
+  const categoryIconFallbacks = [
+    '🌟', '🔑', '💎', '🚀', '🧩', '📱', '💻', '🛒', '🎁', '📦',
+    '🪙', '💳', '🧰', '🔧', '⚙️', '🧪', '📡', '🌐', '🔒', '🧲',
+    '🪄', '📷', '🎯', '🧠', '📝', '📊', '🗂️', '🗝️', '🏷️', '🧸',
+    '🌈', '🔥', '💡', '🪐', '🧭', '🛍️', '🪪', '🎟️', '🎼', '🪁',
+    '🌙', '☀️', '🍀', '🪷', '🐼', '🦊', '🐬', '🦋', '🌸', '🍉',
+    '🥝', '🍓', '🧋', '☕', '🍰', '🧃', '🥇', '🏆', '🏁', '🧿',
+    '🪬', '🔮', '🕰️', '📍', '🗺️', '🪙', '💬', '📣', '🔔', '🪄',
+  ];
+
+  function getCategoryIcons(categories) {
+    const used = new Set(['▦']);
+    let fallbackIndex = 0;
+    return new Map(categories.map(category => {
+      const rule = categoryIconRules.find(([pattern]) => pattern.test(category.toLowerCase()));
+      let icon = rule?.[1];
+      if (!icon || used.has(icon)) {
+        while (fallbackIndex < categoryIconFallbacks.length && used.has(categoryIconFallbacks[fallbackIndex])) {
+          fallbackIndex += 1;
+        }
+        icon = categoryIconFallbacks[fallbackIndex] || '◈';
+        fallbackIndex += 1;
+      }
+      used.add(icon);
+      return [category, icon];
+    }));
+  }
+
   function renderStore() {
     const zh = lang() === 'zh';
     const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
@@ -50,6 +106,7 @@
       if (aAi !== bAi) return aAi ? -1 : 1;
       return categoryCounts.get(b) - categoryCounts.get(a) || a.localeCompare(b);
     });
+    const categoryIcons = getCategoryIcons(categories);
 
     root.innerHTML = `
       <div class="uz-ai-store">
@@ -71,7 +128,7 @@
           </button>
           ${categories.map(category => `
             <button class="uz-category-chip ${selectedCategory === category ? 'active' : ''}" type="button" data-category="${esc(category)}" aria-pressed="${selectedCategory === category}">
-              <span class="uz-category-icon" aria-hidden="true">${aiCategoryPattern.test(category) ? '✦' : '◉'}</span><span class="uz-category-name">${esc(category)}</span><small>${categoryCounts.get(category)}</small>
+              <span class="uz-category-icon" aria-hidden="true">${categoryIcons.get(category)}</span><span class="uz-category-name">${esc(category)}</span><small>${categoryCounts.get(category)}</small>
             </button>
           `).join('')}
         </div>
