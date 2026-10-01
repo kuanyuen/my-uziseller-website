@@ -240,6 +240,59 @@ body{top:0!important;}
 @media(max-width:950px){.smm-order-layout{grid-template-columns:1fr}.smm-sidebar{border-right:0;border-bottom:1px solid #dfe4ec}.smm-info-panel{border-left:0;border-top:1px solid #dfe4ec;padding:12px}.smm-info-card{position:static}.smm-platform-list{flex-direction:row;overflow:auto;padding-bottom:2px}.smm-platform{min-width:max-content;width:auto;grid-template-columns:21px auto auto}.smm-announcement-grid{grid-template-columns:1fr}.smm-select-grid{grid-template-columns:1fr 1fr}.smm-service-select{grid-column:1/-1}.smm-detail-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.smm-topbar{display:block}.smm-topbar-actions{margin-top:10px;justify-content:flex-start}.smm-toolbar{display:grid;grid-template-columns:1fr 1fr}.smm-quick-search{grid-column:1/-1}.smm-main{padding:9px}.smm-form-card{padding:11px}.smm-form-heading{display:block}.smm-status{text-align:left;margin-top:6px}.smm-select-grid{grid-template-columns:1fr}.smm-service-select{grid-column:auto}.smm-detail-grid{grid-template-columns:1fr 1fr}.smm-order-summary{display:block}.smm-summary-actions{margin-top:10px}.smm-summary-actions .smm-btn{width:100%}.smm-service-row{display:block}.smm-row-price{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:10px;border-top:1px solid #edf0f4;margin-top:10px;padding-top:9px}.smm-row-price strong{margin:0}.smm-review-customer{grid-template-columns:1fr}.smm-review-footer{display:block}.smm-review-footer .btn{width:100%;margin-top:10px}}
 
+/* Final dark-surface pass for every light panel in the SMM workspace. */
+.smm-market{background:#090812!important;color:#f5f3ff!important}
+.smm-market .smm-topbar{background:linear-gradient(135deg,#191335,#0d0c1c)!important;color:#fff!important;border-color:rgba(255,255,255,.12)!important}
+.smm-announcement,
+.smm-toolbar,
+.smm-sidebar,
+.smm-main,
+.smm-info-panel{background:#0d0c1c!important;color:#f5f3ff}
+.smm-announcement-grid span,
+.smm-quick-search,
+.smm-status,
+.smm-form-card,
+.smm-service-row,
+.smm-info-card,
+.smm-load-more,
+.smm-review-modal{background:#15132a!important;color:#e9e5f6;border-color:rgba(255,255,255,.13)}
+.smm-quick-search input,
+.smm-select-grid select,
+.smm-field input,
+.smm-field textarea,
+.smm-dripfeed-options input,
+.smm-review-customer input{background:#0b0a18!important;color:#f5f3ff;border-color:rgba(255,255,255,.17)}
+.smm-market label,
+.smm-market .smm-field-head,
+.smm-market .smm-toggle-row,
+.smm-market .smm-order-summary>div{color:#e9e5f6}
+.smm-market .smm-form-card,
+.smm-market .smm-service-row,
+.smm-market .smm-info-card,
+.smm-market .smm-load-more,
+.smm-market .smm-review-modal{border-color:rgba(255,255,255,.13)!important}
+.smm-form-card h3,
+.smm-list-head strong,
+.smm-row-copy h4,
+.smm-info-card-head h3,
+.smm-side-service-copy h4,
+.smm-side-row b,
+.smm-review-modal h3{color:#fff!important}
+.smm-row-copy p,
+.smm-row-copy small,
+.smm-row-meta span,
+.smm-row-price small,
+.smm-list-head span,
+.smm-side-service-copy small,
+.smm-side-row span,
+.smm-field small,
+.smm-review-meta,
+.smm-review-note{color:#9690ae!important}
+.smm-service-row:hover{background:linear-gradient(90deg,rgba(124,77,255,.18),rgba(85,201,255,.06))!important;border-color:rgba(143,120,255,.7)}
+.smm-service-row.selected{background:linear-gradient(90deg,rgba(124,77,255,.24),rgba(85,201,255,.09))!important;border-color:#9278ff}
+.smm-review-summary>div{border-color:rgba(255,255,255,.1)}.smm-review-summary span{color:#9690ae}.smm-review-summary b{color:#f5f3ff}.smm-review-note{background:rgba(255,255,255,.04)}
+.smm-load-more{color:#c9c3dc}.smm-load-more:hover{background:rgba(124,77,255,.15)!important}
+
 /* ===== UziSeller SMM on-brand visual refresh ===== */
 .smm-market{
   background:#f6f7fb;
