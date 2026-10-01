@@ -58,15 +58,18 @@ function parsePrice(value, currency) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 const isAdmin = (req) => !!process.env.ADMIN_PASSWORD && req.headers["x-admin-password"] === process.env.ADMIN_PASSWORD;
-const looksLikeProduct = node =>
-  isObj(node) &&
-  PRODUCT_IDS.some(key => node[key] !== undefined) &&
-  PRODUCT_NAMES.some(key => node[key] !== undefined) &&
-  PRODUCT_PRICES.some(key => node[key] !== undefined && node[key] !== null && String(node[key]).trim() !== "");
+function looksLikeProduct(node) {
+  if (!isObj(node) || !PRODUCT_IDS.some(key => node[key] !== undefined) ||
+      !PRODUCT_NAMES.some(key => node[key] !== undefined)) return false;
+  const currency=String(first(node,["currency","currency_code","currencyCode","price_currency"],"VND")).toUpperCase();
+  return PRODUCT_PRICES.some(key => node[key] !== undefined && node[key] !== null &&
+    String(node[key]).trim() !== "" && parsePrice(node[key],currency) > 0);
+}
 
 // APPMMO has used a few response shapes over time. Walk the response instead of
 // assuming that products are always data[] or products[]. Categories can have
-// IDs and names too, so require a price field before treating a node as a product.
+// IDs, names, and zero-valued placeholder prices too, so require a positive
+// price before treating a node as a purchasable product.
 function collectProducts(node, inheritedCategory="", out=[]) {
   if (Array.isArray(node)) {
     for (const item of node) collectProducts(item, inheritedCategory, out);
