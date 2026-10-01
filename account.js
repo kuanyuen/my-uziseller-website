@@ -60,6 +60,7 @@ const UzAccount = (() => {
     if (overlay) return;
     overlay = document.createElement("div");
     overlay.className = "uz-account-overlay";
+    overlay.style.display = "none";
     overlay.innerHTML = `
       <div class="uz-account-modal">
         <button class="uz-account-close" aria-label="Close">&times;</button>
@@ -331,9 +332,10 @@ const UzAccount = (() => {
       return;
     }
     if (tab) switchTab(tab);
+    overlay.style.display = "flex";
     overlay.classList.add("open");
   }
-  function close() { overlay?.classList.remove("open"); }
+  function close() { if (overlay) { overlay.classList.remove("open"); overlay.style.display = "none"; } }
 
   function logout() {
     clearSession(); refreshNav(); showToast(t("已退出登录", "Signed out"));
@@ -351,7 +353,7 @@ const UzAccount = (() => {
   function init() {
     build();
     refreshNav();
-    document.querySelectorAll("[data-uz-account-open]").forEach(el => el.onclick = open);
+    document.querySelectorAll("[data-uz-account-open]").forEach(el => el.onclick = () => open());
   }
 
   return { init, open, close, login, register, reset, logout, isLoggedIn, getToken, getEmail, getEmailFromServer, getName, authHeaders, refreshNav, showToast };
