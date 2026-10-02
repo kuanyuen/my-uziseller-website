@@ -1,33 +1,18 @@
 # 部署步骤（按顺序执行）
 
-## 1️⃣ GitHub 部署
+## 1️⃣ 部署到现有 Vercel 项目
+
+生产项目为 `my-uziseller-website`（Vercel scope: `uzi-seller`），正式域名为 `www.uziseller.com` 和 `uziseller.com`。不要为同一网站创建新的 Vercel 项目。
 
 ```bash
-# 如果还没有 GitHub 仓库，先创建一个
-# 然后运行：
+# 首次在本地克隆中关联现有生产项目
+vercel link --yes --project my-uziseller-website --scope uzi-seller
 
-git remote add origin https://github.com/你的用户名/uziseller.git
-git branch -M main
-git push -u origin main
-```
-
-## 2️⃣ Vercel 部署
-
-### 方式 A: 一键部署（推荐）
-
-1. 访问 https://vercel.com/new
-2. 选择 "Import Git Repository"
-3. 导入你的 GitHub 仓库
-4. Vercel 会自动检测配置
-5. 点击 "Deploy"
-
-### 方式 B: CLI 部署
-
-```bash
-npm install -g vercel
-vercel login
+# 完成验证后部署
 vercel --prod
 ```
+
+也可以通过该 Vercel 项目已配置的 Git 集成发布默认分支。GitHub Pages 不是生产部署目标。
 
 ## 3️⃣ 配置 Vercel KV (Redis)
 

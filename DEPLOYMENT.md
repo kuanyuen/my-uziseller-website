@@ -21,46 +21,24 @@ UziSeller 是一个完整的数字服务电商平台，包含：
 
 ## 部署步骤
 
-### 1. GitHub 设置
+生产环境已绑定到 Vercel 的 `my-uziseller-website` 项目（scope: `uzi-seller`），正式域名为 `www.uziseller.com` 和 `uziseller.com`。不要另建 Vercel 项目，否则现有域名、环境变量和存储绑定不会自动迁移。
+
+### 使用已连接的 Git 集成
+
+将经过验证的更改合并到该项目连接的 GitHub 仓库默认分支。Vercel 会为该提交创建生产部署。GitHub Pages 不是此网站的生产主机。
+
+### 使用 Vercel CLI
 
 ```bash
-# 初始化 Git 仓库
-git init
-git add .
-git commit -m "Initial commit: UziSeller platform"
+# 首次在本地克隆中关联现有项目
+vercel link --yes --project my-uziseller-website --scope uzi-seller
 
-# 连接到 GitHub（替换为你的仓库地址）
-git remote add origin https://github.com/your-username/uziseller.git
-git branch -M main
-git push -u origin main
-```
-
-### 2. Vercel 部署
-
-#### 方式 A: 通过 Vercel Dashboard（推荐）
-
-1. 访问 [vercel.com](https://vercel.com)
-2. 点击 "Add New Project"
-3. 导入你的 GitHub 仓库
-4. Vercel 会自动检测配置（vercel.json）
-5. 配置环境变量（见下方）
-6. 点击 "Deploy"
-
-#### 方式 B: 通过 Vercel CLI
-
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
-
-# 登录
+# 登录后创建正式生产部署
 vercel login
-
-# 部署
-vercel
-
-# 生产环境部署
 vercel --prod
 ```
+
+部署前先检查项目目录、环境变量和 Vercel scope，确认指向上述现有项目。
 
 ### 3. 配置 Vercel KV (Redis)
 
