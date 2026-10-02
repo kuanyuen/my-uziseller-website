@@ -73,6 +73,10 @@ SHOP_APMMO_BASE=https://shop.appmmo.com/api
 # 后台管理密码
 ADMIN_PASSWORD=your_secure_password
 
+# 账户密码找回（Resend；发送域名须已验证）
+RESEND_API_KEY=your_resend_api_key
+RESEND_EMAIL_DOMAIN=your_verified_sending_domain
+
 # 站点 URL
 SITE_URL=https://your-domain.vercel.app
 ```
@@ -112,6 +116,7 @@ PRICE_INCREASE_PERCENT=50
 - **API 健康检查**: 
   - `https://your-domain.vercel.app/api/smm?action=services`
   - `https://your-domain.vercel.app/api/subscriptions?action=products`
+  - Account password recovery sends a short-lived verification code through Resend.
 
 ## 文件结构
 

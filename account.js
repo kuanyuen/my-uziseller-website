@@ -14,6 +14,8 @@ const UzAccount = (() => {
     "auth.register": ["创建账户", "Create account"],
     "auth.email": ["电子邮件", "Email"],
     "auth.password": ["密码", "Password"],
+    "auth.forgotPassword": ["忘记密码？", "Forgot password?"],
+    "auth.resetSent": ["如果该邮箱已注册，验证码将发送到邮箱。", "If an account exists for that email, a verification code will be sent."],
     "auth.name": ["姓名（可选）", "Name (optional)"],
     "auth.passwordHint": ["密码至少 6 位", "Password (min 6 chars)"],
     "auth.resetHint": ["输入注册邮箱，我们会发送验证码。", "Enter your registered email and we will send a code."],
@@ -117,6 +119,7 @@ const UzAccount = (() => {
             <a href="order-status.html" class="uz-account-link uz-my-orders" style="display:none">${t("我的订单", "My orders")} →</a>
             <label><span data-auth-copy="auth.email">${copy("auth.email")}</span><input class="uz-input" type="email" id="uz-login-email" autocomplete="email" placeholder="you@example.com"></label>
             <label><span data-auth-copy="auth.password">${copy("auth.password")}</span><input class="uz-input" type="password" id="uz-login-password" autocomplete="current-password" placeholder="••••••••"></label>
+            <p class="uz-account-forgot-row"><a href="#" class="uz-account-link" data-uz-forgot-password data-auth-copy="auth.forgotPassword">${copy("auth.forgotPassword")}</a></p>
             <button class="uz-btn" id="uz-login-submit" data-auth-copy="auth.login">${copy("auth.login")}</button>
             <p class="uz-account-note" data-auth-copy="auth.loginNote">${copy("auth.loginNote")}</p>
           </div>
@@ -194,6 +197,11 @@ const UzAccount = (() => {
     overlay.querySelector("#uz-reg-submit").onclick = register;
     overlay.querySelector("#uz-reset-sendcode").onclick = () => sendCode("reset");
     overlay.querySelector("#uz-reset-submit").onclick = reset;
+    overlay.querySelector("[data-uz-forgot-password]").onclick = (e) => {
+      e.preventDefault();
+      overlay.querySelector("#uz-reset-email").value = overlay.querySelector("#uz-login-email").value.trim();
+      switchTab("reset");
+    };
     overlay.querySelector("[data-uz-back-login]").onclick = (e) => { e.preventDefault(); switchTab("login"); };
 
     // Support pressing Enter key in input fields to submit automatically
@@ -334,7 +342,7 @@ const UzAccount = (() => {
     try {
       const j = await api("POST", "send-code", { email, purpose });
       if (j.status !== "ok") throw new Error(j.msg || t("发送失败", "Failed to send"));
-      msg.innerHTML = `<div class="uz-account-ok">${t("验证码已发送，请查收邮箱。", "Verification code sent. Check your email.")}</div>`;
+      msg.innerHTML = `<div class="uz-account-ok">${copy("auth.resetSent")}</div>`;
       const SECOND = 1000;
       const tick = () => {
         const left = Math.max(0, 60 - Math.floor((Date.now() - started) / SECOND));
@@ -385,7 +393,7 @@ const UzAccount = (() => {
     }
     const btn = overlay.querySelector("#uz-reg-submit"); btn.disabled = true; btn.textContent = t("注册中…", "Creating…");
     try {
-      const j = await api("POST", "register", { email, password, name, code });
+      const j = await api("POST", "register", { email, password, name });
       if (j.status !== "ok") throw new Error(j.msg || "Registration failed");
       setSession(j.token, j.user?.name || j.user?.email || "", j.user?.email || "");
       msg.innerHTML = `<div class="uz-account-ok">${t("注册成功！", "Account created!")}</div>`;

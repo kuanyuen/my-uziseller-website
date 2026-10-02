@@ -7,7 +7,7 @@ UziSeller is a digital-services storefront for supplier product subscriptions an
 - Supplier-backed digital product catalogue with category filters, search, sorting, and progressive loading
 - SMM catalogue and server-priced checkout
 - Billplz payments and webhook-driven order processing
-- Customer accounts, order lookup, and an admin order dashboard
+- Customer accounts with email-code password recovery, order lookup, and an admin order dashboard
 - English and Chinese UI, with MYR, USD, and CNY price display
 
 ## Architecture
@@ -43,6 +43,8 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for environment and payment setup details.
 - `/api/smm?action=services` - public SMM catalogue
 - `/api/subscriptions?action=products` - public product catalogue
 - `/api/checkout` and `/api/subscription-checkout` - payment checkout endpoints
+
+Password recovery sends a short-lived email code through Resend. Configure `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` in Vercel; the sending domain must be verified with Resend.
 
 ## License
 

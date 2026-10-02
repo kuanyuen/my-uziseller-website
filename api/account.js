@@ -10,6 +10,7 @@ import {
 } from "../lib/accounts.js";
 import { listRechargeTransactions } from "../lib/wallet.js";
 import { listRecentOrders } from "../lib/store.js";
+import { resetAccountPassword, sendPasswordResetCode } from "../lib/account-recovery.js";
 
 function json(res, status, body) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
@@ -51,6 +52,30 @@ export default async function handler(req, res) {
       return json(res, 405, { status: "error", msg: "Method not allowed" });
     }
 
+    if (action === "send-code") {
+      const email = normalizeEmail(req.body?.email);
+      if (!isValidEmail(email)) {
+        return json(res, 400, { status: "error", msg: "Enter a valid email address" });
+      }
+      const requestIp = String(req.headers?.["x-real-ip"] || "").trim();
+      await sendPasswordResetCode(email, requestIp);
+      return json(res, 200, {
+        status: "ok",
+        msg: "If an account exists for that email, a verification code has been sent."
+      });
+    }
+
+    if (action === "reset") {
+      const { email, code, password } = req.body || {};
+      const normalizedEmail = normalizeEmail(email);
+      if (!isValidEmail(normalizedEmail) || typeof password !== "string" || password.length < 6 || password.length > 1024) {
+        return json(res, 400, { status: "error", msg: "A valid email and a password of at least 6 characters are required" });
+      }
+      const account = await resetAccountPassword(normalizedEmail, code, password);
+      const token = await createSession(account.id);
+      return json(res, 200, { status: "ok", token, user: toPublicAccount(account) });
+    }
+
     const { email, password } = req.body || {};
     const normalizedEmail = normalizeEmail(email);
     if (!isValidEmail(normalizedEmail) || typeof password !== "string" || !password || password.length > 1024) {
@@ -77,6 +102,9 @@ export default async function handler(req, res) {
     return json(res, 400, { status: "error", msg: "Unsupported account action" });
   } catch (error) {
     console.error("Account API error:", error);
-    return json(res, 500, { status: "error", msg: "Account request failed" });
+    return json(res, Number(error?.statusCode) || 500, {
+      status: "error",
+      msg: error?.statusCode ? error.message : "Account request failed"
+    });
   }
 }

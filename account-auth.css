@@ -1,4 +1,5 @@
 /* Split account access panel inspired by premium commerce platforms. */
+.uz-account-forgot-row{display:flex;justify-content:flex-end;margin:-8px 0 10px!important;font-size:11px}.uz-account-forgot-row a,.uz-account-linkrow a{color:#b4a1ff;text-decoration:none}.uz-account-forgot-row a:hover,.uz-account-linkrow a:hover{text-decoration:underline}
 .uz-account-modal{display:grid;grid-template-columns:minmax(330px,420px) minmax(300px,1fr);width:min(980px,calc(100vw - 40px));padding:0!important;overflow:hidden;border-radius:26px!important;background:#0d0d15!important;border-color:rgba(255,255,255,.13)!important;box-shadow:0 35px 120px rgba(0,0,0,.7),0 0 80px rgba(89,65,205,.16)!important}
 .uz-account-form-side{padding:42px 40px 36px;background:linear-gradient(145deg,#141426,#0b0b12)}
 .uz-account-close{z-index:3;top:17px!important;right:19px!important;width:32px;height:32px;border:1px solid rgba(255,255,255,.1)!important;border-radius:50%;background:rgba(255,255,255,.04)!important;line-height:1}
